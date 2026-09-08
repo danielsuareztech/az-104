@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Azure RBAC</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Azure RBAC</div>
+    <div class="nav-sub">Roles, scopes, herencia y roles custom</div>
+    <div class="nav-weight">Dominio 1 · 20–25%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#anatomia"><span class="dot"></span>Anatomía del role assignment</a>
+  <a href="#scopes"><span class="dot"></span>Scopes y herencia</a>
+  <a href="#builtin"><span class="dot"></span>Roles built-in clave</a>
+  <a href="#planos"><span class="dot"></span>Control plane vs Data plane</a>
+  <a href="#custom"><span class="dot"></span>Roles custom (JSON)</a>
+  <a href="#deny"><span class="dot"></span>Deny assignments</a>
+  <a href="#entra"><span class="dot"></span>Azure RBAC vs Entra ID</a>
+  <a href="#policy"><span class="dot"></span>RBAC vs Azure Policy</a>
+  <a href="#operacion"><span class="dot"></span>Operación, límites y CLI</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen casi nunca te pide definir RBAC. Te da un escenario ("Fulano tiene X rol en Y scope, ¿puede hacer Z?") y te obliga a elegir <strong>el rol de menor privilegio</strong> que resuelve el caso. Las tres máquinas de matar son: Contributor no puede asignar roles, Contributor en una Storage Account no lee blobs con Entra ID, y Global Administrator no toca recursos de Azure hasta que alguien prende el toggle de elevación.
+  </div>
+
+  <!-- ══════════ 1 ══════════ -->
+  <div class="section" id="anatomia">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🧩</div>
+      <span class="section-title">Anatomía de una role assignment</span>
+      <span class="section-tag">Base</span>
+    </div>
+
+    <p>Una <strong>role assignment</strong> siempre es la suma de tres cosas. Si en una pregunta falta una, la respuesta está incompleta.</p>
+
+    <div class="flow">
+      <div class="flow-step highlight">Security principal<br><small>a quién</small></div>
+      <span class="flow-arrow">+</span>
+      <div class="flow-step highlight">Role definition<br><small>qué puede hacer</small></div>
+      <span class="flow-arrow">+</span>
+      <div class="flow-step highlight">Scope<br><small>sobre qué</small></div>
+      <span class="flow-arrow">=</span>
+      <div class="flow-step">Role assignment</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">1 · Security principal</div>
+      <ul>
+        <li><strong>User</strong> — una identidad de Microsoft Entra ID.</li>
+        <li><strong>Group</strong> — la forma recomendada: asignás al grupo, no a la persona.</li>
+        <li><strong>Service principal</strong> — la identidad de una app registrada.</li>
+        <li><strong>Managed identity</strong> — system-assigned o user-assigned, para que un recurso llame a otro sin secretos.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2 · Role definition</div>
+      <p>Una colección de permisos en JSON. Los verbos importan: <code>Actions</code> (control plane permitido), <code>NotActions</code> (se resta), <code>DataActions</code> / <code>NotDataActions</code> (plano de datos), <code>AssignableScopes</code> (dónde se puede usar el rol).</p>
+      <div class="rule-box"><strong>Permiso efectivo = Actions − NotActions.</strong> <code>NotActions</code> <strong>no</strong> es un deny: si el mismo principal recibe esa acción por otra role assignment, la tiene igual.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">3 · Scope</div>
+      <p>Uno de cuatro niveles: <span class="chip chip-purple">Management Group</span> <span class="chip chip-blue">Subscription</span> <span class="chip chip-green">Resource Group</span> <span class="chip chip-yellow">Resource</span>. En el portal se hace desde la blade <strong>Access control (IAM)</strong> del objeto en ese nivel.</p>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>El modelo es <strong>allow por defecto denegado</strong>: si no hay ninguna role assignment que te otorgue la acción, no la podés hacer. No existe "quitar" un permiso heredado con otra assignment.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 2 ══════════ -->
+  <div class="section" id="scopes">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">🏗️</div>
+      <span class="section-title">Jerarquía de scopes y herencia</span>
+      <span class="section-tag">Herencia</span>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">Management Group<br><small>puede anidarse</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Subscription</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Resource Group</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Resource</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Las tres reglas de la herencia</div>
+      <ul>
+        <li><strong>Baja, no sube.</strong> Lo que asignás en un MG aplica a todas las subscriptions, RGs y recursos de abajo. Nunca al revés: Owner en un RG no te da nada en la subscription.</li>
+        <li><strong>Es aditiva (unión, no intersección).</strong> Si tenés Reader en la subscription y Contributor en un RG, dentro de ese RG sos Contributor. Los permisos se suman.</li>
+        <li><strong>No se resta.</strong> No podés asignar un rol "más chico" en un scope hijo para recortar lo heredado. Para quitar permiso hay que <strong>eliminar la assignment del scope padre</strong> (o que exista un deny assignment).</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "El usuario tiene Contributor en la subscription y le asignás Reader en el RG-Producción para que solo lea ahí." <strong>No funciona.</strong> Sigue siendo Contributor en ese RG porque los permisos se acumulan. La única salida es sacar el Contributor de la subscription y reasignar más abajo.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">🌳</span>
+      <span>Arriba de todo está el <strong>root management group</strong> (<code>/</code>), que tiene el mismo ID que el tenant. Todas las subscriptions y MGs cuelgan de él, y una role assignment ahí llega a absolutamente todo el tenant.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 3 ══════════ -->
+  <div class="section" id="builtin">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">👤</div>
+      <span class="section-title">Roles built-in que sí se preguntan</span>
+      <span class="section-tag">Menor privilegio</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Rol</th><th>Actions</th><th>Gestiona recursos</th><th>Asigna roles</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Owner</strong></td><td><code>*</code> sin NotActions</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span></td></tr>
+          <tr><td><strong>Contributor</strong></td><td><code>*</code> menos <code>Microsoft.Authorization/*/Write</code> y <code>/Delete</code></td><td><span class="yes">Sí</span></td><td><span class="no">No</span></td></tr>
+          <tr><td><strong>Reader</strong></td><td><code>*/read</code></td><td><span class="no">Solo ve</span></td><td><span class="no">No</span></td></tr>
+          <tr><td><strong>User Access Administrator</strong></td><td><code>*/read</code> + <code>Microsoft.Authorization/*</code></td><td><span class="no">No</span></td><td><span class="yes">Sí</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>La distinción de oro:</strong> Contributor = "hace todo menos repartir acceso". Owner = Contributor + repartir acceso. User Access Administrator = solo repartir acceso (y leer). Si el escenario dice "tiene que poder crear y borrar VMs <em>pero no</em> dar permisos a otros" → <strong>Contributor</strong>. Si dice "solo tiene que poder dar permisos, no tocar recursos" → <strong>User Access Administrator</strong>.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí 2: Sales lee RG1+RG2, crea solo en RG1</div>
+      <p>Grupo SalesDepartment (sync de AD). Least privilege: leer RG1 y RG2, crear solo en RG1, no asignar roles, no crear RGs. RG3 existe.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Assignment</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Contributor en RG1</strong></td><td><span class="yes">Sí</span></td><td>Crea recursos. No asigna roles. Ya incluye read de RG1</td></tr>
+            <tr><td><strong>Reader en RG2</strong></td><td><span class="yes">Sí</span></td><td>Lee RG2 sin crear</td></tr>
+            <tr><td>Owner en RG1</td><td><span class="no">No</span></td><td>Puede asignar permisos</td></tr>
+            <tr><td>Contributor en la subscription</td><td><span class="no">No</span></td><td>Crea en RG2/RG3 y crea RGs nuevos</td></tr>
+            <tr><td>Reader en la subscription</td><td><span class="no">No</span></td><td>Lee RG3, viola “solo RG1 y RG2”</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el scope es el RG, no la sub (RG3 y “crear RGs” se cuelan). Owner ≠ Contributor: Owner reparte acceso. Contributor en RG1 ya lee RG1, no hace falta un Reader extra ahí.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Least privilege: gestionar el acceso de otros</div>
+      <p>Un ingeniero nuevo debe <strong>administrar el acceso de otros a recursos de Azure</strong>, sin más privilegio del necesario.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Rol</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>User Access Administrator</strong></td><td><span class="yes">Sí</span></td><td>RBAC de Azure: asigna roles. No crea/borra VMs. Es el mínimo</td></tr>
+            <tr><td>Owner</td><td><span class="no">No</span></td><td>También reparte acceso, pero además opera todos los recursos</td></tr>
+            <tr><td>Contributor</td><td><span class="no">No</span></td><td>Opera recursos; <strong>no</strong> asigna roles</td></tr>
+            <tr><td>User Administrator</td><td><span class="no">No</span></td><td>Rol de <strong>Entra ID</strong>: usuarios y grupos del directorio, no IAM de VMs/VNets</td></tr>
+            <tr><td>Co-Administrator</td><td><span class="no">No</span></td><td>Admin clásico de subscription (legado). Acceso amplio, no least privilege</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>az role assignment create --assignee &lt;upn&gt; --role "User Access Administrator" --scope /subscriptions/&lt;id&gt;
+New-AzRoleAssignment -SignInName user@contoso.com -RoleDefinitionName "User Access Administrator"</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <strong>User Administrator</strong> ≠ <strong>User Access Administrator</strong>. El primero es Entra (cuentas). El segundo es Azure RBAC (quién toca recursos). Co-Administrator y Owner sobran privilegio. Contributor no da IAM.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Roles específicos que aparecen en escenarios</div>
+      <ul>
+        <li><strong>Virtual Machine Contributor</strong> — crea y administra VMs. <em>No</em> te da acceso a la vNet ni a la Storage Account a las que la VM se conecta, y <strong>no</strong> te da acceso al sistema operativo invitado.</li>
+        <li><strong>Virtual Machine Administrator Login</strong> / <strong>Virtual Machine User Login</strong> — estos sí son login al SO (con Entra ID), como admin o como usuario común. Ojo: son roles de <em>acceso a la VM</em>, no de gestión del recurso.</li>
+        <li><strong>Network Contributor</strong> — administra networking (vNets, NSGs, load balancers) pero no da acceso a los recursos conectados.</li>
+        <li><strong>Storage Blob Data Contributor / Reader / Owner</strong> — plano de datos de blobs (ver la sección siguiente).</li>
+        <li><strong>Backup Operator</strong> — opera backups (dispara jobs, restaura) pero no puede crear vaults ni quitar la protección de backup; eso es <strong>Backup Contributor</strong>. <strong>Backup Reader</strong> solo monitorea.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> cuando la pregunta dice "<em>minimum required role</em> / principio de menor privilegio", Owner y Contributor casi siempre son distractores. Si existe un rol específico del servicio (Virtual Machine Contributor, Network Contributor, Backup Operator, Storage Blob Data Reader), ese es el correcto.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><code>New-AzRoleAssignment</code>: leé el output</div>
+      <p>Asignás <code>Virtual Machine Contributor</code> con <code>-ObjectId</code> y <code>-ResourceGroupName medicine-sales</code>. El output trae <code>ObjectType: ServicePrincipal</code>, <code>DisplayName: MyTestApplication</code>, <code>SignInName</code> vacío.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>El rol se asigna a un <strong>usuario</strong> con ese ObjectId</td><td><span class="no">No</span></td><td><code>ObjectType</code> = <strong>ServicePrincipal</strong> (app). Un user tendría <code>User</code> y un <code>SignInName</code></td></tr>
+            <tr><td>El scope es el RG <code>medicine-sales</code></td><td><span class="yes">Yes</span></td><td><code>-ResourceGroupName</code> y el path <code>.../resourceGroups/medicine-sales</code></td></tr>
+            <tr><td>VM Contributor administra la VM, no la VNet ni la Storage Account</td><td><span class="yes">Yes</span></td><td>Definición del rol: compute de la VM, no network/storage conectados</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>New-AzRoleAssignment -ObjectId &lt;sp-id&gt; `
+  -RoleDefinitionName "Virtual Machine Contributor" `
+  -ResourceGroupName medicine-sales
+# CLI: az role assignment create --assignee-object-id &lt;sp-id&gt; \
+#   --assignee-principal-type ServicePrincipal \
+#   --role "Virtual Machine Contributor" --resource-group medicine-sales</code></pre>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <code>-ObjectId</code> no implica “es un user”. Leé <strong>ObjectType</strong> en el output. SignInName vacío + DisplayName de aplicación = SP.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 4 ══════════ -->
+  <div class="section" id="planos">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🗄️</div>
+      <span class="section-title">Control plane vs Data plane</span>
+      <span class="section-tag">Trampa clásica</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>Control plane</th><th>Data plane</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Qué gestiona</strong></td><td>El recurso como objeto de Azure</td><td>Los datos <em>adentro</em> del recurso</td></tr>
+          <tr><td><strong>Campo en el JSON</strong></td><td><code>Actions</code> / <code>NotActions</code></td><td><code>DataActions</code> / <code>NotDataActions</code></td></tr>
+          <tr><td><strong>Endpoint</strong></td><td><code>management.azure.com</code> (ARM)</td><td>Endpoint del servicio (ej. <code>blob.core.windows.net</code>)</td></tr>
+          <tr><td><strong>Ejemplo Storage</strong></td><td>Crear la Storage Account, cambiar el tier, rotar keys</td><td>Leer, subir o borrar un blob</td></tr>
+          <tr><td><strong>Rol típico</strong></td><td>Storage Account Contributor, Contributor</td><td>Storage Blob Data Reader / Contributor / Owner</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> un usuario con <strong>Contributor</strong> sobre una Storage Account y autenticación con <strong>Microsoft Entra ID</strong> abre el container en el portal y ve <em>AuthorizationPermissionMismatch</em>: no puede listar ni leer blobs. Contributor da control plane, no <code>DataActions</code>. La solución es <strong>Storage Blob Data Reader</strong> (leer) o <strong>Storage Blob Data Contributor</strong> (leer/escribir/borrar).</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">🔑</span>
+      <span>El matiz que separa a los que estudiaron: Contributor <strong>sí</strong> puede hacer <code>listKeys</code>, así que puede acceder a los datos <em>usando la account key o un SAS</em>. Lo que no puede es acceder <strong>con su identidad de Entra ID</strong>. Por eso la mitigación real es desactivar el acceso por shared key y forzar Entra ID + roles de datos.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Otros servicios con roles de data plane</div>
+      <ul>
+        <li><strong>Key Vault</strong> — con el modelo de permisos RBAC: Key Vault Secrets User (leer secretos), Key Vault Secrets Officer, Key Vault Administrator. Alternativa histórica: <em>access policies</em> del propio vault (los dos modelos son excluyentes: se elige uno).</li>
+        <li><strong>Storage Queue / File / Table Data</strong> — mismo patrón que Blob, un set de roles por servicio.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════ 5 ══════════ -->
+  <div class="section" id="custom">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">🛠️</div>
+      <span class="section-title">Roles custom</span>
+      <span class="section-tag">JSON</span>
+    </div>
+
+    <p>Se crean cuando ningún built-in encaja. Se pueden armar desde el portal (clonando un built-in o desde cero), con JSON, CLI o PowerShell.</p>
+
+<pre><code>{
+  "Name": "VM Operator",
+  "IsCustom": true,
+  "Description": "Puede arrancar, parar y reiniciar VMs, pero no crearlas ni borrarlas.",
+  "Actions": [
+    "Microsoft.Compute/*/read",
+    "Microsoft.Compute/virtualMachines/start/action",
+    "Microsoft.Compute/virtualMachines/restart/action",
+    "Microsoft.Compute/virtualMachines/deallocate/action",
+    "Microsoft.Authorization/*/read",
+    "Microsoft.Resources/subscriptions/resourceGroups/read"
+  ],
+  "NotActions": [],
+  "DataActions": [],
+  "NotDataActions": [],
+  "AssignableScopes": [
+    "/subscriptions/00000000-0000-0000-0000-000000000000"
+  ]
+}</code></pre>
+
+    <div class="card">
+      <div class="card-title">Reglas que se preguntan</div>
+      <ul>
+        <li><strong>Permiso efectivo = Actions − NotActions</strong> (y <code>DataActions − NotDataActions</code> para datos). Se calculan por separado: un wildcard en <code>Actions</code> nunca otorga <code>DataActions</code>.</li>
+        <li><strong>AssignableScopes</strong> define <em>dónde se puede asignar</em> el rol, no qué permisos da. Admite management group, subscription o resource group; <strong>no</strong> admite un recurso individual y <strong>no</strong> admite el root scope <code>/</code>.</li>
+        <li><strong>No se permiten wildcards en AssignableScopes.</strong> Si querés que el rol sirva en varias subscriptions, o las listás todas, o usás un management group que las contenga.</li>
+        <li>Para crear un rol custom necesitás <code>Microsoft.Authorization/roleDefinitions/write</code> en ese scope: lo tienen <strong>Owner</strong> y <strong>User Access Administrator</strong>. Contributor <span class="no">no</span>.</li>
+        <li>Límite: <strong>5000 roles custom por tenant</strong> (en Azure China 21Vianet, 2000).</li>
+        <li>Los roles custom se guardan en el <strong>tenant</strong>, así que un rol creado en una subscription puede compartirse con otras del mismo tenant agregándolas a <code>AssignableScopes</code>. Entre tenants distintos, no.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> confundir <code>AssignableScopes</code> con el scope de la assignment. El rol de arriba tiene <code>AssignableScopes</code> = una subscription; eso no significa que quien lo reciba tenga permisos sobre toda la subscription: significa que ese rol <em>solo puede asignarse</em> dentro de ella (a la sub, a un RG o a un recurso de adentro).</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>Truco práctico: la forma rápida de armar un rol custom es <strong>clonar un built-in</strong> y sacarle acciones. Para descubrir el string exacto de una operación, <code>az provider operation show --namespace Microsoft.Compute</code>.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 6 ══════════ -->
+  <div class="section" id="deny">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.22)">⛔</div>
+      <span class="section-title">Deny assignments</span>
+      <span class="section-tag">Precedencia</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué son</div>
+      <ul>
+        <li>Bloquean acciones específicas a principals determinados en un scope, aunque una role assignment se las otorgue.</li>
+        <li><strong>Precedencia absoluta:</strong> deny gana siempre sobre cualquier allow. El motor evalúa primero los deny.</li>
+        <li><strong>No se crean a mano</strong> — no hay botón en la blade IAM para agregarlas. Las crea Azure: <strong>Deployment Stacks</strong> (deny settings), <strong>Azure Managed Applications</strong> (RG gestionado por el publisher) y, en legado, <strong>Azure Blueprints</strong> (en retiro el 31 ene 2027).</li>
+        <li>Se pueden <em>leer</em>: pestaña <strong>Deny assignments</strong> en Access control (IAM), o <code>az role assignment list</code> no las muestra — usá <code>Get-AzDenyAssignment</code> en PowerShell.</li>
+        <li>Se heredan hacia abajo igual que las role assignments (salvo que la deny assignment tenga marcado que no aplique a scopes hijos).</li>
+      </ul>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step highlight">¿Hay deny?<br><small>gana el deny</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">¿Hay allow acumulado?<br><small>suma de assignments</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Si no: <strong>denegado</strong></div>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">🔒</span>
+      <span>No confundas deny assignments con <strong>resource locks</strong> (<code>CanNotDelete</code> / <code>ReadOnly</code>). Los locks aplican a <em>todos</em> los principals por igual y son parte de ARM, no de RBAC; incluso un Owner queda bloqueado hasta que borre el lock (y borrar un lock requiere <code>Microsoft.Authorization/locks/*</code>, que tienen Owner y User Access Administrator).</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 7 ══════════ -->
+  <div class="section" id="entra">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.22)">🪪</div>
+      <span class="section-title">Azure RBAC vs roles de Microsoft Entra ID</span>
+      <span class="section-tag">Muy preguntado</span>
+    </div>
+
+    <p>Son <strong>dos sistemas de permisos separados</strong> que no se hablan entre sí.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>Azure RBAC</th><th>Roles de Entra ID</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Controla</strong></td><td>Recursos de Azure (VMs, storage, redes)</td><td>Objetos del directorio (usuarios, grupos, apps, licencias)</td></tr>
+          <tr><td><strong>Scopes</strong></td><td>MG / Subscription / RG / Recurso</td><td>Todo el tenant (o unidades administrativas / app scope)</td></tr>
+          <tr><td><strong>Dónde se ve</strong></td><td>Blade <strong>Access control (IAM)</strong> del recurso</td><td>Entra ID → <strong>Roles and administrators</strong></td></tr>
+          <tr><td><strong>Roles típicos</strong></td><td>Owner, Contributor, Reader</td><td>Global Administrator, User Administrator, Billing Administrator</td></tr>
+          <tr><td><strong>Custom</strong></td><td>Sí, con JSON y AssignableScopes</td><td>Sí, pero es otro motor (requiere licencia P1/P2)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> un <strong>Global Administrator</strong> <em>no</em> tiene acceso a los recursos de Azure por defecto. Puede administrar todo el directorio y no ver ni una VM. Para arreglarlo: <strong>Entra ID → Properties → "Access management for Azure resources" → Yes</strong>. Eso le asigna <strong>User Access Administrator en el root scope (<code>/</code>)</strong>, desde donde puede darse a sí mismo o a otros los roles que necesite. Es un cambio auditado y conviene revertirlo cuando termina la tarea.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Detalles del "elevate access"</div>
+      <ul>
+        <li>El toggle otorga <strong>User Access Administrator</strong>, no Owner: te deja repartir acceso, no administrar recursos directamente.</li>
+        <li>Solo lo puede activar un Global Administrator, y solo aplica a esa cuenta.</li>
+        <li>El permiso detrás es <code>Microsoft.Authorization/elevateAccess/action</code>, que está en las <code>NotActions</code> de Contributor.</li>
+        <li>Se revierte apagando el toggle o borrando la assignment en el root scope: <code>az role assignment delete --assignee &lt;objectId&gt; --scope "/" --role "User Access Administrator"</code>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">🧠</span>
+      <span>Regla mnemotécnica: <strong>Global Administrator manda en el directorio; Owner manda en los recursos.</strong> Y para gestionar management groups (crear, mover subscriptions) hace falta permiso de Azure RBAC en el MG, no un rol de Entra.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 8 ══════════ -->
+  <div class="section" id="policy">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.22)">⚖️</div>
+      <span class="section-title">RBAC vs Azure Policy</span>
+      <span class="section-tag">No se confunden</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>RBAC responde "¿quién puede hacer qué?". Azure Policy responde "¿qué configuraciones son válidas?".</strong> Policy no mira quién sos: aplica a todos por igual, incluido un Owner.
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>Azure RBAC</th><th>Azure Policy</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Objeto de control</strong></td><td>Identidades y acciones</td><td>Propiedades del recurso</td></tr>
+          <tr><td><strong>Ejemplo</strong></td><td>"Ana puede crear VMs en RG-Dev"</td><td>"Ninguna VM puede crearse fuera de West Europe"</td></tr>
+          <tr><td><strong>Aplica a Owner</strong></td><td>Owner tiene todo permitido</td><td><span class="yes">Sí</span> — un Deny de Policy frena también al Owner</td></tr>
+          <tr><td><strong>Efectos</strong></td><td>Allow (y deny assignments internas)</td><td>Deny, Audit, Append, Modify, DeployIfNotExists</td></tr>
+          <tr><td><strong>Scopes</strong></td><td>MG / Sub / RG / Recurso</td><td>MG / Sub / RG (con exclusions)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">🔗</span>
+      <span>Se cruzan en un punto: las policies con efecto <strong>DeployIfNotExists</strong> o <strong>Modify</strong> necesitan una <strong>managed identity</strong> y una role assignment para poder remediar. Por eso al asignar ese tipo de policy el portal te pide elegir un rol y una ubicación para la identidad.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 9 ══════════ -->
+  <div class="section" id="operacion">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.22)">⚙️</div>
+      <span class="section-title">Operación: límites, propagación y CLI</span>
+      <span class="section-tag">Números</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Check access</div>
+      <p>En <strong>Access control (IAM) → Check access</strong> elegís un usuario, grupo o service principal y Azure te muestra <strong>los permisos efectivos en ese scope</strong>, distinguiendo las assignments directas de las <em>heredadas</em> (te dice de qué scope vienen) y las que llegan por pertenencia a grupos. Es la herramienta correcta cuando la pregunta dice "¿cómo verificás por qué un usuario puede/no puede hacer algo?".</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Límite</th><th>Valor</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Role assignments por subscription</td><td><span class="chip chip-blue">4.000</span> (incluye las de sub, RG y recursos)</td></tr>
+          <tr><td>Role assignments por management group</td><td><span class="chip chip-blue">500</span></td></tr>
+          <tr><td>Roles custom por tenant</td><td><span class="chip chip-purple">5.000</span></td></tr>
+          <tr><td>Niveles de scope</td><td><span class="chip chip-green">4</span> (MG → Sub → RG → Recurso)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el límite de role assignments es la razón por la que <strong>se asigna a grupos y no a usuarios</strong>. Si un escenario dice "estamos cerca del límite de role assignments en la subscription", la respuesta no es "pedir aumento de cuota": es consolidar en grupos de Entra ID (o usar roles custom que agrupen permisos).</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">⏱️</span>
+      <span><strong>Propagación:</strong> una role assignment no aplica instantáneamente — contá unos minutos (el material de referencia habla de hasta ~5 minutos). Azure Resource Manager cachea, así que si el usuario sigue viendo el permiso viejo, que cierre sesión y vuelva a entrar para refrescar el token (los cambios de <em>pertenencia a grupos</em> solo se reflejan con un token nuevo).</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Comandos que hay que reconocer</div>
+<pre><code># Listar roles built-in y custom disponibles
+az role definition list --output table
+az role definition list --name "Storage Blob Data Reader"
+az role definition list --custom-role-only true
+
+# Ver quién tiene qué, incluyendo herencia y grupos
+az role assignment list --scope /subscriptions/&lt;subId&gt;/resourceGroups/RG-Prod \
+  --include-inherited --include-groups --output table
+
+# Asignar y quitar
+az role assignment create --assignee ana@contoso.com \
+  --role "Virtual Machine Contributor" \
+  --scope /subscriptions/&lt;subId&gt;/resourceGroups/RG-Prod
+az role assignment delete --assignee ana@contoso.com --role Reader --scope &lt;scope&gt;
+
+# Roles custom
+az role definition create --role-definition @vm-operator.json
+az role definition update --role-definition @vm-operator.json</code></pre>
+      <p>Equivalentes en PowerShell: <code>Get-AzRoleDefinition</code>, <code>Get-AzRoleAssignment</code>, <code>New-AzRoleAssignment</code>, <code>Remove-AzRoleAssignment</code>, <code>New-AzRoleDefinition</code>, <code>Get-AzDenyAssignment</code>.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: assignments de UserA <em>vía grupos</em></div>
+<pre><code>az role assignment list --include-groups --assignee UserA@myorg.com \
+  --output json --query '[].{principalName:principalName, roleDefinitionName:roleDefinitionName, scope:scope}'</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Hueco</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>list</code></td><td><span class="yes">Sí</span></td><td>Filtra varias assignments. <code>show</code> pide un ID concreto</td></tr>
+            <tr><td><code>--include-groups</code></td><td><span class="yes">Sí</span></td><td>Trae roles asignados a los <strong>grupos</strong> de UserA, no solo los directos</td></tr>
+            <tr><td><code>--include-inherited</code></td><td><span class="no">No</span></td><td>Es jerarquía de <strong>scope</strong> (MG → sub → RG → recurso), no membresía de grupo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “scoped to the groups of which UserA is a member” = <code>--include-groups</code>. <code>--include-inherited</code> es otra pregunta (roles que bajan del padre). <code>az role assignment show</code> no lista por usuario.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">📜</span>
+      <span>Para auditar "¿quién le dio Owner a este tipo?", la respuesta es el <strong>Activity Log</strong> de la subscription (operación <em>Create role assignment</em>), no el log de Entra ID.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Cuáles son los 3 componentes de toda role assignment?", a: "<strong>Security principal</strong> (a quién) + <strong>Role definition</strong> (qué) + <strong>Scope</strong> (sobre qué).", cat: "Anatomía" },
+  { q: "¿Cuál es la única cosa que Contributor NO puede hacer y Owner sí?", a: "<strong>Asignar roles / gestionar acceso.</strong> Contributor tiene <code>Actions: *</code> pero con <code>NotActions</code> sobre <code>Microsoft.Authorization/*/Write</code> y <code>/Delete</code>.", cat: "Built-in" },
+  { q: "Un usuario tiene Contributor en la subscription. Le asignás Reader en un RG. ¿Qué permisos tiene en ese RG?", a: "<strong>Contributor.</strong> Los permisos de RBAC son <strong>aditivos</strong>: se suman, nunca se restan. Para limitarlo hay que sacar el Contributor del scope padre.", cat: "Herencia" },
+  { q: "Contributor en una Storage Account: ¿puede leer blobs autenticándose con Entra ID?", a: "<strong>No</strong> — falla con <em>AuthorizationPermissionMismatch</em>. Contributor es control plane; leer blobs con Entra ID necesita <strong>Storage Blob Data Reader</strong> (o Contributor de datos). Con la <em>account key</em> sí podría, porque puede hacer <code>listKeys</code>.", cat: "Data plane" },
+  { q: "¿Cómo se calcula el permiso efectivo de una role definition?", a: "<strong>Actions − NotActions</strong> para control plane y <strong>DataActions − NotDataActions</strong> para datos. <code>NotActions</code> no es un deny: si otra assignment otorga esa acción, el usuario la tiene.", cat: "Custom" },
+  { q: "¿Qué define AssignableScopes en un rol custom?", a: "<strong>Dónde se puede asignar</strong> el rol, no qué permisos otorga. Admite management group, subscription o resource group; <strong>no</strong> un recurso individual ni el root scope <code>/</code>, y <strong>no admite wildcards</strong>.", cat: "Custom" },
+  { q: "¿Cuántos roles custom se permiten por tenant?", a: "<strong>5.000</strong> (2.000 en Azure China 21Vianet).", cat: "Límites" },
+  { q: "¿Quién crea las deny assignments y qué precedencia tienen?", a: "No se crean a mano: las crean <strong>Deployment Stacks</strong>, <strong>Azure Managed Applications</strong> y, en legado, <strong>Azure Blueprints</strong> (retiro 31 ene 2027). Tienen <strong>precedencia sobre cualquier allow</strong>: el deny gana siempre.", cat: "Deny" },
+  { q: "Un Global Administrator de Entra ID, ¿puede ver los recursos de una subscription de Azure?", a: "<strong>No, por defecto no.</strong> Son dos sistemas separados. Debe activar <strong>Entra ID → Properties → Access management for Azure resources = Yes</strong>.", cat: "Entra ID" },
+  { q: "¿Qué rol y en qué scope otorga el toggle \"Access management for Azure resources\"?", a: "<strong>User Access Administrator</strong> en el <strong>root scope <code>/</code></strong> (root management group). No otorga Owner.", cat: "Entra ID" },
+  { q: "¿Cuántas role assignments admite una subscription y cuántas un management group?", a: "<strong>4.000 por subscription</strong> (suma las de sub, RG y recursos) y <strong>500 por management group</strong>. Por eso se asigna a grupos, no a usuarios.", cat: "Límites" },
+  { q: "RBAC vs Azure Policy en una frase", a: "<strong>RBAC = quién puede hacer qué.</strong> <strong>Policy = qué configuraciones son válidas.</strong> Un Deny de Policy frena incluso a un Owner.", cat: "Policy" },
+  { q: "¿Qué rol necesita alguien que solo debe repartir permisos, sin poder administrar recursos?", a: "<strong>User Access Administrator</strong> (<code>*/read</code> + <code>Microsoft.Authorization/*</code>).", cat: "Built-in" },
+  { q: "¿Qué herramienta del portal usás para ver los permisos efectivos de un usuario en un scope, incluyendo lo heredado?", a: "<strong>Check access</strong>, en la blade <strong>Access control (IAM)</strong>. Muestra assignments directas, heredadas (y de qué scope vienen) y las que llegan por grupos. En CLI: <code>az role assignment list --include-inherited --include-groups</code>.", cat: "Operación" },
+  { q: "Least privilege: gestionar el acceso de otros a recursos Azure. ¿User Access Administrator, User Administrator, Contributor, Owner o Co-Administrator?", a: "<strong>User Access Administrator</strong> (RBAC: asigna roles, no opera recursos). <strong>User Administrator</strong> es Entra (usuarios/grupos), no IAM de VMs. Contributor no asigna roles. Owner y Co-Administrator (clásico) sobran privilegio. <code>az role assignment create --role \"User Access Administrator\"</code>.", cat: "Built-in" },
+  { q: "CLI: ver roles de UserA incluyendo los de sus grupos. ¿list o show? ¿--include-groups o --include-inherited?", a: "<code>az role assignment list --include-groups --assignee UserA@...</code>. <code>show</code> pide un assignment ID. <code>--include-inherited</code> es jerarquía de scope (MG/sub/RG), no membresía de grupo.", cat: "Operación" },
+  { q: "SalesDepartment: leer RG1+RG2, crear solo en RG1, no asignar roles, no crear RGs. Elegí 2.", a: "<strong>Contributor en RG1</strong> + <strong>Reader en RG2</strong>. Owner en RG1 asigna permisos. Contributor/Reader en la subscription tocan RG3 y (Contributor) crea RGs. Contributor en RG1 ya lee RG1.", cat: "Built-in" },
+  { q: "New-AzRoleAssignment VM Contributor, ObjectType ServicePrincipal, scope medicine-sales. Yes/No: ¿es un user? ¿scope el RG? ¿el rol toca VNet/storage?", a: "<strong>No / Yes / Yes</strong> (el rol <em>no</em> toca VNet/storage: la tercera es verdadera). ObjectType = SP, no User. Scope = RG. VM Contributor = la VM, no la red ni la cuenta de storage.", cat: "Built-in" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

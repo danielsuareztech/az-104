@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azure: Load Balancer vs App Gateway vs WAF vs Front Door vs Traffic Manager</title>
+<style>
+  :root{
+    --bg: #0b1220;
+    --panel: #121b2e;
+    --panel2: #16233a;
+    --line: #24344f;
+    --text: #dbe4f3;
+    --muted: #8ea3c4;
+    --l4: #5fd0c0;      /* capa 4 - transporte */
+    --l7: #f2b84b;      /* capa 7 - aplicación */
+    --global: #c792ea;  /* servicios globales */
+    --regional: #6ea8fe;/* servicios regionales */
+    --mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+    --sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--sans); line-height:1.5; padding:32px 20px 80px;
+  }
+  h1{
+    font-family:var(--mono); font-size:1.4rem; letter-spacing:.5px;
+    color:#fff; margin:0 0 4px; text-transform:uppercase;
+  }
+  .subtitle{ color:var(--muted); font-size:.9rem; margin-bottom:28px; }
+  .legend{ display:flex; gap:18px; flex-wrap:wrap; margin-bottom:26px; font-size:.8rem; color:var(--muted); }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .dot{ width:10px; height:10px; border-radius:2px; display:inline-block; }
+
+  .wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:6px; margin-bottom:40px; }
+  table{ border-collapse:collapse; width:100%; min-width:920px; font-size:.85rem; }
+  thead th{
+    background:var(--panel2); color:#fff; font-family:var(--mono); font-weight:600;
+    text-align:left; padding:12px 14px; border-bottom:2px solid var(--line);
+    position:sticky; top:0;
+  }
+  tbody td{ padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tbody tr:hover{ background:var(--panel); }
+  .rowlabel{ font-family:var(--mono); color:var(--muted); font-size:.78rem; white-space:nowrap; }
+  .badge{
+    display:inline-block; font-family:var(--mono); font-size:.72rem; font-weight:700;
+    padding:2px 7px; border-radius:3px; margin-bottom:3px;
+  }
+  .b-l4{ background:rgba(95,208,192,.15); color:var(--l4); border:1px solid var(--l4); }
+  .b-l7{ background:rgba(242,184,75,.15); color:var(--l7); border:1px solid var(--l7); }
+  .b-global{ background:rgba(199,146,234,.15); color:var(--global); border:1px solid var(--global); }
+  .b-regional{ background:rgba(110,168,254,.15); color:var(--regional); border:1px solid var(--regional); }
+
+  h2{ font-family:var(--mono); font-size:1rem; color:#fff; border-left:3px solid var(--l7); padding-left:10px; margin:36px 0 14px; text-transform:uppercase; letter-spacing:.5px; }
+
+  .tree{ background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; }
+  .q{ font-weight:600; color:#fff; margin-bottom:6px; }
+  .branch{ margin:0 0 14px 18px; padding-left:14px; border-left:2px dashed var(--line); }
+  .answer{ color:var(--muted); font-size:.88rem; }
+  .answer b{ color:var(--l7); }
+
+  details{ background:var(--panel); border:1px solid var(--line); border-radius:6px; margin-bottom:10px; overflow:hidden; }
+  summary{
+    cursor:pointer; padding:12px 16px; font-family:var(--mono); font-weight:600; color:#fff;
+    list-style:none; display:flex; justify-content:space-between; align-items:center;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  summary::after{ content:'+'; color:var(--l7); font-size:1.2rem; }
+  details[open] summary::after{ content:'–'; }
+  .details-body{ padding:0 16px 16px; color:var(--text); font-size:.88rem; }
+  .details-body ul{ margin:6px 0; padding-left:20px; }
+  .trap{
+    background:rgba(242,132,75,.08); border:1px solid #7a4a2a; border-radius:6px;
+    padding:14px 16px; margin-top:8px; font-size:.85rem;
+  }
+  .trap b{ color:#f2984b; font-family:var(--mono); }
+  code{ font-family:var(--mono); background:var(--panel2); padding:1px 5px; border-radius:3px; font-size:.85em; }
+</style>
+</head>
+<body>
+<p style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;margin:0 0 16px"><a href="00-indice.html" style="color:#5b8dee;text-decoration:none">← Índice AZ-104</a></p>
+
+
+<h1>&#9670; Servicios de entrega de tráfico en Azure</h1>
+<div class="subtitle">Load Balancer · Application Gateway · WAF · Front Door · Traffic Manager — Comparación exam-focused AZ-104</div>
+
+<div class="legend">
+  <span><span class="dot" style="background:var(--l4)"></span>Capa 4 (Transporte)</span>
+  <span><span class="dot" style="background:var(--l7)"></span>Capa 7 (Aplicación)</span>
+  <span><span class="dot" style="background:var(--regional)"></span>Regional</span>
+  <span><span class="dot" style="background:var(--global)"></span>Global</span>
+</div>
+
+<div class="wrap">
+<table>
+  <thead>
+    <tr>
+      <th>Criterio</th>
+      <th>Load Balancer</th>
+      <th>Application Gateway</th>
+      <th>WAF (en AppGW/FD)</th>
+      <th>Front Door</th>
+      <th>Traffic Manager</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="rowlabel">Capa OSI</td>
+      <td><span class="badge b-l4">L4</span> TCP/UDP</td>
+      <td><span class="badge b-l7">L7</span> HTTP/HTTPS</td>
+      <td><span class="badge b-l7">L7</span> HTTP/HTTPS</td>
+      <td><span class="badge b-l7">L7</span> HTTP/HTTPS</td>
+      <td>DNS (no procesa tráfico real)</td>
+    </tr>
+    <tr>
+      <td class="rowlabel">Alcance</td>
+      <td><span class="badge b-regional">Regional</span></td>
+      <td><span class="badge b-regional">Regional</span></td>
+      <td>Depende del host (Regional o Global)</td>
+      <td><span class="badge b-global">Global</span></td>
+      <td><span class="badge b-global">Global</span></td>
+    </tr>
+    <tr>
+      <td class="rowlabel">Mecanismo de enrutamiento</td>
+      <td>Hash de 5-tupla (IP/puerto origen-destino + protocolo)</td>
+      <td>Path-based, host-based, basado en contenido HTTP</td>
+      <td>No enruta: inspecciona y filtra</td>
+      <td>Anycast + rutas basadas en latencia/prioridad/peso, con reglas L7</td>
+      <td>Resolución DNS (redirige al cliente, no al tráfico)</td>
+    </tr>
+    <tr>
+      <td class="rowlabel">SKUs</td>
+      <td>Basic (deprecado) / Standard</td>
+      <td>Standard_v2 / WAF_v2</td>
+      <td>Incluido en AppGW WAF_v2 o Front Door Premium</td>
+      <td>Standard / Premium</td>
+      <td>Único SKU, con distintos "routing methods"</td>
+    </tr>
+    <tr>
+      <td class="rowlabel">Terminación SSL</td>
+      <td>No (pass-through)</td>
+      <td>Sí (SSL offload / re-encrypt)</td>
+      <td>—</td>
+      <td>Sí</td>
+      <td>No (no toca el tráfico)</td>
+    </tr>
+    <tr>
+      <td class="rowlabel">Health probes</td>
+      <td>TCP/HTTP/HTTPS básico</td>
+      <td>HTTP/HTTPS con customización de códigos</td>
+      <td>—</td>
+      <td>HTTP/HTTPS globales, multi-región</td>
+      <td>HTTP/HTTPS a endpoints, decide failover</td>
+    </tr>
+    <tr>
+      <td class="rowlabel">Casos de uso típicos</td>
+      <td>Balanceo interno/externo de VMs y VMSS, escenarios no-HTTP</td>
+      <td>Publicar apps web, redirección por URL, backend pools multi-tier</td>
+      <td>Protección OWASP Top 10: SQLi, XSS, bots</td>
+      <td>CDN + WAF + balanceo global para apps multi-región</td>
+      <td>Failover/distribución global basada en DNS, incluso entre nubes</td>
+    </tr>
+    <tr>
+      <td class="rowlabel">¿Balancea tráfico real?</td>
+      <td>Sí</td>
+      <td>Sí</td>
+      <td>No (solo filtra)</td>
+      <td>Sí</td>
+      <td>No — solo responde IP vía DNS</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Árbol de decisión rápido</h2>
+<div class="tree">
+  <div class="branch">
+    <div class="q">¿El tráfico es HTTP/HTTPS?</div>
+    <div class="answer">
+      <b>No</b> (TCP/UDP genérico) → <b>Load Balancer</b><br>
+      <b>Sí</b> → seguir
+    </div>
+  </div>
+  <div class="branch">
+    <div class="q">¿Necesitas enrutamiento por contenido (path/host) dentro de una región?</div>
+    <div class="answer">
+      <b>Sí, solo una región</b> → <b>Application Gateway</b> (+ WAF_v2 si necesitas firewall)<br>
+      <b>Sí, multi-región / global</b> → seguir
+    </div>
+  </div>
+  <div class="branch">
+    <div class="q">¿Necesitas CDN + seguridad + balanceo global en un solo servicio?</div>
+    <div class="answer">
+      <b>Sí</b> → <b>Front Door</b> (Premium incluye WAF integrado)<br>
+      <b>No, solo necesitas resolver DNS al endpoint más cercano/sano, incluso fuera de Azure</b> → <b>Traffic Manager</b>
+    </div>
+  </div>
+</div>
+
+<h2>Detalle por servicio</h2>
+
+<details>
+  <summary>Azure Load Balancer</summary>
+  <div class="details-body">
+    <ul>
+      <li><b>Público o Interno</b> (ILB): expone servicio externamente o solo dentro de la VNet.</li>
+      <li><b>SKU Standard</b>: soporta Zonas de disponibilidad, requiere NSG explícito (no abre tráfico por defecto).</li>
+      <li>No entiende HTTP: no puede hacer cookie-based affinity a nivel de sesión de aplicación (solo 5-tuple hash o session persistence por IP de cliente).</li>
+      <li>Usado detrás de VMSS para distribuir carga entre instancias.</li>
+    </ul>
+  </div>
+</details>
+
+<details>
+  <summary>Application Gateway</summary>
+  <div class="details-body">
+    <ul>
+      <li>Requiere su propia <b>subnet dedicada</b> dentro de la VNet.</li>
+      <li><b>v2</b> soporta autoscaling y zone redundancy; la v1 no.</li>
+      <li>Funciones clave: <b>path-based routing</b>, <b>multi-site hosting</b> (varios dominios en un mismo gateway), <b>rewrite HTTP headers/URL</b>, <b>redirect</b>.</li>
+      <li>WAF_v2 añade el firewall (OWASP Core Rule Set) en modo Detección o Prevención.</li>
+    </ul>
+  </div>
+</details>
+
+<details>
+  <summary>WAF (Web Application Firewall)</summary>
+  <div class="details-body">
+    <ul>
+      <li>No es un servicio standalone independiente para desplegar solo: viene integrado en <b>Application Gateway</b> o en <b>Front Door Premium</b>.</li>
+      <li>Modos: <b>Detection</b> (solo loguea) y <b>Prevention</b> (bloquea).</li>
+      <li>Usa <b>Core Rule Set (CRS)</b> de OWASP; se pueden crear reglas custom.</li>
+    </ul>
+  </div>
+</details>
+
+<details>
+  <summary>Azure Front Door</summary>
+  <div class="details-body">
+    <ul>
+      <li>Es <b>Anycast</b>: el usuario llega al POP más cercano de Microsoft, luego el tráfico viaja por la red backbone de Microsoft hasta el origen.</li>
+      <li>Combina: balanceo global L7, CDN, WAF (Premium), aceleración TLS.</li>
+      <li>Reemplaza al antiguo "Azure Front Door (classic)"; el modelo actual usa <b>perfiles, endpoints, origin groups y reglas de enrutamiento</b>.</li>
+      <li><b>Trampa de examen</b>: no confundir con Traffic Manager — Front Door sí procesa el tráfico HTTP; Traffic Manager solo resuelve DNS.</li>
+    </ul>
+  </div>
+</details>
+
+<details>
+  <summary>Traffic Manager</summary>
+  <div class="details-body">
+    <ul>
+      <li>Es puramente <b>DNS-based</b>: el cliente resuelve un nombre y Traffic Manager le da la IP del endpoint elegido; después el cliente se conecta directo, sin pasar por Azure.</li>
+      <li>Métodos de enrutamiento: <b>Priority, Weighted, Performance, Geographic, MultiValue, Subnet</b>.</li>
+      <li>Puede apuntar a endpoints <b>fuera de Azure</b> (on-premises, otras nubes).</li>
+      <li>Como no ve el tráfico real, no ofrece SSL offload ni WAF.</li>
+    </ul>
+  </div>
+</details>
+
+<div class="trap">
+  <b>Trampas comunes del examen:</b>
+  <ul>
+    <li>Load Balancer <b>NO</b> entiende contenido HTTP → si la pregunta menciona "enrutar por URL/path", la respuesta nunca es Load Balancer.</li>
+    <li>Traffic Manager <b>NO</b> balancea tráfico real, solo resuelve DNS → no ofrece terminación SSL ni WAF.</li>
+    <li>WAF no se despliega solo: siempre va dentro de Application Gateway (WAF_v2) o Front Door (Premium).</li>
+    <li>Front Door es <b>global/anycast</b>; Application Gateway es <b>regional</b>. Si la pregunta requiere multi-región con un solo punto de entrada → Front Door, no App Gateway.</li>
+    <li>Application Gateway necesita una <b>subnet dedicada</b> — no puede compartir subnet con otros recursos.</li>
+  </ul>
+</div>
+
+</body>
+</html>

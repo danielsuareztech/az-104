@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Conectividad Híbrida</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Conectividad Híbrida</div>
+    <div class="nav-sub">VPN Gateway, ExpressRoute y Virtual WAN</div>
+    <div class="nav-weight">Dominio 4 · 15–20%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#panorama"><span class="dot"></span>Panorama de opciones</a>
+  <a href="#vng"><span class="dot"></span>Virtual Network Gateway</a>
+  <a href="#vpngw"><span class="dot"></span>VPN Gateway y S2S</a>
+  <a href="#p2s"><span class="dot"></span>Point-to-Site</a>
+  <a href="#bgp"><span class="dot"></span>BGP</a>
+  <a href="#er"><span class="dot"></span>ExpressRoute</a>
+  <a href="#vwan"><span class="dot"></span>Virtual WAN</a>
+  <a href="#decision"><span class="dot"></span>Tabla de decisión</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen casi nunca te pide configurar un túnel paso a paso. Te tira un <em>escenario</em> —"la sucursal necesita 5 Gbps garantizados", "cambiaron el rango on-prem", "60 branches nuevas"— y te pide elegir el servicio correcto o identificar el <strong>único objeto</strong> que hay que tocar. Memorizá nombres exactos (<code>GatewaySubnet</code>, Local Network Gateway), qué SKU habilita qué feature, y qué cosas <strong>no</strong> soporta Basic ni policy-based.
+  </div>
+
+  <!-- ══ 1 ══ -->
+  <div class="section" id="panorama">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🌐</div>
+      <span class="section-title">Panorama: cómo se conecta on-premises con Azure</span>
+      <span class="section-tag">Elegir la opción</span>
+    </div>
+
+    <p>Hay cinco piezas que el examen mezcla a propósito. Cuatro son híbridas (on-prem ↔ Azure); una, el peering, es <strong>solo Azure a Azure</strong> y aparece como distractor en casi todas las preguntas de conectividad híbrida.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Opción</th><th>Qué conecta</th><th>Transporte</th><th>Requisitos clave</th><th>Cuándo la eligen en el examen</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Site-to-Site (S2S) VPN</strong></td>
+            <td>Toda una red on-prem ↔ VNet</td>
+            <td>IPsec / IKE sobre <span class="chip chip-yellow">internet</span></td>
+            <td>VPN Gateway en Azure + <strong>VPN device on-prem con IP pública</strong> (o FQDN) + Local Network Gateway + shared key</td>
+            <td>Oficina/datacenter entero, tráfico moderado, hay que levantarlo ya y barato</td>
+          </tr>
+          <tr>
+            <td><strong>Point-to-Site (P2S) VPN</strong></td>
+            <td><strong>Un cliente individual</strong> ↔ VNet</td>
+            <td>OpenVPN / SSTP / IKEv2 sobre <span class="chip chip-yellow">internet</span></td>
+            <td>VPN Gateway <strong>route-based</strong> (no Basic) + address pool de clientes + método de autenticación</td>
+            <td>Teletrabajo, admins remotos, demos. <strong>No</strong> requiere hardware ni IP pública fija del lado del cliente</td>
+          </tr>
+          <tr>
+            <td><strong>VNet-to-VNet</strong></td>
+            <td>VNet ↔ VNet (misma o distinta región/tenant/suscripción)</td>
+            <td>IPsec entre dos <strong>gateways</strong></td>
+            <td>Un Virtual Network Gateway en <strong>cada</strong> VNet + una connection en cada punta</td>
+            <td>Cuando el peering no sirve o se necesita el túnel cifrado por gateway</td>
+          </tr>
+          <tr>
+            <td><strong>ExpressRoute</strong></td>
+            <td>On-prem ↔ Azure (y M365) por circuito privado</td>
+            <td><span class="chip chip-green">NO pasa por internet</span> — circuito dedicado vía connectivity provider</td>
+            <td>Contrato con el proveedor, service key, routers de borde, ExpressRoute Gateway en la VNet</td>
+            <td>Ancho de banda alto, latencia predecible, SLA, requisitos de compliance ("el tráfico no puede salir a internet pública")</td>
+          </tr>
+          <tr>
+            <td><strong>VNet Peering</strong></td>
+            <td><span class="chip chip-red">Solo Azure ↔ Azure</span></td>
+            <td>Backbone de Microsoft, sin gateway</td>
+            <td>Address spaces que <strong>no se solapen</strong>; no es transitivo por sí solo</td>
+            <td>Distractor. Si la pregunta dice "on-premises", peering <strong>nunca</strong> es la respuesta</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cómo decidir en 10 segundos</div>
+      <ul>
+        <li>¿Dice <strong>"un usuario / laptop / desde casa"</strong>? → Point-to-Site.</li>
+        <li>¿Dice <strong>"la sucursal", "el datacenter", "toda la red"</strong> y menciona internet o costo bajo? → Site-to-Site.</li>
+        <li>¿Dice <strong>"no debe atravesar internet pública"</strong>, "latencia predecible", "SLA", "Gbps"? → ExpressRoute.</li>
+        <li>¿Dice <strong>"decenas/cientos de branches"</strong>, "hub-and-spoke gestionado", "transit routing sin UDRs"? → Virtual WAN.</li>
+        <li>¿Las dos puntas están en Azure y solo quieren que se vean? → VNet peering (y ojo: puede ser global).</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> VNet peering aparece constantemente como opción en preguntas híbridas porque suena a "conectar redes". El peering <strong>no puede</strong> conectar nada que esté fuera de Azure. Si en el enunciado hay un datacenter, una oficina o un servidor físico, descartá peering de entrada.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Los address spaces <strong>no se pueden solapar</strong> en ninguna de estas opciones: ni entre VNets peereadas, ni entre la VNet y on-prem en un S2S, ni entre el pool de P2S y lo anterior. Un solapamiento es la causa "correcta" de fallo en muchas preguntas de troubleshooting.</span>
+    </div>
+  </div>
+
+  <!-- ══ 2 ══ -->
+  <div class="section" id="vng">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">🚪</div>
+      <span class="section-title">Virtual Network Gateway: la puerta de la VNet</span>
+      <span class="section-tag">GatewaySubnet</span>
+    </div>
+
+    <p>El <strong>Virtual Network Gateway</strong> es el recurso que le da a una VNet una salida híbrida. Internamente son VMs gestionadas por Microsoft que Azure despliega en una subred especial de tu VNet. Vos no las ves ni las administrás.</p>
+
+    <div class="card">
+      <div class="card-title">Requisitos no negociables</div>
+      <ul>
+        <li>Una subred llamada <strong>exactamente</strong> <code>GatewaySubnet</code>. Ese nombre es literal: no acepta <code>gatewaysubnet</code>, <code>GW-Subnet</code> ni nada parecido, y si no existe con ese nombre el deployment falla.</li>
+        <li>Tamaño: <strong>/27 o más grande</strong> es lo recomendado. Con /29 o /28 te podés quedar sin direcciones al escalar, al pasar a active-active o al agregar coexistencia VPN + ExpressRoute, que consumen más IPs.</li>
+        <li>Al menos una <strong>Public IP</strong> asociada al gateway (dos si es active-active). ExpressRoute Gateway también usa una Public IP para su gestión interna, aunque el tráfico del circuito no salga a internet.</li>
+        <li><strong>Gateway type</strong>: <code>Vpn</code> o <code>ExpressRoute</code>. Se elige en la creación y <strong>no se puede cambiar</strong> después.</li>
+        <li>El despliegue tarda <strong>decenas de minutos</strong> (típicamente media hora o más). Cualquier respuesta del estilo "en segundos" es falsa.</li>
+      </ul>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">VNet<br><small>10.0.0.0/16</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">GatewaySubnet<br><small>/27</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Virtual Network<br>Gateway<br><small>type: Vpn</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Connection<br><small>IPsec + shared key</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Local Network<br>Gateway<br><small>on-prem</small></div>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla de cardinalidad:</strong> una VNet puede tener <strong>un gateway de tipo Vpn y un gateway de tipo ExpressRoute</strong> conviviendo (eso es la coexistencia), pero <strong>nunca dos del mismo tipo</strong>. "Agregá un segundo VPN Gateway a la misma VNet para redundancia" es siempre incorrecto: la redundancia se hace con <strong>active-active</strong> dentro del mismo gateway.
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> no le pongas NSG ni Route Table (UDR) a la <code>GatewaySubnet</code>. Aplicar un NSG que bloquee el tráfico de control de Azure, o una UDR con default route, rompe el gateway y el circuito de ExpressRoute. Si una pregunta describe un túnel que "dejó de funcionar después de aplicar seguridad de red", mirá qué le colgaron a la GatewaySubnet.</span>
+    </div>
+  </div>
+
+  <!-- ══ 3 ══ -->
+  <div class="section" id="vpngw">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">🔐</div>
+      <span class="section-title">VPN Gateway: route-based, SKUs y Local Network Gateway</span>
+      <span class="section-tag">Site-to-Site</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Route-based vs Policy-based</div>
+      <p>El <strong>VPN type</strong> se elige al crear el gateway y tampoco se puede cambiar después. Es la decisión que más consecuencias tiene.</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Característica</th><th>Route-based <span class="chip chip-green">default moderno</span></th><th>Policy-based <span class="chip chip-red">legacy</span></th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Cómo decide qué va por el túnel</td><td>Por <strong>tabla de ruteo</strong> (interfaz virtual de túnel)</td><td>Por <strong>traffic selectors</strong> / policy — combinaciones de prefijos origen-destino</td></tr>
+          <tr><td>Cantidad de túneles S2S</td><td><span class="yes">Múltiples</span></td><td><span class="no">Uno solo</span></td></tr>
+          <tr><td>Point-to-Site</td><td><span class="yes">Sí</span></td><td><span class="no">No</span></td></tr>
+          <tr><td>BGP</td><td><span class="yes">Sí</span></td><td><span class="no">No</span></td></tr>
+          <tr><td>Active-active</td><td><span class="yes">Sí</span></td><td><span class="no">No</span></td></tr>
+          <tr><td>Coexistencia con ExpressRoute</td><td><span class="yes">Sí</span></td><td><span class="no">No</span></td></tr>
+          <tr><td>IKE</td><td>IKEv2</td><td>IKEv1</td></tr>
+          <tr><td>SKUs</td><td>Basic y todas las VpnGw</td><td>Solo <strong>Basic</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Regla práctica: <strong>elegí route-based siempre</strong>, salvo que el enunciado diga explícitamente que el dispositivo on-prem es viejo y solo soporta policy-based / IKEv1. Si la pregunta pide P2S, BGP, varios túneles o coexistencia, route-based es la única respuesta posible.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SKUs de VPN Gateway</div>
+      <p>Cada SKU <code>VpnGwN</code> tiene su variante <strong>AZ</strong> (<code>VpnGw1AZ</code> … <code>VpnGw5AZ</code>), que es <strong>zone-redundant</strong>: las instancias se reparten en Availability Zones de la región. Si el escenario pide resiliencia a la caída de una zona, la respuesta es una SKU AZ.</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>SKU</th><th>Throughput agregado</th><th>Túneles S2S / VNet2VNet</th><th>Conexiones P2S</th><th>BGP</th><th>Active-active</th><th>Zone-redundant</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Basic</strong> <span class="chip chip-red">desaconsejada</span></td><td>100 Mbps</td><td>10</td><td>128 (solo SSTP)</td><td><span class="no">No</span></td><td><span class="no">No</span></td><td><span class="no">No</span></td></tr>
+          <tr><td><strong>VpnGw1 / 1AZ</strong></td><td>650 Mbps</td><td>30</td><td>250</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span></td><td>Solo AZ</td></tr>
+          <tr><td><strong>VpnGw2 / 2AZ</strong></td><td>1 Gbps</td><td>30</td><td>500</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span></td><td>Solo AZ</td></tr>
+          <tr><td><strong>VpnGw3 / 3AZ</strong></td><td>1.25 Gbps</td><td>30</td><td>1000</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span></td><td>Solo AZ</td></tr>
+          <tr><td><strong>VpnGw4 / 4AZ</strong></td><td>5 Gbps</td><td>100</td><td>5000</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span></td><td>Solo AZ</td></tr>
+          <tr><td><strong>VpnGw5 / 5AZ</strong></td><td>10 Gbps</td><td>100</td><td>10000</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span></td><td>Solo AZ</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Lo que Basic NO soporta (lista de memoria)</div>
+      <ul>
+        <li>P2S con <strong>OpenVPN</strong> ni <strong>IKEv2</strong> (solo SSTP) → tampoco autenticación con <strong>Entra ID</strong> ni <strong>RADIUS</strong>.</li>
+        <li><strong>BGP</strong>, <strong>active-active</strong>, <strong>zone redundancy</strong>.</li>
+        <li><strong>Coexistencia</strong> con ExpressRoute.</li>
+        <li>No se puede redimensionar (<em>resize</em>) hacia las SKUs modernas: hay que <strong>recrear</strong> el gateway. Entre SKUs VpnGw sí se puede hacer resize.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Active-active para alta disponibilidad</div>
+      <ul>
+        <li>El gateway levanta <strong>dos instancias</strong> activas simultáneamente.</li>
+        <li>Necesita <strong>dos Public IPs</strong>.</li>
+        <li>Se arman <strong>dos túneles</strong> hacia on-prem; el dispositivo del otro extremo tiene que soportar múltiples túneles y, idealmente, BGP.</li>
+        <li>Si cae una instancia (falla o mantenimiento planificado), el tráfico sigue por la otra. Es la respuesta a "cómo minimizo la interrupción durante el mantenimiento del gateway".</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Local Network Gateway (LNG) — el objeto más preguntado</div>
+      <p>Es la <strong>representación en Azure del sitio on-premises</strong>. No es un recurso de red real: es metadata. Contiene exactamente dos cosas que importan:</p>
+      <ul>
+        <li>La <strong>IP pública</strong> (o FQDN) del VPN device on-prem.</li>
+        <li>Los <strong>address prefixes</strong> de la red on-premises (o la config de BGP, si usás BGP en vez de prefijos estáticos).</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si <strong>cambia el direccionamiento IP on-premises</strong> (agregan una subred, cambian el rango) o <strong>cambia la IP pública del router on-prem</strong>, lo que hay que actualizar es el <strong>Local Network Gateway</strong> — no el VPN Gateway, no la Connection, no la VNet. Es la pregunta clásica de "qué recurso modificás". Y no hace falta recrear ni reiniciar el VPN Gateway para eso.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>La <strong>shared key</strong> (PSK) del túnel IPsec tiene que ser <strong>idéntica en ambos extremos</strong>. "El túnel no levanta / queda en <em>Not connected</em>" con configuración aparentemente correcta = mismatch de shared key o de address prefixes en el LNG. Se puede rotar sin recrear nada, con <code>az network vpn-connection shared-key update</code>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 4 ══ -->
+  <div class="section" id="p2s">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">💻</div>
+      <span class="section-title">Point-to-Site: clientes individuales</span>
+      <span class="section-tag">P2S</span>
+    </div>
+
+    <p>P2S conecta <strong>una computadora</strong> a la VNet, iniciando la conexión desde el cliente. No necesita hardware VPN ni IP pública del lado del usuario, así que sirve para trabajo remoto y para casos donde el usuario está detrás de NAT.</p>
+
+    <div class="card">
+      <div class="card-title">Address pool del cliente</div>
+      <ul>
+        <li>Definís un rango del que Azure le asigna una IP a <strong>cada cliente conectado</strong>.</li>
+        <li>Ese rango <strong>no se puede solapar</strong> con el address space de la VNet, ni con on-premises, ni con ninguna VNet alcanzable por peering o por otros túneles.</li>
+        <li>El pool tiene que ser lo bastante grande para la cantidad de clientes concurrentes esperados.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Protocolo (tunnel type)</th><th>Transporte</th><th>Sistemas operativos</th><th>Notas de examen</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>OpenVPN</strong></td>
+            <td>SSL/TLS sobre <strong>TCP 443</strong></td>
+            <td>Windows, macOS, Linux, iOS, Android</td>
+            <td>El más flexible; atraviesa firewalls y proxies. <strong>Único</strong> que soporta autenticación con <strong>Entra ID</strong></td>
+          </tr>
+          <tr>
+            <td><strong>SSTP</strong></td>
+            <td>SSL sobre <strong>TCP 443</strong></td>
+            <td><span class="chip chip-yellow">Solo Windows</span></td>
+            <td>Atraviesa firewalls igual que OpenVPN, pero limitado a Windows. Es el único P2S de la SKU Basic</td>
+          </tr>
+          <tr>
+            <td><strong>IKEv2</strong></td>
+            <td>IPsec (UDP)</td>
+            <td>macOS, Linux, Windows</td>
+            <td>La opción para clientes <strong>Mac</strong>; puede quedar bloqueado por firewalls que solo dejan salir 443</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Método de autenticación</th><th>Cómo funciona</th><th>Restricciones</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Certificados de Azure</strong></td>
+            <td>Subís la <strong>clave pública del root certificate</strong> al gateway; cada cliente instala un <strong>client certificate</strong> emitido por esa raíz</td>
+            <td>Funciona con los tres protocolos. Para revocar un cliente puntual se carga su <strong>thumbprint</strong> en la lista de certificados revocados</td>
+          </tr>
+          <tr>
+            <td><strong>Microsoft Entra ID</strong></td>
+            <td>El usuario se autentica contra Entra ID; permite <strong>Conditional Access y MFA</strong></td>
+            <td><span class="chip chip-red">Solo con OpenVPN</span> y con el <strong>Azure VPN Client</strong>. No funciona con SSTP ni IKEv2</td>
+          </tr>
+          <tr>
+            <td><strong>RADIUS</strong></td>
+            <td>El gateway delega la autenticación en un servidor RADIUS (típicamente NPS contra AD DS on-prem)</td>
+            <td>Requiere alcanzar el RADIUS server desde la VNet. No disponible en Basic</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Requisitos y operación</div>
+      <ul>
+        <li>El gateway tiene que ser <strong>route-based</strong>. <strong>Basic no sirve</strong> para nada más que SSTP con certificados.</li>
+        <li>Después de <strong>cualquier cambio</strong> en la configuración P2S (pool, protocolo, rutas, certificados), hay que <strong>descargar de nuevo el VPN client configuration package</strong> y redistribuirlo. Es una respuesta correcta muy común en troubleshooting.</li>
+        <li>Si además querés que los clientes P2S lleguen a on-prem a través del túnel S2S, necesitás propagación de rutas — típicamente con <strong>BGP</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "los usuarios de Mac no pueden conectarse" → el gateway tiene habilitado solo <strong>SSTP</strong> (Windows-only); la solución es habilitar <strong>OpenVPN</strong> o <strong>IKEv2</strong>. Y "queremos MFA / Conditional Access en la VPN" → obliga a <strong>Entra ID</strong>, que a su vez obliga a <strong>OpenVPN</strong>. Las dos condiciones se preguntan encadenadas.</span>
+    </div>
+  </div>
+
+  <!-- ══ 5 ══ -->
+  <div class="section" id="bgp">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">📡</div>
+      <span class="section-title">BGP: ruteo dinámico entre on-prem y Azure</span>
+      <span class="section-tag">Route-based only</span>
+    </div>
+
+    <p><strong>Border Gateway Protocol</strong> permite que Azure y on-premises se <strong>anuncien las rutas entre sí automáticamente</strong>, en lugar de que vos cargues a mano los prefixes en el Local Network Gateway cada vez que alguien crea una subred.</p>
+
+    <div class="card">
+      <div class="card-title">Qué te da BGP</div>
+      <ul>
+        <li><strong>Cero mantenimiento manual de prefijos</strong>: si on-prem agrega una red, se anuncia sola.</li>
+        <li><strong>Múltiples túneles</strong> hacia el mismo sitio con failover automático (es lo que hace útil el active-active).</li>
+        <li><strong>Transit routing</strong>: Azure puede reenviar tráfico entre sitios on-prem conectados por distintos túneles.</li>
+        <li>Convivencia limpia entre <strong>ExpressRoute y VPN</strong> en escenarios de coexistencia y failover.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué se configura</div>
+      <ul>
+        <li><strong>ASN de Azure</strong> en el VPN Gateway. El valor por defecto es <strong>65515</strong>; se puede cambiar, pero hay ASNs reservados por Azure que no podés usar.</li>
+        <li><strong>ASN del peer</strong> (el de on-premises) y sus <strong>address prefixes</strong>, en el <strong>Local Network Gateway</strong>.</li>
+        <li>Las <strong>BGP peering addresses</strong> de cada lado.</li>
+        <li>Hay que habilitar BGP <strong>en el gateway, en el LNG y en la connection</strong>. Si falta en alguno, la sesión no levanta.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> BGP requiere gateway <strong>route-based</strong> y una SKU <strong>que no sea Basic</strong>. Cualquier respuesta que combine "policy-based + BGP" o "Basic + BGP" es incorrecta por definición. Además, los ASNs de las dos puntas <strong>no pueden ser iguales</strong>.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>Cuando el enunciado se queja de "tenemos que actualizar los prefijos manualmente cada vez que cambia la red on-prem", la respuesta correcta es <strong>habilitar BGP</strong>, no "editar el Local Network Gateway más seguido".</span>
+    </div>
+  </div>
+
+  <!-- ══ 6 ══ -->
+  <div class="section" id="er">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(56,189,248,.15)">🛤️</div>
+      <span class="section-title">ExpressRoute: circuito privado</span>
+      <span class="section-tag">Sin internet</span>
+    </div>
+
+    <p>ExpressRoute es una <strong>conexión privada dedicada</strong> entre tu infraestructura y Microsoft, provista por un <strong>connectivity provider</strong>. La frase que hay que grabar: <strong>el tráfico no viaja por internet pública</strong>. Eso le da mayor confiabilidad, latencias más consistentes, más ancho de banda y un SLA de disponibilidad, a cambio de costo y de un tiempo de aprovisionamiento largo (semanas, no minutos).</p>
+
+    <div class="card">
+      <div class="card-title">Modelos de conexión</div>
+      <ul>
+        <li><strong>CloudExchange colocation</strong>: estás en un datacenter de colocation que ya tiene presencia de Microsoft; el proveedor te hace un cross-connect virtual.</li>
+        <li><strong>Point-to-point Ethernet</strong>: un enlace Ethernet punto a punto desde tu sitio hasta Microsoft.</li>
+        <li><strong>Any-to-any (IPVPN)</strong>: integrás Azure como una sucursal más de tu WAN MPLS existente.</li>
+        <li><strong>ExpressRoute Direct</strong>: te conectás <strong>directamente</strong> a la red global de Microsoft en un peering location, sin proveedor intermedio. Para escenarios de muy alta capacidad y aislamiento físico.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Peering type</th><th>A qué llega</th><th>Direccionamiento</th><th>Estado</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Private peering</strong></td>
+            <td>Tus <strong>VNets</strong>: VMs, servicios con private endpoint, todo lo que viva en la red virtual</td>
+            <td><strong>IPs privadas</strong> — es una extensión de tu red</td>
+            <td><span class="chip chip-green">Vigente</span></td>
+          </tr>
+          <tr>
+            <td><strong>Microsoft peering</strong></td>
+            <td>Servicios <strong>PaaS públicos</strong> (Storage, SQL Database) y <strong>Microsoft 365</strong> / Dynamics 365</td>
+            <td><strong>IPs públicas</strong>, con prefijos que tenés que poseer y validar; requiere route filters</td>
+            <td><span class="chip chip-green">Vigente</span></td>
+          </tr>
+          <tr>
+            <td><s>Public peering</s></td>
+            <td>Antecesor de Microsoft peering</td>
+            <td>—</td>
+            <td><span class="chip chip-red">Obsoleto / deprecated</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Features que se preguntan por nombre</div>
+      <ul>
+        <li><strong>ExpressRoute Global Reach</strong>: conecta <strong>dos sitios on-premises entre sí</strong> usando el backbone de Microsoft como tránsito, uniendo dos circuitos ExpressRoute. Es la respuesta a "quiero que mi sucursal de Buenos Aires hable con la de Madrid sin contratar una WAN aparte".</li>
+        <li><strong>FastPath</strong>: hace que el tráfico de datos <strong>saltee el ExpressRoute Gateway</strong> y vaya directo a las VMs de la VNet, mejorando latencia y packets-per-second. El gateway sigue existiendo para el control plane y el ruteo; FastPath requiere SKUs de gateway altas.</li>
+        <li><strong>Redundancia incorporada</strong>: todo circuito ExpressRoute se entrega con <strong>dos conexiones</strong> hacia dos routers de Microsoft en el peering location. No hay opción de circuito "simple"; si el diseño on-prem usa un solo router, se pierde la redundancia que ya pagaste.</li>
+        <li><strong>ExpressRoute Gateway</strong>: el Virtual Network Gateway de tipo <code>ExpressRoute</code> que hay que crear en cada VNet que quiera usar el circuito. Sus SKUs son distintas de las de VPN.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Modelo de facturación</th><th>Cómo se cobra</th><th>Cuándo conviene</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Metered data</strong></td><td>Tarifa mensual del puerto + cargo por <strong>datos de salida (egress)</strong> transferidos. El ingress no se cobra</td><td>Volumen de salida bajo o irregular</td></tr>
+          <tr><td><strong>Unlimited data</strong></td><td>Tarifa mensual fija más alta, <strong>sin cargo por transferencia</strong></td><td>Volumen de salida alto y sostenido; costo predecible</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Coexistencia VPN + ExpressRoute</div>
+      <ul>
+        <li>Una misma VNet puede tener un <strong>ExpressRoute Gateway</strong> y un <strong>VPN Gateway</strong> al mismo tiempo.</li>
+        <li>Uso típico: el S2S VPN queda como <strong>failover</strong> por si se cae el circuito ExpressRoute. Cuando ExpressRoute está arriba, es el camino preferido.</li>
+        <li>Requiere VPN Gateway <strong>route-based</strong> (nada de Basic ni policy-based) y una <code>GatewaySubnet</code> con espacio suficiente para los dos gateways.</li>
+        <li>También se puede usar el VPN para <strong>cifrar</strong> el tráfico que corre sobre private peering, si el compliance lo exige.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> ExpressRoute por sí solo <strong>no cifra</strong> el tráfico — es privado, no encriptado. Si el enunciado pide "conexión privada <em>y</em> cifrada", la respuesta es ExpressRoute <strong>más</strong> un VPN S2S encima (coexistencia), no ExpressRoute a secas. Otra confusión frecuente: <strong>Global Reach conecta sitios on-prem entre sí</strong>, mientras que para conectar VNets entre sí se usa peering o Virtual WAN.</span>
+    </div>
+  </div>
+
+  <!-- ══ 7 ══ -->
+  <div class="section" id="vwan">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,.15)">🕸️</div>
+      <span class="section-title">Azure Virtual WAN</span>
+      <span class="section-tag">Hub-and-spoke gestionado</span>
+    </div>
+
+    <p><strong>Virtual WAN</strong> es un servicio de networking que empaqueta y administra por vos una topología <strong>hub-and-spoke a escala global</strong>. En lugar de armar a mano gateways, peerings y UDRs en cada región, creás <strong>virtual hubs</strong> y le colgás conexiones.</p>
+
+    <div class="card">
+      <div class="card-title">Componentes</div>
+      <ul>
+        <li><strong>Virtual WAN</strong>: el recurso paraguas, global.</li>
+        <li><strong>Virtual hub</strong>: una VNet gestionada por Microsoft, <strong>uno por región</strong>. Adentro viven los gateways y el router del hub.</li>
+        <li><strong>VNet connections</strong>: tus VNets spoke se conectan al hub (peering gestionado, no lo administrás vos).</li>
+        <li><strong>VPN sites / Site-to-site VPN</strong>: cada sucursal se modela como un <em>site</em> y se conecta al hub.</li>
+        <li><strong>User VPN (Point-to-site)</strong>: clientes remotos contra el hub.</li>
+        <li><strong>ExpressRoute</strong>: circuitos terminados en el hub.</li>
+        <li><strong>Routing gestionado</strong>: el hub router hace el transit entre todo lo anterior — VNet a VNet, branch a VNet, branch a branch — sin que escribas UDRs.</li>
+        <li><strong>Secured virtual hub</strong>: hub con Azure Firewall (Firewall Manager) para inspeccionar el tráfico.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Capacidad</th><th>Virtual WAN <strong>Basic</strong></th><th>Virtual WAN <strong>Standard</strong></th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Site-to-site VPN</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span></td></tr>
+          <tr><td>ExpressRoute</td><td><span class="no">No</span></td><td><span class="yes">Sí</span></td></tr>
+          <tr><td>User VPN (P2S)</td><td><span class="no">No</span></td><td><span class="yes">Sí</span></td></tr>
+          <tr><td>Hub-to-hub / inter-hub transit</td><td><span class="no">No</span></td><td><span class="yes">Sí</span></td></tr>
+          <tr><td>Transit VNet-a-VNet a través del hub</td><td><span class="no">No</span></td><td><span class="yes">Sí</span></td></tr>
+          <tr><td>Azure Firewall en el hub</td><td><span class="no">No</span></td><td><span class="yes">Sí</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla:</strong> Basic solo hace <strong>S2S VPN</strong>. En cuanto el escenario menciona ExpressRoute, P2S, varios hubs o transit routing, la respuesta es <strong>Standard</strong>. Un Virtual WAN Basic se puede <strong>upgradear</strong> a Standard, pero no al revés.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cuándo el escenario pide Virtual WAN</div>
+      <ul>
+        <li><strong>Muchas sucursales</strong> (decenas o cientos) que hay que conectar y administrar de forma uniforme.</li>
+        <li>Topología <strong>hub-and-spoke multi-región</strong> que a mano sería inmanejable.</li>
+        <li>Se pide <strong>transit routing</strong> (branch↔VNet, branch↔branch, VNet↔VNet entre regiones) <strong>sin mantener UDRs ni NVAs de tránsito</strong>.</li>
+        <li>Se quiere <strong>onboarding automatizado</strong> de dispositivos de sucursal (partners de SD-WAN).</li>
+        <li>Contraejemplo: si es <strong>una sola VNet y una sola oficina</strong>, Virtual WAN es sobreingeniería — la respuesta es un VPN Gateway común.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>En Virtual WAN <strong>no creás la GatewaySubnet ni los gateways a mano</strong>: los despliega el hub. Si una opción de respuesta dice "creá una GatewaySubnet dentro del virtual hub", está mal.</span>
+    </div>
+  </div>
+
+  <!-- ══ 8 ══ -->
+  <div class="section" id="decision">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.12)">⚖️</div>
+      <span class="section-title">Comparativa final y checklist de decisión</span>
+      <span class="section-tag">Repaso</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Criterio</th><th>Site-to-Site VPN</th><th>ExpressRoute</th><th>Virtual WAN</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>¿Va por internet?</strong></td>
+            <td><span class="chip chip-yellow">Sí</span>, cifrado con IPsec</td>
+            <td><span class="chip chip-green">No</span>, circuito privado del proveedor</td>
+            <td>Depende del transporte que le conectes (VPN sí, ExpressRoute no)</td>
+          </tr>
+          <tr>
+            <td><strong>Ancho de banda</strong></td>
+            <td>Hasta el límite de la SKU del gateway (10 Gbps agregados en VpnGw5) y de tu enlace a internet</td>
+            <td>Muy alto y <strong>dedicado</strong>; hasta 10 Gbps por circuito estándar y hasta 100 Gbps con ExpressRoute Direct</td>
+            <td>Agregado de todas las conexiones del hub; escala horizontalmente</td>
+          </tr>
+          <tr>
+            <td><strong>Latencia / previsibilidad</strong></td>
+            <td>Depende de internet, variable</td>
+            <td><strong>Predecible</strong>, consistente</td>
+            <td>Backbone de Microsoft entre hubs</td>
+          </tr>
+          <tr>
+            <td><strong>SLA</strong></td>
+            <td>99.95% en SKUs VpnGw (no Basic)</td>
+            <td>99.95% de disponibilidad del circuito</td>
+            <td>SLA por componente del hub (VPN / ExpressRoute / firewall)</td>
+          </tr>
+          <tr>
+            <td><strong>Costo</strong></td>
+            <td><span class="chip chip-green">Bajo</span> — solo el gateway y el egress</td>
+            <td><span class="chip chip-red">Alto</span> — circuito + puerto del proveedor + facturación metered/unlimited</td>
+            <td><span class="chip chip-yellow">Medio-alto</span> — hub + unidades de escala + conexiones</td>
+          </tr>
+          <tr>
+            <td><strong>Tiempo de aprovisionamiento</strong></td>
+            <td>Decenas de minutos (el gateway) — todo self-service</td>
+            <td><span class="chip chip-red">Semanas</span> — depende del proveedor y del cableado físico</td>
+            <td>Minutos por hub, pero cada branch depende de su enlace</td>
+          </tr>
+          <tr>
+            <td><strong>Caso de uso típico</strong></td>
+            <td>Una o pocas oficinas, dev/test, backup de ExpressRoute</td>
+            <td>Cargas productivas críticas, migraciones masivas de datos, compliance que prohíbe internet pública</td>
+            <td>Muchas sucursales, red global, transit routing gestionado</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Errores que el examen castiga</div>
+      <ul>
+        <li>Nombrar la subred distinto de <code>GatewaySubnet</code>, o hacerla demasiado chica.</li>
+        <li>Elegir <strong>policy-based</strong> y después pedir P2S, BGP, varios túneles o coexistencia.</li>
+        <li>Usar <strong>Basic</strong> para cualquier cosa moderna (OpenVPN, Entra ID, active-active, zone redundancy, coexistencia).</li>
+        <li>Modificar el <strong>VPN Gateway</strong> cuando lo que cambió es el direccionamiento on-prem (va en el <strong>Local Network Gateway</strong>).</li>
+        <li>Solapar el <strong>address pool de P2S</strong> con la VNet o con on-prem.</li>
+        <li>Creer que <strong>VNet peering</strong> alcanza a on-premises, o que es transitivo por sí solo.</li>
+        <li>Asumir que <strong>ExpressRoute cifra</strong> el tráfico.</li>
+        <li>Poner <strong>Virtual WAN Basic</strong> en un escenario que menciona ExpressRoute o P2S.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span><strong>Orden de lectura de un escenario:</strong> 1) ¿on-prem o solo Azure? 2) ¿un usuario o una red entera? 3) ¿hay una restricción de "no internet", de ancho de banda o de SLA? 4) ¿cuántos sitios? Con esas cuatro respuestas, la opción correcta queda sola.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Cómo se tiene que llamar la subred donde se despliega un Virtual Network Gateway, y qué tamaño se recomienda?", a: "Exactamente <code>GatewaySubnet</code> — el nombre es literal y sin él el deployment falla. Se recomienda <strong>/27 o más grande</strong>; ExpressRoute y la coexistencia VPN+ER necesitan más espacio.", cat: "Gateway" },
+  { q: "Cambió el rango de direcciones IP de la red on-premises. ¿Qué recurso de Azure actualizás?", a: "El <strong>Local Network Gateway</strong>, que es donde viven la IP pública del VPN device on-prem y los <strong>address prefixes</strong> del sitio. No se toca el VPN Gateway ni la Connection.", cat: "LNG" },
+  { q: "¿Cuántos gateways puede tener una misma VNet?", a: "Uno de tipo <strong>Vpn</strong> y uno de tipo <strong>ExpressRoute</strong> conviviendo (coexistencia), pero <strong>nunca dos del mismo tipo</strong>. La redundancia del VPN se hace con <strong>active-active</strong>, no con un segundo gateway.", cat: "Gateway" },
+  { q: "Route-based vs Policy-based: ¿qué pierde policy-based?", a: "Policy-based soporta <strong>un solo túnel</strong>, usa IKEv1 y <strong>no</strong> soporta P2S, BGP, active-active ni coexistencia con ExpressRoute. Solo existe en la SKU <strong>Basic</strong>. Route-based es el default moderno.", cat: "VPN type" },
+  { q: "¿Qué NO soporta la SKU Basic de VPN Gateway?", a: "Ni <strong>BGP</strong>, ni <strong>active-active</strong>, ni <strong>zone redundancy</strong>, ni <strong>coexistencia con ExpressRoute</strong>, ni P2S con <strong>OpenVPN/IKEv2</strong> (solo SSTP) — por lo tanto tampoco Entra ID ni RADIUS. Está desaconsejada.", cat: "SKUs" },
+  { q: "¿Qué implica configurar un VPN Gateway en active-active?", a: "<strong>Dos instancias</strong> del gateway activas, <strong>dos Public IPs</strong> y <strong>dos túneles</strong> hacia on-prem. El dispositivo del otro extremo tiene que soportar múltiples túneles; conviene usar BGP.", cat: "HA" },
+  { q: "El túnel S2S queda en 'Not connected' con todo aparentemente bien configurado. ¿Las dos causas más probables?", a: "La <strong>shared key (PSK) no coincide</strong> en ambos extremos, o los <strong>address prefixes del Local Network Gateway</strong> están mal / se solapan con la VNet.", cat: "Troubleshooting" },
+  { q: "P2S: ¿qué protocolo necesitás para autenticar con Microsoft Entra ID, y cuál es solo para Windows?", a: "Entra ID funciona <strong>únicamente con OpenVPN</strong> (TCP 443, y con el Azure VPN Client). <strong>SSTP</strong> es solo Windows. Para macOS/Linux, <strong>IKEv2</strong> u OpenVPN.", cat: "P2S" },
+  { q: "¿Qué restricción tiene el address pool de clientes de Point-to-Site?", a: "No se puede <strong>solapar</strong> con el address space de la VNet, ni con on-premises, ni con VNets alcanzables por peering o por otros túneles. Además P2S exige gateway <strong>route-based</strong> y no Basic.", cat: "P2S" },
+  { q: "¿Qué te resuelve BGP en un S2S y qué requiere?", a: "<strong>Anuncio dinámico de rutas</strong> (no hay que mantener prefijos a mano), múltiples túneles con failover y <strong>transit routing</strong>. Requiere gateway <strong>route-based</strong> y SKU no-Basic. El ASN por defecto de Azure es <strong>65515</strong>; los ASNs de ambos lados deben ser distintos.", cat: "BGP" },
+  { q: "ExpressRoute: ¿qué diferencia hay entre private peering y Microsoft peering?", a: "<strong>Private peering</strong> llega a tus <strong>VNets</strong> con <strong>IPs privadas</strong>. <strong>Microsoft peering</strong> llega a servicios <strong>PaaS públicos y Microsoft 365</strong> con <strong>IPs públicas</strong> y route filters. El antiguo <em>public peering</em> está obsoleto.", cat: "ExpressRoute" },
+  { q: "¿Qué hacen ExpressRoute Global Reach y FastPath?", a: "<strong>Global Reach</strong> conecta <strong>dos sitios on-premises entre sí</strong> a través del backbone de Microsoft, uniendo dos circuitos ER. <strong>FastPath</strong> hace que el tráfico de datos <strong>saltee el ExpressRoute Gateway</strong> y vaya directo a las VMs, bajando la latencia.", cat: "ExpressRoute" },
+  { q: "Virtual WAN: ¿qué habilita la SKU Standard que Basic no tiene?", a: "Basic solo hace <strong>Site-to-site VPN</strong>. <strong>Standard</strong> agrega <strong>ExpressRoute</strong>, <strong>User VPN (P2S)</strong>, <strong>hub-to-hub e inter-hub transit</strong>, transit VNet-a-VNet y Azure Firewall en el hub. Se puede upgradear Basic → Standard, no al revés.", cat: "Virtual WAN" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

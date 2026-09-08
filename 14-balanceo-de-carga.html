@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Balanceo de Carga</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Balanceo de Carga</div>
+    <div class="nav-sub">Load Balancer, App Gateway, Front Door y Traffic Manager</div>
+    <div class="nav-weight">Dominio 4 · 15–20%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#sec-matriz"><span class="dot"></span>Matriz de decisión</a>
+  <a href="#sec-lb"><span class="dot"></span>Azure Load Balancer</a>
+  <a href="#sec-appgw"><span class="dot"></span>Application Gateway</a>
+  <a href="#sec-waf"><span class="dot"></span>Web Application Firewall</a>
+  <a href="#sec-fd"><span class="dot"></span>Azure Front Door</a>
+  <a href="#sec-tm"><span class="dot"></span>Traffic Manager</a>
+  <a href="#sec-tabla"><span class="dot"></span>Comparativa consolidada</a>
+  <a href="#sec-trampas"><span class="dot"></span>Trampas frecuentes</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen casi nunca te pide configurar un balanceador — te da un escenario y te pregunta <strong>cuál de los cuatro</strong> elegís. Todo se resuelve con dos preguntas: ¿el tráfico es HTTP/S (capa 7) o no (capa 4)?, y ¿el alcance es regional o global? VMs en una VNet/región + Front Door = <strong>No</strong> (Front Door es global). El resto son detalles de componentes, health probes y limitaciones de SKU.
+  </div>
+
+  <!-- ══ 1 · MATRIZ ══ -->
+  <div class="section" id="sec-matriz">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🧭</div>
+      <span class="section-title">La matriz de decisión</span>
+      <span class="section-tag">Empezá acá</span>
+    </div>
+
+    <p>Azure tiene cuatro servicios de balanceo y se ordenan en una grilla de 2×2: <strong>capa 4 vs capa 7</strong> en un eje, <strong>regional vs global</strong> en el otro. Si internalizás esta grilla, resolvés la mayoría de las preguntas del dominio sin leer el resto del escenario.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>Capa 4 (TCP/UDP)</th><th>Capa 7 (HTTP/S)</th><th>Solo DNS</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Regional</strong></td>
+            <td><span class="chip chip-blue">Azure Load Balancer</span><br><small>Balancea cualquier protocolo TCP/UDP dentro de una VNet o región</small></td>
+            <td><span class="chip chip-purple">Application Gateway</span><br><small>Terminación TLS, path-based routing, WAF</small></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>Global</strong></td>
+            <td><small>(Cross-region Load Balancer, fuera del foco del AZ-104)</small></td>
+            <td><span class="chip chip-green">Azure Front Door</span><br><small>Anycast, CDN, WAF global, backbone de Microsoft</small></td>
+            <td><span class="chip chip-yellow">Traffic Manager</span><br><small>Resuelve DNS al endpoint más sano; no toca el tráfico</small></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Árbol de decisión</div>
+      <ul>
+        <li><strong>¿El tráfico es HTTP/HTTPS?</strong>
+          <ul>
+            <li><strong>NO</strong> (SQL, RDP, SSH, SMTP, UDP, un protocolo propietario) → <span class="chip chip-blue">Azure Load Balancer</span>. Es el único que balancea capa 4 puro dentro de una región.</li>
+            <li><strong>SÍ</strong> → seguí a la pregunta de alcance.</li>
+          </ul>
+        </li>
+        <li><strong>¿Cuántas regiones?</strong>
+          <ul>
+            <li><strong>Una sola región</strong>, y necesito routing por URL/path, terminación TLS o WAF → <span class="chip chip-purple">Application Gateway</span>.</li>
+            <li><strong>Varias regiones</strong>, y quiero <em>un único punto de entrada</em> que acelere, cachee y aplique WAF global → <span class="chip chip-green">Front Door</span>.</li>
+            <li><strong>Varias regiones</strong> o endpoints <em>fuera de Azure</em> (on-prem, otra nube), y solo necesito que el DNS resuelva al endpoint más sano o más cercano → <span class="chip chip-yellow">Traffic Manager</span>.</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">¿HTTP/S?<br><small>no</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">Load Balancer<br><small>L4 · regional</small></div>
+      <span class="flow-arrow">|</span>
+      <div class="flow-step">sí · 1 región</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">App Gateway<br><small>L7 · regional</small></div>
+    </div>
+    <div class="flow">
+      <div class="flow-step">sí · multi-región<br><small>1 entrada</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">Front Door<br><small>L7 · global</small></div>
+      <span class="flow-arrow">|</span>
+      <div class="flow-step">solo resolver<br><small>al endpoint sano</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">Traffic Manager<br><small>DNS · global</small></div>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span><strong>Regla mnemotécnica:</strong> <em>Load Balancer</em> mueve paquetes, <em>Application Gateway</em> lee URLs, <em>Front Door</em> hace las dos cosas pero desde el borde global, y <em>Traffic Manager</em> solo contesta preguntas de DNS.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">🔗</span>
+      <span>Los servicios se <strong>combinan</strong>: es un patrón común poner Front Door adelante de un Application Gateway por región, y el App Gateway adelante de un VM Scale Set que a su vez usa un internal Load Balancer para su capa de datos.</span>
+    </div>
+  </div>
+
+  <!-- ══ 2 · LOAD BALANCER ══ -->
+  <div class="section" id="sec-lb">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">⚖️</div>
+      <span class="section-title">Azure Load Balancer</span>
+      <span class="section-tag">Capa 4 · regional</span>
+    </div>
+
+    <p>Distribuye tráfico <strong>TCP y UDP</strong>. No inspecciona el contenido: no sabe qué es una URL, una cookie ni un header. Opera dentro de una región y es un recurso de plano de datos <strong>pass-through</strong> (no es un proxy: no termina conexiones ni cambia el payload).</p>
+
+    <div class="card">
+      <div class="card-title">Público vs Interno (ILB)</div>
+      <ul>
+        <li><strong>Public Load Balancer:</strong> el frontend es una <strong>Public IP</strong>. Publica servicios a Internet y además provee conectividad saliente (SNAT) a las VMs del backend pool.</li>
+        <li><strong>Internal Load Balancer (ILB):</strong> el frontend es una <strong>IP privada de una subnet</strong>. Solo accesible desde la VNet, VNets peereadas, VPN o ExpressRoute. Es el patrón típico para la capa de base de datos o de aplicación en una arquitectura de N capas.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">ILB: el backend no llega a su propio frontend (hairpin)</div>
+      <p>Probes OK, VMs healthy, el data port no responde. Una VM del pool intenta el VIP interno del mismo LB.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Poner un <strong>proxy</strong> (p. ej. Nginx) junto al ILB</td><td><span class="yes">Sí</span></td><td>El loopback/hairpin del Standard LB no está soportado. Un proxy L7 corta el loop</td></tr>
+            <tr><td><strong>Application Gateway</strong> interno (HTTP/HTTPS)</td><td><span class="yes">Sí</span></td><td>Es reverse proxy: el backend no habla con su propio VIP de LB</td></tr>
+            <tr><td>Revisar/rearmar NSGs del backend</td><td><span class="no">No</span></td><td>Los probes pasan: no es firewall. Es limitación de arquitectura</td></tr>
+            <tr><td>Un backend pool por aplicación</td><td><span class="no">No</span></td><td>Si la VM sigue yendo a <em>su</em> frontend, el hairpin sigue</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> backend healthy + data port muerto porque una VM pega al VIP = <strong>hairpinning</strong>. NSG no lo arregla. Elegí 2: <strong>proxy / Nginx</strong> o <strong>App Gateway</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Los 5 componentes que hay que saber de memoria</div>
+      <ul>
+        <li><strong>Frontend IP configuration:</strong> la IP (pública o privada) por la que entra el tráfico. Un LB puede tener varias.</li>
+        <li><strong>Backend pool:</strong> las VMs, NICs o instancias del VM Scale Set que reciben el tráfico.</li>
+        <li><strong>Health probe:</strong> determina qué instancias del pool están sanas. Las instancias que fallan el probe dejan de recibir <em>nuevas</em> conexiones.</li>
+        <li><strong>Load balancing rule:</strong> mapea frontend IP + puerto → backend pool + puerto, asociando un health probe. Es el "muchos a muchos".</li>
+        <li><strong>Inbound NAT rule:</strong> mapea frontend IP + puerto → <em>una instancia específica</em> y su puerto. Es el "uno a uno", y es la respuesta cuando el escenario pide <strong>RDP o SSH a una VM puntual</strong> detrás del LB (por ejemplo puerto 50001 → VM1:3389, 50002 → VM2:3389).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">4 VMs backend: una sola Public IP + NAT</div>
+      <p>Cuatro VMs idénticas. Minimizar attack surface, admin y costo. Acceso público puntual (RDP/SSH).</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>PIP en un <strong>public LB</strong> + inbound NAT a las VMs</td><td><span class="yes">Sí</span></td><td>Un solo punto de entrada. NAT 1:1 por VM. Barato y simple</td></tr>
+            <tr><td>PIP en un VPN Gateway + LB</td><td><span class="no">No</span></td><td>El gateway suma costo y complejidad; no es el patrón de NAT inbound</td></tr>
+            <tr><td>PIP en cada NIC + JIT</td><td><span class="no">No</span></td><td>4 IPs públicas = más superficie. JIT pide Defender y no está en el outline</td></tr>
+            <tr><td>PIP en cada VM + NSG</td><td><span class="no">No</span></td><td>Misma superficie (4 IPs). Más reglas que un NAT centralizado</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “minimize attack surface” descarta PIP por VM (aunque haya NSG o JIT). Un frontend + NAT rules es el patrón.</span>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">Frontend IP</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">LB rule<br><small>+ health probe</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Backend pool</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">VM / VMSS</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Distribución: hash de 5-tupla y session persistence</div>
+      <p>Por defecto el Load Balancer usa un <strong>algoritmo de hash de 5-tupla</strong>: IP origen, puerto origen, IP destino, puerto destino y tipo de protocolo. Como el puerto origen cambia en cada conexión, sesiones distintas del mismo cliente pueden caer en backends distintos.</p>
+      <ul>
+        <li><strong>None (default)</strong> — hash de 5-tupla. Máxima distribución, sin afinidad.</li>
+        <li><strong>Client IP</strong> — hash de <strong>2-tupla</strong> (IP origen + IP destino). El mismo cliente siempre va al mismo backend.</li>
+        <li><strong>Client IP and protocol</strong> — hash de <strong>3-tupla</strong> (IP origen + IP destino + protocolo).</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el Load Balancer <strong>no entiende HTTP</strong>. Si el escenario menciona enrutar por <em>URL, path, hostname, header o cookie</em>, terminación SSL o WAF, la respuesta <strong>nunca</strong> es Load Balancer — es Application Gateway (regional) o Front Door (global). La "session persistence" del LB se basa en IP, no en cookies.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Health probes</div>
+      <ul>
+        <li><strong>TCP:</strong> el probe es exitoso si se completa el handshake TCP contra el puerto. Disponible en Basic y Standard.</li>
+        <li><strong>HTTP:</strong> el probe pide una ruta (ej. <code>/health</code>) y espera un <code>HTTP 200</code>. Cualquier otra respuesta, o timeout, marca la instancia como no sana.</li>
+        <li><strong>HTTPS:</strong> igual que HTTP pero sobre TLS. <strong>Solo en el SKU Standard.</strong></li>
+        <li>Los probes salen siempre de la dirección <code>168.63.129.16</code>, una IP virtual de la plataforma de Azure. El <strong>NSG del backend debe permitir el tráfico entrante desde el service tag <code>AzureLoadBalancer</code></strong>, o todas las instancias van a aparecer caídas.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">📍</span>
+      <span>La IP <code>168.63.129.16</code> es la misma que usa el agente de Azure para DHCP, DNS provisto por la plataforma y comunicación de estado. Es una IP virtual fija e idéntica en todas las regiones; no se puede cambiar y no es enrutable fuera de Azure.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Basic vs Standard</div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Característica</th><th>Basic</th><th>Standard</th></tr></thead>
+        <tbody>
+          <tr><td>Availability Zones (zonal / zone-redundant)</td><td class="no">No</td><td class="yes">Sí</td></tr>
+          <tr><td>SLA</td><td class="no">Sin SLA</td><td class="yes">Con SLA</td></tr>
+          <tr><td>Tamaño del backend pool</td><td>Chico (cientos de instancias)</td><td>Mucho mayor (miles de instancias)</td></tr>
+          <tr><td>Backend pool por</td><td>Availability set o VMSS único</td><td>Cualquier VM/NIC de una misma VNet</td></tr>
+          <tr><td>HA Ports (balancear todos los puertos a la vez)</td><td class="no">No</td><td class="yes">Sí (ILB)</td></tr>
+          <tr><td>Health probes</td><td>TCP, HTTP</td><td>TCP, HTTP, <strong>HTTPS</strong></td></tr>
+          <tr><td>Outbound rules (control explícito de SNAT)</td><td class="no">No</td><td class="yes">Sí</td></tr>
+          <tr><td>Seguridad por defecto</td><td>Abierto por defecto</td><td><strong>Cerrado por defecto</strong> — requiere NSG que lo permita</td></tr>
+          <tr><td>Public IP asociada</td><td>Public IP SKU Basic</td><td>Public IP SKU Standard (estática)</td></tr>
+          <tr><td>Estado del ciclo de vida</td><td><span class="chip chip-red">Retirado (30-sep-2025)</span></td><td><span class="chip chip-green">Recomendado</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el <strong>SKU de la Public IP tiene que coincidir con el SKU del Load Balancer</strong>. No podés asociar una Public IP Basic a un LB Standard ni viceversa; el portal te va a rechazar la operación. Lo mismo aplica a mezclar SKUs dentro de un mismo backend pool. Y ojo con el "secure by default" del Standard: si desplegás un LB Standard y no ves tráfico llegar, lo primero que se revisa es el <strong>NSG</strong> — a diferencia del Basic, el Standard no deja pasar nada hasta que una regla lo autoriza explícitamente. Yes/No de SLA máximo + datacenters separados: <strong>Standard LB + VMs en AZs = Yes</strong>; Basic LB = No.</span>
+    </div>
+    <div class="card">
+      <div class="card-title">Yes/No: Public IP del Standard Load Balancer</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Solo Public IP <strong>Standard</strong> con un LB Standard</td><td><span class="yes">Yes</span></td><td>SKUs tienen que coincidir. Basic IP + Standard LB = no</td></tr>
+            <tr><td>Public IP Standard permite inbound <strong>por default</strong></td><td><span class="no">No</span></td><td>Cerrada hasta que un NSG Allow. Basic era abierta</td></tr>
+            <tr><td>Podés <strong>escribir</strong> la IP (1.2.3.4) al crear el recurso</td><td><span class="no">No</span></td><td>Azure la asigna del pool. Static = no cambia, no es “la elijo yo”</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">IMDS: 404 “No load balancer metadata is found”</div>
+      <p>Query al Azure Instance Metadata Service por datos del LB. Elegí dos inferencias.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Inferencia</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>El LB es <strong>Basic</strong> (no Standard)</td><td><span class="yes">Sí</span></td><td>IMDS de LB solo existe en SKU Standard</td></tr>
+            <tr><td>La VM <strong>no está</strong> en un backend pool</td><td><span class="yes">Sí</span></td><td>Sin asociación no hay metadata de LB</td></tr>
+            <tr><td>Hay rate limit</td><td><span class="no">No</span></td><td>Eso es <strong>429</strong>, no 404</td></tr>
+            <tr><td>El path está mal</td><td><span class="no">No</span></td><td>El mensaje nombra “no load balancer metadata”, no un path 404 genérico</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>curl -s -H Metadata:true --noproxy "*" \
+  "http://169.254.169.254/metadata/loadbalancer?api-version=2021-02-01"</code></pre>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> 404 de IMDS/LB = <strong>Basic SKU o VM fuera del pool</strong>. Rate limit = 429. El path mal formado no es lo que el mensaje describe.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí 4: ILB de la capa backend (3-tier)</div>
+      <p>LOB en tres capas, cada una con 2 VMs en un <strong>Availability Set</strong>. ILB para el <strong>backend</strong>: IIS en <strong>TCP 443</strong>, health interno en <strong>TCP 80</strong>. Resiliente a fallas de hardware/software y cost-effective.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Standard Load Balancer</strong> (interno)</td><td><span class="yes">Sí</span></td><td>SLA, AZ, diagnósticos. “Cost-effective” no salva al Basic (retirado, sin SLA)</td></tr>
+            <tr><td><strong>Backend pool con el Availability Set</strong></td><td><span class="yes">Sí</span></td><td>Las 2 VMs ya viven en ese set; el pool las toma juntas</td></tr>
+            <tr><td><strong>HTTP health probe en puerto 80</strong></td><td><span class="yes">Sí</span></td><td>El enunciado da el endpoint interno en 80, no en 443</td></tr>
+            <tr><td><strong>Load balancing rule en puerto 443</strong></td><td><span class="yes">Sí</span></td><td>Ahí escucha IIS. El 80 es del probe, no del tráfico de app</td></tr>
+            <tr><td>Basic Load Balancer</td><td><span class="no">No</span></td><td>Sin SLA ni zonas. “Barato” es la carnada</td></tr>
+            <tr><td>LB rule en puerto 80</td><td><span class="no">No</span></td><td>Mezcla probe con frontend. El tráfico de backend es 443</td></tr>
+            <tr><td>Backend pool “usando las VMs”</td><td><span class="no">No</span></td><td>Funciona en Standard, pero el escenario te da el <strong>Availability Set</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>az network lb create -g RG -n ilb-be --sku Standard --vnet-name VNet --subnet beSubnet
+az network lb address-pool create -g RG --lb-name ilb-be -n bepool
+az network lb probe create -g RG --lb-name ilb-be -n hp80 --protocol Http --port 80 --path /
+az network lb rule create -g RG --lb-name ilb-be -n https \
+  --protocol Tcp --frontend-port 443 --backend-port 443 --probe-name hp80</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> probe y rule <strong>no usan el mismo puerto</strong> si el enunciado los separa: health = <strong>80 HTTP</strong>, app = <strong>443</strong>. Standard gana a Basic aunque diga “cost-effective”. Pool = Availability Set, no “las VMs sueltas”.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Outbound rules y SNAT port exhaustion</div>
+      <ul>
+        <li>Cuando una VM sin Public IP propia sale a Internet a través de un public Load Balancer, Azure hace <strong>SNAT</strong>: traduce la IP privada a la IP pública del frontend y le asigna un <strong>puerto SNAT efímero</strong>.</li>
+        <li>Cada IP pública de frontend aporta un pool acotado de puertos SNAT que se <strong>reparte entre todas las instancias</strong> del backend pool. Cuantas más instancias, menos puertos por instancia.</li>
+        <li><strong>SNAT port exhaustion:</strong> si las VMs abren muchísimas conexiones salientes simultáneas al mismo destino, se acaban los puertos y las nuevas conexiones fallan con timeouts intermitentes. Es el síntoma clásico: "las conexiones salientes fallan de a ratos, pero el tráfico entrante funciona".</li>
+        <li>Mitigaciones: <strong>outbound rules</strong> del SKU Standard (asignar más puertos por instancia, agregar más IPs públicas de frontend, subir el idle timeout), usar <strong>NAT Gateway</strong> (la opción recomendada y la que escala mejor), o darle Public IP de instancia a la VM.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Si la pregunta es "cómo resuelvo problemas de conectividad saliente a escala", la respuesta moderna es <strong>NAT Gateway</strong>, no agregar IPs al Load Balancer.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Standard LB: outbound Yes / No</div>
+      <p>VM01–03 en el backend de LB01. Rule solo TCP. IP01 en VM01. IP02 e IP03 en LB01.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>El outbound de VM01 siempre usa IP02</td><td><span class="no">No</span></td><td>VM01 tiene <strong>ILPIP</strong> (IP01): esa IP gana al SNAT del LB</td></tr>
+            <tr><td>El outbound de LB01 usa IP02 e IP03 a la vez</td><td><span class="yes">Yes</span></td><td>Standard reparte SNAT entre todos los frontend públicos para más puertos</td></tr>
+            <tr><td>El outbound UDP de VM03 usa IP02 o IP03</td><td><span class="no">No</span></td><td>Solo hay LB rule <strong>TCP</strong>. Sin rule/outbound rule UDP, no hay SNAT UDP</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> No / Yes / No. ILPIP de instancia pisa al frontend del LB. Varias IPs de frontend sí se usan en paralelo para SNAT. Protocolo de la rule = protocolo del SNAT implícito.</span>
+    </div>
+  </div>
+
+  <!-- ══ 3 · APPLICATION GATEWAY ══ -->
+  <div class="section" id="sec-appgw">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">🚪</div>
+      <span class="section-title">Application Gateway</span>
+      <span class="section-tag">Capa 7 · regional</span>
+    </div>
+
+    <p>Es un <strong>reverse proxy de capa 7</strong>: termina la conexión del cliente, lee la request HTTP y decide a qué backend mandarla en función de la URL, el hostname o los headers. Al ser un proxy real, puede <strong>terminar TLS</strong>, reescribir headers y aplicar WAF.</p>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Application Gateway requiere una <strong>subred dedicada dentro de la VNet</strong>. Esa subred <strong>no puede contener ningún otro recurso</strong> (ni VMs, ni otro tipo de gateway) — solo instancias de Application Gateway. Si el escenario dice "el deployment falla porque la subred ya tiene VMs", la solución es crear una subred nueva y vacía. Se recomienda un <code>/24</code> para dejar espacio de autoscaling.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SKUs</div>
+      <ul>
+        <li><strong>Standard_v2:</strong> balanceo L7 completo, <strong>autoscaling</strong>, <strong>zone redundancy</strong>, Public IP estática, mejor rendimiento y despliegue más rápido que v1.</li>
+        <li><strong>WAF_v2:</strong> todo lo de Standard_v2 <strong>más el Web Application Firewall</strong>. Es el único SKU que trae WAF.</li>
+        <li>Los SKUs <strong>v1 (Standard y WAF) están retirados</strong>. En cualquier escenario nuevo asumí v2. Si la pregunta pide autoscaling o zonas, la respuesta es v2 — v1 nunca los soportó.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Anatomía de una request</div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">Frontend IP<br><small>pública o privada</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">Listener<br><small>puerto + protocolo + hostname</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">Routing rule<br><small>basic o path-based</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">HTTP settings<br><small>puerto, protocolo, probe</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Backend pool</div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Componente</th><th>Qué define</th><th>Detalle de examen</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Frontend IP</strong></td><td>Punto de entrada público y/o privado</td><td>El v2 usa Public IP <strong>Standard estática</strong></td></tr>
+          <tr><td><strong>Listener</strong></td><td>Puerto, protocolo y (opcional) hostname y certificado TLS</td><td><em>Basic</em> escucha en cualquier host; <em>Multi-site</em> filtra por hostname. El certificado TLS se carga en el listener</td></tr>
+          <tr><td><strong>Routing rule</strong></td><td>Une un listener con un backend pool + HTTP settings</td><td><em>Basic</em> = todo a un pool. <em>Path-based</em> = URL path map con reglas por patrón</td></tr>
+          <tr><td><strong>HTTP settings</strong></td><td>Cómo el gateway habla con el backend: puerto, protocolo, cookie affinity, timeout, probe</td><td>Si el protocolo al backend es <strong>HTTPS</strong>, estás haciendo <strong>end-to-end TLS (re-encrypt)</strong></td></tr>
+          <tr><td><strong>Backend pool</strong></td><td>Destinos: NICs, IPs, FQDNs, VMSS, App Service</td><td>Puede apuntar a backends <strong>fuera de Azure</strong> vía FQDN/IP</td></tr>
+          <tr><td><strong>Health probe</strong></td><td>Chequeo del backend</td><td>El probe por defecto usa el hostname del backend; los <strong>custom probes</strong> permiten path propio, hostname y <strong>códigos de respuesta esperados</strong> (ej. 200–399)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Features clave que aparecen en escenarios</div>
+      <ul>
+        <li><strong>Path-based routing (URL path map):</strong> <code>/images/*</code> al pool de contenido estático, <code>/video/*</code> al pool de streaming, <code>/*</code> al pool default. Es <em>la</em> señal de que la respuesta es Application Gateway y no Load Balancer.</li>
+        <li><strong>Multi-site hosting:</strong> varios sitios (<code>contoso.com</code>, <code>fabrikam.com</code>) sobre un mismo gateway, cada uno con su listener y su backend pool. Ahorra desplegar un gateway por sitio.</li>
+        <li><strong>Redirección:</strong> HTTP → HTTPS, a otro listener, a un path o a una URL externa; permanente (301) o temporal (302).</li>
+        <li><strong>Rewrite:</strong> modificar <strong>headers</strong> de request/response y la <strong>URL</strong> (path y query string) en vuelo, con condiciones. Sirve para agregar headers de seguridad o sacar headers que filtran información del backend.</li>
+        <li><strong>Cookie-based affinity:</strong> el gateway inserta una cookie propia para mandar al mismo usuario siempre al mismo backend. Es <em>session affinity a nivel HTTP</em> — a diferencia del Load Balancer, que solo puede afinar por IP.</li>
+        <li><strong>SSL/TLS offload:</strong> el gateway termina TLS y habla HTTP plano con el backend, liberando CPU en los servidores.</li>
+        <li><strong>End-to-end TLS (re-encrypt):</strong> el gateway termina TLS, inspecciona, y vuelve a cifrar hacia el backend. Necesario cuando la normativa exige cifrado hasta el servidor final.</li>
+        <li><strong>WebSocket y HTTP/2</strong> soportados en el listener.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">🔐</span>
+      <span>Los certificados del listener se pueden referenciar desde <strong>Azure Key Vault</strong>, lo que requiere una <strong>managed identity</strong> en el Application Gateway con permisos de lectura sobre el secreto/certificado.</span>
+    </div>
+  </div>
+
+  <!-- ══ 4 · WAF ══ -->
+  <div class="section" id="sec-waf">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">🛡️</div>
+      <span class="section-title">Web Application Firewall (WAF)</span>
+      <span class="section-tag">Add-on, no servicio</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el WAF <strong>no es un servicio standalone</strong> — no lo desplegás solo. Vive <em>adentro</em> de un <strong>Application Gateway con SKU WAF_v2</strong> (protección regional) o de un <strong>Front Door Premium</strong> (protección global, con managed rule sets). Si una opción de respuesta dice "desplegar un Azure WAF" sin un host asociado, sospechá.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué hace</div>
+      <p>Protege aplicaciones web contra ataques comunes de capa 7: <strong>SQL injection</strong>, <strong>cross-site scripting (XSS)</strong>, command injection, HTTP request smuggling, inclusión de archivos remotos, etc. La lógica viene del <strong>OWASP Core Rule Set (CRS)</strong>, un conjunto de reglas administrado por Microsoft que se actualiza por versión.</p>
+      <ul>
+        <li><strong>Managed rule sets:</strong> el CRS de OWASP, mantenido por Microsoft. Elegís la versión del rule set.</li>
+        <li><strong>Exclusiones:</strong> sacan de la evaluación atributos puntuales (un header, una cookie, un campo de formulario) que generan falsos positivos, sin desactivar toda la regla.</li>
+        <li><strong>Reglas custom:</strong> permitir/bloquear por IP, geografía, header, método, tamaño del body, etc. Las custom se evalúan <strong>antes</strong> que las managed.</li>
+        <li><strong>Bot protection:</strong> ruleset que clasifica bots (buenos, malos, desconocidos) y actúa según categoría.</li>
+        <li><strong>Rate limiting:</strong> reglas que limitan la cantidad de requests por cliente en una ventana de tiempo — mitigación de fuerza bruta y de scraping.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Modo</th><th>Comportamiento</th><th>Cuándo se usa</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Detection</strong></td><td>Solo <strong>registra</strong> las coincidencias en los logs. <strong>No bloquea nada.</strong></td><td>Onboarding: se activa primero para medir falsos positivos y armar exclusiones antes de cortar tráfico real</td></tr>
+          <tr><td><strong>Prevention</strong></td><td><strong>Bloquea</strong> la request que dispara una regla y la registra</td><td>Producción, una vez ajustadas las exclusiones</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "protección OWASP en <strong>una sola región</strong>" → <strong>Application Gateway WAF_v2</strong>. "Protección OWASP <strong>global</strong> / en el borde / para varias regiones" → <strong>Front Door Premium</strong>. Y si el escenario dice "activamos el WAF y se rompió la app": el WAF está en modo <strong>Prevention</strong> y la solución de diagnóstico es pasarlo a <strong>Detection</strong> o agregar una <strong>exclusión</strong> para la regla que da falso positivo, no desactivar el WAF entero.</span>
+    </div>
+  </div>
+
+  <!-- ══ 5 · FRONT DOOR ══ -->
+  <div class="section" id="sec-fd">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(34,211,238,.15)">🌐</div>
+      <span class="section-title">Azure Front Door</span>
+      <span class="section-tag">Capa 7 · global</span>
+    </div>
+
+    <p>Es el <strong>application delivery network global</strong> de Microsoft: reverse proxy de capa 7 desplegado en los <strong>puntos de presencia (POP)</strong> del borde de la red de Microsoft, en todo el mundo.</p>
+
+    <div class="card">
+      <div class="card-title">Anycast y el backbone</div>
+      <ul>
+        <li>El endpoint de Front Door se anuncia por <strong>anycast</strong>: la misma IP se publica desde todos los POP, así que el usuario llega automáticamente al <strong>POP más cercano</strong> por routing de Internet.</li>
+        <li>Desde ese POP, el tráfico viaja al origen por el <strong>backbone privado de Microsoft</strong>, no por la Internet pública. Eso reduce latencia y jitter aunque el origen esté del otro lado del planeta.</li>
+        <li>El handshake TLS también se termina en el POP (<strong>TLS acceleration</strong>), así que el RTT del handshake es corto aunque el origen esté lejos.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> 3 VMs en AZs de <strong>una VNet / una región</strong> + <strong>Front Door</strong> para repartir conexiones = <strong>No</strong>. Front Door es el balanceador <strong>global</strong> (borde, multi-región). Adentro de una región el examen quiere <strong>Standard Load Balancer</strong> (L4) o <strong>Application Gateway</strong> (L7). Front Door entra cuando hay <strong>varias regiones</strong> o un único hostname mundial.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Jerarquía de objetos (modelo Standard/Premium actual)</div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">Profile<br><small>Standard o Premium</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Endpoint<br><small>hostname público</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">Route<br><small>+ rule set</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Origin group<br><small>+ health probe</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Origin</div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Objeto</th><th>Qué es</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Profile</strong></td><td>El recurso contenedor; acá se elige el tier <strong>Standard</strong> o <strong>Premium</strong></td></tr>
+          <tr><td><strong>Endpoint</strong></td><td>El hostname por el que entran los clientes; se le asocian custom domains y certificados</td></tr>
+          <tr><td><strong>Origin group</strong></td><td>Conjunto de orígenes equivalentes, con su <strong>health probe</strong>, método de balanceo y session affinity</td></tr>
+          <tr><td><strong>Origin</strong></td><td>El backend real: App Service, Storage static website, Load Balancer, App Gateway, o un servidor fuera de Azure</td></tr>
+          <tr><td><strong>Route</strong></td><td>Une endpoint + patrones de path + origin group; define caching, redirect HTTP→HTTPS y protocolos aceptados</td></tr>
+          <tr><td><strong>Rule set</strong></td><td>Reglas condicionales en el borde: rewrite de URL, modificación de headers, redirects, override de caching</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Capacidad</th><th>Standard</th><th>Premium</th></tr></thead>
+        <tbody>
+          <tr><td>Balanceo global, routing, rule sets</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td>Caching / CDN, compresión</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td>Custom domains + certificados administrados</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td>WAF con <strong>reglas custom</strong></td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td>WAF con <strong>managed rule sets</strong> (OWASP) y bot protection</td><td class="no">No</td><td class="yes">Sí</td></tr>
+          <tr><td><strong>Private Link</strong> hacia el origen (origen sin exposición pública)</td><td class="no">No</td><td class="yes">Sí</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Balanceo y salud</div>
+      <ul>
+        <li><strong>Latencia:</strong> entre los orígenes sanos, Front Door elige el de menor latencia medida desde el POP (dentro de un margen de sensibilidad configurable).</li>
+        <li><strong>Prioridad:</strong> cada origen tiene un valor de prioridad; el tráfico va al de prioridad más alta que esté sano. Es el patrón <strong>activo/pasivo</strong>.</li>
+        <li><strong>Peso:</strong> distribución proporcional entre orígenes del mismo nivel de prioridad. Sirve para canary o blue/green ponderado.</li>
+        <li><strong>Health probes globales:</strong> cada POP prueba los orígenes de forma independiente y comparte resultados, así que el failover es rápido y no depende del DNS.</li>
+        <li><strong>Session affinity:</strong> mediante cookie, para que un usuario siga pegado al mismo origen.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Bloquear el acceso directo al origen</div>
+      <p>Si el origen sigue teniendo IP pública, un atacante puede saltearse Front Door (y su WAF) yendo directo. Se cierra con dos controles combinados:</p>
+      <ol>
+        <li><strong>Service tag <code>AzureFrontDoor.Backend</code></strong> en el NSG o en las restricciones de acceso del origen: solo se aceptan conexiones desde el rango de salida de Front Door.</li>
+        <li><strong>Validar el header <code>X-Azure-FDID</code></strong> contra el <strong>Front Door ID</strong> de tu perfil. Necesario porque el service tag es común a <em>todos</em> los perfiles de Front Door de Azure, incluidos los de otros tenants — el header es lo que identifica que la request vino de <em>tu</em> instancia.</li>
+      </ol>
+      <p>En Front Door <strong>Premium</strong> la alternativa más fuerte es <strong>Private Link</strong> al origen, dejándolo sin endpoint público.</p>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> filtrar solo por el service tag <code>AzureFrontDoor.Backend</code> <strong>no alcanza</strong> — cualquier perfil de Front Door del mundo sale por ese mismo rango. La respuesta completa es <strong>service tag + validación del header <code>X-Azure-FDID</code></strong>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 6 · TRAFFIC MANAGER ══ -->
+  <div class="section" id="sec-tm">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🧭</div>
+      <span class="section-title">Traffic Manager</span>
+      <span class="section-tag">DNS · global</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">📡</span>
+      <span>Traffic Manager es <strong>puramente DNS</strong>. Cuando un cliente resuelve <code>miapp.trafficmanager.net</code>, Traffic Manager decide qué endpoint devolver y responde con su <strong>CNAME o IP</strong>. Después de eso, <strong>el cliente se conecta directo al endpoint</strong> — el tráfico de la aplicación <strong>nunca pasa por Traffic Manager</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Consecuencias directas de ser "solo DNS"</div>
+      <ul>
+        <li><strong>No hay SSL/TLS offload</strong>, no hay WAF, no hay caching, no hay rewrite de headers ni path-based routing. Nada de eso es posible si no ves el tráfico.</li>
+        <li><strong>El failover depende del TTL.</strong> Traffic Manager detecta la caída con sus propios probes y deja de devolver ese endpoint, pero los clientes y resolvers que ya cachearon la respuesta anterior siguen yendo al endpoint caído hasta que expire el TTL. Un TTL bajo acelera el failover a costa de más consultas DNS. Front Door, en cambio, falla sobre la marcha porque termina la conexión.</li>
+        <li><strong>Puede apuntar a cualquier cosa con un nombre o IP</strong>: recursos de Azure, servidores on-prem u otra nube.</li>
+        <li>Monitorea la salud de los endpoints con probes <strong>HTTP, HTTPS o TCP</strong> sobre el puerto y path que definas.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Métodos de enrutamiento</div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Método</th><th>Cómo decide</th><th>Escenario típico del examen</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Priority</strong></td><td>Devuelve siempre el endpoint de prioridad más alta que esté sano; si cae, pasa al siguiente</td><td><strong>Failover</strong> activo/pasivo: región primaria + región de DR. Combo clásico con <strong>ASR</strong> + Public IP en un recovery plan</td></tr>
+          <tr><td><strong>Weighted</strong></td><td>Reparte las respuestas de forma proporcional a los pesos asignados</td><td>Distribución controlada, <strong>canary</strong>, migración gradual (ej. 90/10)</td></tr>
+          <tr><td><strong>Performance</strong></td><td>Devuelve el endpoint con <strong>menor latencia de red</strong> desde el origen de la consulta DNS</td><td>Apps multi-región donde importa la experiencia del usuario más cercano</td></tr>
+          <tr><td><strong>Geographic</strong></td><td>Devuelve un endpoint según el <strong>país/región geográfica</strong> desde donde vino la consulta DNS</td><td><strong>Soberanía de datos</strong> y cumplimiento: "los usuarios de la UE deben ir al datacenter europeo"</td></tr>
+          <tr><td><strong>MultiValue</strong></td><td>Devuelve <strong>varias IPs sanas</strong> en una sola respuesta; el cliente reintenta con otra si la primera falla</td><td>Solo con endpoints tipo External definidos por <strong>dirección IPv4/IPv6</strong></td></tr>
+          <tr><td><strong>Subnet</strong></td><td>Mapea <strong>rangos de IP del cliente</strong> a endpoints específicos</td><td>Distinguir usuarios corporativos (rango de la oficina) de usuarios de Internet y mandarlos a versiones distintas</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span><strong>Performance vs Geographic:</strong> se confunden todo el tiempo. <em>Performance</em> optimiza <strong>latencia</strong> (el más rápido, sea cual sea el país). <em>Geographic</em> impone <strong>reglas de negocio o legales</strong> por país, aunque ese endpoint sea más lento. Si el enunciado menciona regulación, soberanía o "los usuarios de X país deben ir a Y", es Geographic.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tipos de endpoint</div>
+      <ul>
+        <li><strong>Azure endpoints:</strong> recursos PaaS o Public IPs de Azure (App Service, Public IP de un LB o de una VM). Traffic Manager conoce su estado de forma nativa.</li>
+        <li><strong>External endpoints:</strong> servicios <strong>fuera de Azure</strong> — on-premises, otra nube, un hosting cualquiera — definidos por FQDN o IP. Es la clave en escenarios <strong>híbridos o multicloud</strong>.</li>
+        <li><strong>Nested endpoints:</strong> otro <strong>perfil de Traffic Manager</strong> como endpoint de este.</li>
+      </ul>
+      <p>Los <strong>perfiles anidados</strong> permiten <strong>combinar métodos de enrutamiento</strong>: por ejemplo un perfil padre con <em>Performance</em> que manda al continente más cercano, y un perfil hijo por continente con <em>Weighted</em> o <em>Priority</em> que reparte entre las regiones de ese continente. Es la única forma de aplicar dos métodos distintos en una misma resolución.</p>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Traffic Manager <strong>no balancea tráfico real</strong>, no termina TLS y no puede protegerse con WAF. Si el escenario pide <em>cualquier</em> procesamiento del tráfico (offload de SSL, cache, WAF, routing por path, o failover instantáneo sin depender de la caché DNS), la respuesta es Front Door — no Traffic Manager. Traffic Manager es la respuesta cuando el requisito es <strong>protocolo no-HTTP a escala global</strong> o <strong>endpoints fuera de Azure</strong>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 7 · COMPARATIVA ══ -->
+  <div class="section" id="sec-tabla">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,.15)">📊</div>
+      <span class="section-title">Comparativa consolidada</span>
+      <span class="section-tag">Repaso rápido</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Criterio</th><th>Load Balancer</th><th>Application Gateway</th><th>Front Door</th><th>Traffic Manager</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Capa OSI</strong></td><td>Capa 4 (TCP/UDP)</td><td>Capa 7 (HTTP/S)</td><td>Capa 7 (HTTP/S)</td><td>DNS (capa 7 de nombres, no de tráfico)</td></tr>
+          <tr><td><strong>Alcance</strong></td><td>Regional</td><td>Regional</td><td><strong>Global</strong></td><td><strong>Global</strong></td></tr>
+          <tr><td><strong>Protocolos</strong></td><td>Cualquier TCP/UDP</td><td>HTTP, HTTPS, HTTP/2, WebSocket</td><td>HTTP, HTTPS</td><td>Cualquiera (solo resuelve el nombre)</td></tr>
+          <tr><td><strong>Terminación SSL/TLS</strong></td><td class="no">No</td><td class="yes">Sí (offload y end-to-end)</td><td class="yes">Sí (en el POP)</td><td class="no">No</td></tr>
+          <tr><td><strong>¿Balancea tráfico real?</strong></td><td class="yes">Sí (pass-through)</td><td class="yes">Sí (proxy)</td><td class="yes">Sí (proxy en el borde)</td><td class="no">No — solo devuelve DNS</td></tr>
+          <tr><td><strong>Health probes</strong></td><td>TCP, HTTP, HTTPS<sup>*</sup></td><td>HTTP/HTTPS, custom con códigos esperados</td><td>Globales desde cada POP</td><td>HTTP, HTTPS, TCP</td></tr>
+          <tr><td><strong>WAF disponible</strong></td><td class="no">No</td><td class="yes">Sí (SKU WAF_v2)</td><td class="yes">Sí (managed rules en Premium)</td><td class="no">No</td></tr>
+          <tr><td><strong>Routing por URL/path</strong></td><td class="no">No</td><td class="yes">Sí</td><td class="yes">Sí</td><td class="no">No</td></tr>
+          <tr><td><strong>Caching / CDN</strong></td><td class="no">No</td><td class="no">No</td><td class="yes">Sí</td><td class="no">No</td></tr>
+          <tr><td><strong>Session affinity</strong></td><td>Por IP (2/3-tupla)</td><td>Cookie</td><td>Cookie</td><td class="no">No aplica</td></tr>
+          <tr><td><strong>Endpoints fuera de Azure</strong></td><td class="no">No</td><td class="yes">Sí (por IP/FQDN)</td><td class="yes">Sí</td><td class="yes">Sí (External endpoints)</td></tr>
+          <tr><td><strong>Caso de uso típico</strong></td><td>SQL, RDP/SSH, VMSS interno, capa de datos, HA Ports para NVAs</td><td>Web app regional con path-based routing, multi-site y WAF</td><td>App global multi-región con un único punto de entrada, cache y WAF</td><td>Failover DNS entre regiones, híbrido/multicloud, protocolos no-HTTP globales</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><small><sup>*</sup> Los probes HTTPS del Load Balancer requieren el SKU Standard.</small></p>
+
+    <div class="rule-box">
+      <strong>Patrón de arquitectura de referencia:</strong> Front Door (global, WAF + cache) → Application Gateway por región (L7, WAF regional, path-based) → VM Scale Set → internal Load Balancer → capa de base de datos. Cada servicio hace lo que el de arriba no puede.
+    </div>
+  </div>
+
+  <!-- ══ 8 · TRAMPAS ══ -->
+  <div class="section" id="sec-trampas">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(244,114,182,.15)">🎯</div>
+      <span class="section-title">Trampas frecuentes</span>
+      <span class="section-tag">Antes del examen</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "Necesito enrutar <code>/api/*</code> a un pool y <code>/*</code> a otro" con Load Balancer como opción tentadora. El Load Balancer <strong>no ve la URL</strong> — es capa 4. Nunca es la respuesta a un requisito de routing por path, host o header.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "Distribuir usuarios entre regiones y hacer SSL offload" → <strong>no es Traffic Manager</strong>. Traffic Manager es DNS puro: no ve el tráfico, así que no puede hacer offload, cache ni WAF. La respuesta es Front Door.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> App Gateway es <strong>regional</strong> y Front Door es <strong>global</strong>. Un App Gateway vive en una VNet de una región y no puede ser el punto de entrada único de un despliegue multi-región. Si el requisito es "un solo hostname que sirva a usuarios de todo el mundo con failover automático", es Front Door.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Checklist final de confusiones</div>
+      <ul>
+        <li><strong>Subred dedicada:</strong> Application Gateway exige una subred propia y vacía. Compartirla con VMs hace fallar el deployment.</li>
+        <li><strong>SKU matching:</strong> Public IP Basic con LB Basic, Public IP Standard con LB Standard. No se mezclan.</li>
+        <li><strong>Standard LB es cerrado por defecto:</strong> sin NSG que permita el tráfico, no pasa nada. El Basic era abierto.</li>
+        <li><strong>Probes bloqueados:</strong> si todo el backend aparece unhealthy, revisá que el NSG permita <code>AzureLoadBalancer</code> / el rango de probes y que la app responda 200 en el path del probe.</li>
+        <li><strong>WAF no vive solo:</strong> WAF_v2 en App Gateway (regional) o Front Door Premium (global).</li>
+        <li><strong>Front Door y Traffic Manager se combinan pero no son intercambiables:</strong> Traffic Manager puede tener el endpoint de Front Door como uno de sus endpoints, y Front Door puede apuntar a orígenes que también estén detrás de otros balanceadores. Pero si el requisito toca el <em>contenido</em> del tráfico, solo Front Door sirve.</li>
+        <li><strong>Inbound NAT rule ≠ load balancing rule:</strong> NAT rule es uno-a-uno (RDP/SSH a una VM puntual); LB rule es muchos-a-muchos.</li>
+        <li><strong>Fallas salientes intermitentes</strong> con LB público = <strong>SNAT port exhaustion</strong>. Se resuelve con NAT Gateway u outbound rules, no con más health probes.</li>
+        <li><strong>HA Ports</strong> (balancear todos los puertos con una sola regla, típico para NVAs) es exclusivo del <strong>Standard internal Load Balancer</strong>.</li>
+        <li><strong>Autoscaling y zonas en App Gateway</strong> solo existen en los SKUs <strong>v2</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span><strong>Estrategia de examen:</strong> leé el enunciado buscando tres palabras clave — el <strong>protocolo</strong> (HTTP/S vs otro), el <strong>alcance</strong> (una región vs varias vs fuera de Azure) y el <strong>requisito extra</strong> (WAF, cache, path routing, TLS). Con esas tres, la respuesta es única.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Qué servicio de balanceo elegís para tráfico <strong>no-HTTP</strong> (SQL, RDP, SSH) dentro de una región?", a: "<strong>Azure Load Balancer</strong> — capa 4, regional, cualquier protocolo TCP/UDP.", cat: "Decisión" },
+  { q: "Capa 7 + <strong>global</strong> + un único punto de entrada con cache y WAF: ¿cuál es?", a: "<strong>Azure Front Door</strong>. Capa 7 regional sería Application Gateway; global pero solo DNS sería Traffic Manager.", cat: "Decisión" },
+  { q: "3 VMs en AZs de una VNet, misma región, repartir conexiones. ¿Front Door cumple?", a: "<strong>No.</strong> Front Door es <strong>global</strong>. Para una región/VNet: <strong>Standard Load Balancer</strong> o <strong>Application Gateway</strong>. Cmdlets del distractor: <code>az afd profile create</code> / <code>New-AzFrontDoorCdnProfile</code>.", cat: "Decisión" },
+  { q: "¿Qué algoritmo de distribución usa Azure Load Balancer por defecto?", a: "<strong>Hash de 5-tupla</strong>: IP origen, puerto origen, IP destino, puerto destino y protocolo.", cat: "Load Balancer" },
+  { q: "Modos de <strong>session persistence</strong> del Load Balancer", a: "<strong>None</strong> (5-tupla, default), <strong>Client IP</strong> (2-tupla) y <strong>Client IP and protocol</strong> (3-tupla). Nunca por cookie.", cat: "Load Balancer" },
+  { q: "¿Para qué sirve una <strong>inbound NAT rule</strong> y en qué se diferencia de una load balancing rule?", a: "La NAT rule mapea un puerto del frontend a <strong>una instancia específica</strong> (uno a uno) — típico para RDP/SSH a una VM puntual. La LB rule reparte entre <strong>todo el backend pool</strong> (muchos a muchos).", cat: "Load Balancer" },
+  { q: "¿Desde qué dirección IP llegan los health probes de Azure y qué hay que permitir en el NSG?", a: "Desde <code>168.63.129.16</code>. El NSG del backend debe permitir el entrante del service tag <strong><code>AzureLoadBalancer</code></strong> o todo el pool aparece unhealthy.", cat: "Load Balancer" },
+  { q: "Tres diferencias clave entre Load Balancer <strong>Basic</strong> y <strong>Standard</strong>", a: "El <strong>Standard</strong> soporta <strong>Availability Zones</strong>, tiene <strong>SLA</strong>, backend pools mucho más grandes, HA Ports, probes HTTPS, outbound rules, y es <strong>cerrado por defecto</strong> (necesita NSG). El Basic está <strong>retirado</strong>.", cat: "Load Balancer" },
+  { q: "ILB del backend: IIS 443, health 80, VMs en Availability Set. Elegí 4. ¿Basic? ¿Rule en 80? ¿Pool de VMs sueltas?", a: "<strong>Standard ILB</strong> + pool con el <strong>Availability Set</strong> + <strong>HTTP probe 80</strong> + <strong>LB rule 443</strong>. Basic no tiene SLA. Rule en 80 mezcla probe y app. Pool “usando las VMs” ignora el set del enunciado. CLI: <code>az network lb create --sku Standard</code> + <code>probe create --protocol Http --port 80</code> + <code>rule create --backend-port 443</code>.", cat: "Load Balancer" },
+  { q: "Síntoma: las conexiones <strong>salientes</strong> de las VMs detrás de un public LB fallan de forma intermitente. ¿Causa y solución?", a: "<strong>SNAT port exhaustion</strong>. Se mitiga con <strong>NAT Gateway</strong> (recomendado), con <strong>outbound rules</strong> del SKU Standard (más puertos por instancia, más IPs de frontend) o dándole Public IP de instancia a la VM.", cat: "Load Balancer" },
+  { q: "¿Qué requisito de red tiene Application Gateway que hace fallar muchos deployments?", a: "Necesita una <strong>subred dedicada y vacía</strong> dentro de la VNet: no puede compartirla con VMs ni con otros recursos. Se recomienda un <code>/24</code>.", cat: "App Gateway" },
+  { q: "Ordená el flujo de una request en Application Gateway", a: "Frontend IP → <strong>Listener</strong> → <strong>Routing rule</strong> → <strong>HTTP settings</strong> → <strong>Backend pool</strong>, con un <strong>health probe</strong> asociado a los HTTP settings.", cat: "App Gateway" },
+  { q: "¿Qué es <strong>multi-site hosting</strong> vs <strong>path-based routing</strong> en App Gateway?", a: "<strong>Multi-site</strong>: varios hostnames (contoso.com, fabrikam.com) en un mismo gateway, cada uno con su listener. <strong>Path-based</strong>: distintos paths de un mismo sitio (<code>/images/*</code>, <code>/*</code>) a backend pools distintos.", cat: "App Gateway" },
+  { q: "¿Dónde puede vivir un WAF en Azure y cuáles son sus dos modos?", a: "No es standalone: vive en <strong>Application Gateway WAF_v2</strong> (regional) o en <strong>Front Door Premium</strong> (global). Modos: <strong>Detection</strong> (solo loguea) y <strong>Prevention</strong> (bloquea). Usa el <strong>OWASP Core Rule Set</strong>.", cat: "WAF" },
+  { q: "¿Cómo se garantiza que el origen solo acepte tráfico proveniente de <strong>tu</strong> perfil de Front Door?", a: "Service tag <strong><code>AzureFrontDoor.Backend</code></strong> en el NSG/access restrictions <strong>más</strong> la validación del header <strong><code>X-Azure-FDID</code></strong> con tu Front Door ID. El service tag solo no alcanza: es común a todos los perfiles de Azure. En Premium, <strong>Private Link</strong> al origen.", cat: "Front Door" },
+  { q: "Métodos de enrutamiento de <strong>Traffic Manager</strong> y por qué no hace SSL offload", a: "<strong>Priority</strong> (failover), <strong>Weighted</strong>, <strong>Performance</strong> (latencia), <strong>Geographic</strong> (país del query DNS), <strong>MultiValue</strong> y <strong>Subnet</strong>. Es <strong>puramente DNS</strong>: devuelve la IP/CNAME y el cliente se conecta directo, así que nunca ve el tráfico — sin TLS offload, sin WAF, sin cache, y el failover depende del <strong>TTL</strong>.", cat: "Traffic Manager" },
+  { q: "Standard LB + Public IP. Yes/No: ¿solo SKU Standard? ¿Standard permite inbound by default? ¿Elegís vos la IP al crear?", a: "<strong>Yes / No / No</strong>. SKUs coinciden. Standard es deny inbound hasta el NSG. Azure asigna la IP del pool; Static = no cambia, no “pongo 1.2.3.4”.", cat: "Load Balancer" },
+  { q: "IMDS: 404 No load balancer metadata is found. Elegí 2: ¿rate limit, LB Basic, path mal, VM sin LB?", a: "<strong>LB Basic</strong> (IMDS de LB es Standard-only) + <strong>la VM no está en un backend pool</strong>. Rate limit = 429. El mensaje no es un path 404 genérico.", cat: "Load Balancer" },
+  { q: "4 VMs backend: mín. superficie, admin y costo. ¿PIP en LB+NAT, VPN Gateway, PIP+JIT, o PIP+NSG por VM?", a: "<strong>Public IP en el load balancer + inbound NAT</strong>. VPN Gateway es caro. PIP por NIC/VM agranda la superficie (JIT/NSG no la achican a una sola IP).", cat: "Load Balancer" },
+  { q: "Standard LB: IP01 en VM01, IP02+IP03 en LB, rule solo TCP. Yes/No: ¿VM01 siempre sale por IP02? ¿LB usa IP02 e IP03 a la vez? ¿VM03 UDP por IP02/IP03?", a: "<strong>No / Yes / No</strong>. ILPIP (IP01) gana. Multi-frontend SNAT sí. Sin rule UDP no hay SNAT UDP.", cat: "Load Balancer" },
+  { q: "ILB interno: probes OK, una VM del pool pega al frontend y el data port muere. Elegí 2: ¿NSG, Nginx/proxy, pools separados, App Gateway?", a: "<strong>Proxy (Nginx)</strong> + <strong>Application Gateway</strong> (HTTP/HTTPS). Es hairpinning: Standard LB no hace loopback. NSG no es el problema (probes pasan). Separar pools no evita que una VM hable con su VIP.", cat: "Load Balancer" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

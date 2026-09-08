@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Storage · Seguridad y Acceso</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Storage · Seguridad y Acceso</div>
+    <div class="nav-sub">SAS, claves, cifrado y acceso de red</div>
+    <div class="nav-weight">Dominio 2 · 15–20%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#autorizacion"><span class="dot"></span>Las 3 formas de autorizar</a>
+  <a href="#sas"><span class="dot"></span>Tipos de SAS</a>
+  <a href="#policies"><span class="dot"></span>Stored Access Policies</a>
+  <a href="#rbac"><span class="dot"></span>RBAC de plano de datos</a>
+  <a href="#anonimo"><span class="dot"></span>Acceso anónimo</a>
+  <a href="#red"><span class="dot"></span>Acceso de red</a>
+  <a href="#cifrado"><span class="dot"></span>Cifrado</a>
+  <a href="#extras"><span class="dot"></span>Endurecer la cuenta</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen casi nunca te pregunta "qué es un SAS". Te da un escenario —"un partner necesita subir blobs por 3 días y tenés que poder cortarle el acceso sin rotar la clave"— y esperás que elijas <strong>el tipo exacto</strong> de SAS, el rol RBAC exacto, o si hace falta un Service Endpoint o un Private Endpoint. Drop-down clásico: storage solo desde appSubnet → Deny + <code>Microsoft.Storage</code> en <strong>appSubnet</strong> (no storageSubnet) + <code>Add-AzStorageAccountNetworkRule</code>. Memorizá las distinciones y los números: 7 días, 5 policies, quién firma qué.
+  </div>
+
+  <!-- ══ 1 ══ -->
+  <div class="section" id="autorizacion">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🔑</div>
+      <span class="section-title">Las tres formas de autorizar</span>
+      <span class="section-tag">Base</span>
+    </div>
+
+    <p>Toda request al plano de datos de una Storage Account se autoriza de una de tres maneras. Sabé cuál elegir según el escenario.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Método</th><th>Cómo funciona</th><th>Granularidad</th><th>Cómo se revoca</th><th>Recomendado</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Access Keys</strong> (Shared Key)</td>
+            <td>Dos claves de 512 bits (<code>key1</code> / <code>key2</code>) que dan acceso <strong>total</strong> a todos los servicios de la cuenta</td>
+            <td>Ninguna: todo o nada</td>
+            <td>Rotando la clave</td>
+            <td><span class="chip chip-red">Evitar</span></td>
+          </tr>
+          <tr>
+            <td><strong>SAS token</strong></td>
+            <td>URI firmado con permisos, ventana de tiempo y alcance acotados</td>
+            <td>Alta: servicio / container / blob, permisos y tiempo</td>
+            <td>Depende del tipo (ver más abajo)</td>
+            <td><span class="chip chip-yellow">Acceso delegado</span></td>
+          </tr>
+          <tr>
+            <td><strong>Entra ID + RBAC</strong></td>
+            <td>Token OAuth 2.0 de Entra ID; el acceso lo define un rol de datos asignado a un usuario, grupo, service principal o managed identity</td>
+            <td>Identidad + scope de Azure Resource Manager</td>
+            <td>Quitando la asignación de rol</td>
+            <td><span class="chip chip-green">Microsoft recomienda</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Por qué Entra ID es la opción recomendada</div>
+      <ul>
+        <li><strong>No hay secreto que se filtre</strong>: no guardás ninguna clave en código ni en config.</li>
+        <li>Soporta <strong>MFA, Conditional Access, PIM</strong> y revocación instantánea de la identidad.</li>
+        <li>El acceso queda <strong>auditado por identidad</strong>, no por "alguien con la key".</li>
+        <li>Con <strong>managed identities</strong> la app se autentica sin credenciales de ningún tipo.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Rotación de access keys — el patrón de las dos claves</div>
+      <p>La cuenta tiene <strong>exactamente dos</strong> keys (<code>key1</code> / <code>key2</code>), no tres. Cualquiera de las dos da acceso total. Existen dos para poder rotar <strong>sin cortar el servicio</strong>: siempre hay una “de recambio” que nadie está usando.</p>
+      <p><strong>Regla:</strong> nunca regenerés la key que las apps están usando. Regenerar invalida esa clave <em>al instante</em> → las connection strings viejas mueren.</p>
+      <p>Escenario de examen: apps en <code>key1</code>, <code>key2</code> de backup, <strong>las dos pueden estar comprometidas</strong>, cero downtime. Cinco acciones:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Acción</th><th>Por qué ese orden</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Regenerar <strong>key2</strong> (la que nadie usa)</td><td>Obtenés un recambio <em>limpio</em> sin tocar producción. Si migraras primero a key2, pondrías las apps sobre una key también filtrada</td></tr>
+            <tr><td>2</td><td>Actualizar connection strings a <strong>key2</strong></td><td>Ahora las apps corren con la key limpia. key1 queda libre para rotarla</td></tr>
+            <tr><td>3</td><td>Regenerar <strong>key1</strong></td><td>Invalida la key comprometida que estaba en producción. Las apps ya no la usan, no hay corte</td></tr>
+            <tr><td>4</td><td>Volver las connection strings a <strong>key1</strong></td><td>Estado recomendado: apps en primary, secondary de backup</td></tr>
+            <tr><td>5</td><td>Verificar + regenerar <strong>key2</strong> otra vez</td><td>key2 se usó en el corte (pasos 2–4) y además estaba comprometida al inicio. El backup tiene que quedar limpio y sin uso</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>az storage account keys renew -g rg1 -n cuenta --key secondary   # key2
+az storage account keys renew -g rg1 -n cuenta --key primary     # key1
+# PS: New-AzStorageAccountKey -Name cuenta -ResourceGroupName rg1 -KeyName key2</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Movida tentadora</th><th></th><th>Por qué no</th></tr></thead>
+          <tbody>
+            <tr><td>Crear <strong>key3</strong> en el portal</td><td><span class="no">No</span></td><td>No existe. Solo hay key1 y key2</td></tr>
+            <tr><td>Regenerar key1 primero</td><td><span class="no">No</span></td><td>Las apps están en key1 → corte inmediato</td></tr>
+            <tr><td>Pasar apps a key2 <em>antes</em> de regenerarla</td><td><span class="no">No</span></td><td>Con “ambas comprometidas” estarías produciendo con una key filtrada. Primero la limpiás (paso 1)</td></tr>
+            <tr><td>Parar en el paso 3 (no volver a key1 ni rotar key2)</td><td><span class="no">No</span></td><td>El backup queda siendo la key que estuvo en las apps; no terminás la rotación de las dos</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Guardá las claves en <strong>Key Vault</strong> (o Key Vault managed storage account keys) si querés rotación automática. Policy de “keys older than N days” para auditar antigüedad.</p>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “ambas keys comprometidas + sin interrumpir” = regenerar primero la que <em>nadie usa</em> (key2), saltar las apps ahí, regenerar key1, volver a key1, y <strong>rotar key2 de nuevo</strong>. No hay key3. Regenerar la key en uso = outage. Docs de rotación periódica (sin leak) a veces empiezan “switch to key2”; acá el leak obliga a limpiar el recambio <em>antes</em> de saltar.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">CLI: rotar keys de storage1 sin cortar app1</div>
+      <p>App Service lee la key de un app setting. <code>keys list</code>: índice <code>[0]</code> = primary, <code>[1]</code> = secondary.</p>
+<pre><code>key=$(az storage account keys list -g rg1 -n storage1 --query [1].value)
+az webapp config appsettings set -g rg1 -n app1 --settings STORAGE_ACCOUNT_KEY=$key
+az storage account keys renew -g rg1 -n storage1 --key primary
+key=$(az storage account keys list -g rg1 -n storage1 --query [0].value)
+az webapp config appsettings set -g rg1 -n app1 --settings STORAGE_ACCOUNT_KEY=$key
+az storage account keys renew -g rg1 -n storage1 --key secondary</code></pre>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> drop-down = <code>[1].value</code> → <code>--key primary</code> → <code>[0].value</code> → <code>--key secondary</code>. Si renovás primary mientras la app todavía lo usa, hay corte.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> regenerar una access key <strong>invalida inmediatamente todos los Service SAS y Account SAS firmados con esa clave</strong>, porque están firmados con ella. No invalida los User delegation SAS (esos van firmados con una user delegation key de Entra ID). Si la pregunta dice "revocar un SAS sin afectar a las demás aplicaciones", rotar la key es la respuesta <em>incorrecta</em>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 2 ══ -->
+  <div class="section" id="sas">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">🎟️</div>
+      <span class="section-title">Tipos de SAS — el tema más preguntado</span>
+      <span class="section-tag">Alto rendimiento</span>
+    </div>
+
+    <p>Un <strong>Shared Access Signature</strong> es una URL con una query string firmada. Quien la tenga, entra: es un <em>bearer token</em>. Hay tres tipos y el examen los mezcla a propósito.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>User delegation SAS</th><th>Service SAS</th><th>Account SAS</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Firmado con</strong></td>
+            <td>Credenciales de <strong>Entra ID</strong> (user delegation key)</td>
+            <td>Account key</td>
+            <td>Account key</td>
+          </tr>
+          <tr>
+            <td><strong>Servicios</strong></td>
+            <td><span class="chip chip-purple">Blob</span> y Data Lake Gen2 (el caso clásico); Microsoft lo extendió también a Files, Queues y Tables</td>
+            <td>Un solo servicio: Blob, File, Queue <em>o</em> Table</td>
+            <td>Uno o varios servicios a la vez</td>
+          </tr>
+          <tr>
+            <td><strong>Alcance</strong></td>
+            <td>Container o blob</td>
+            <td>Un recurso dentro del servicio (container, blob, share, queue, table)</td>
+            <td>Recursos + <strong>operaciones de nivel cuenta</strong> (ej. listar containers, leer/escribir service properties)</td>
+          </tr>
+          <tr>
+            <td><strong>Stored Access Policy</strong></td>
+            <td><span class="no">No</span></td>
+            <td><span class="yes">Sí</span></td>
+            <td><span class="no">No</span></td>
+          </tr>
+          <tr>
+            <td><strong>Validez máxima</strong></td>
+            <td><span class="chip chip-yellow">7 días</span></td>
+            <td>Sin límite duro (buena práctica: corta)</td>
+            <td>Sin límite duro (buena práctica: corta)</td>
+          </tr>
+          <tr>
+            <td><strong>Cómo se revoca</strong></td>
+            <td>Revocando la <strong>user delegation key</strong> (o quitando el rol RBAC)</td>
+            <td>Borrando/cambiando la <strong>stored access policy</strong>, o rotando la key</td>
+            <td>Solo rotando la <strong>account key</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Seguridad</strong></td>
+            <td><span class="chip chip-green">La más segura · recomendada</span></td>
+            <td><span class="chip chip-yellow">Media</span></td>
+            <td><span class="chip chip-red">La más amplia</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Seis acciones: SAS ad hoc de un blob nuevo, sin portal</div>
+      <p>La cuenta ya existe. SAS <strong>ad hoc</strong> = fechas y permisos en el token, <strong>sin</strong> stored access policy. Herramienta: Storage Explorer.</p>
+      <ol>
+        <li>Open Azure Storage Explorer</li>
+        <li>Connect to the storage account</li>
+        <li>Create a blob container</li>
+        <li>Upload the blob</li>
+        <li>Get a SAS for the blob (start/expiry + permissions)</li>
+        <li>Give the user the HTTPS URL</li>
+      </ol>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Paso tentador</th><th></th><th>Por qué no</th></tr></thead>
+          <tbody>
+            <tr><td>Create a resource group</td><td><span class="no">No</span></td><td>La cuenta ya existe</td></tr>
+            <tr><td>Create a stored access policy</td><td><span class="no">No</span></td><td>Eso es SAS con policy, no <em>ad hoc</em></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “ad hoc SAS” = permisos y expiry <strong>en el token</strong>. Si el drag-and-drop ofrece stored access policy, es el otro tipo. “Sin portal” + GUI = <strong>Storage Explorer</strong>, no AzCopy. No creés RG.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">User delegation SAS — cómo se genera</div>
+      <div class="flow">
+        <div class="flow-step">Te autenticás<br>con <strong>Entra ID</strong></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step highlight">Pedís una<br><strong>user delegation key</strong></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Firmás el SAS<br>con esa key</div>
+      </div>
+      <ul>
+        <li>Hace falta la acción <code>Microsoft.Storage/storageAccounts/blobServices/generateUserDelegationKey</code>, incluida en los roles <strong>Storage Blob Data Contributor / Owner / Reader</strong> y en <strong>Storage Blob Delegator</strong>.</li>
+        <li>Los permisos efectivos del SAS son la <strong>intersección</strong> entre lo que pide el token y lo que el rol RBAC le permite al principal que lo firmó. Si el firmante solo tiene <em>Reader</em>, un SAS con permiso de escritura no va a escribir.</li>
+        <li>La delegation key hereda el límite de <strong>7 días</strong>; el SAS no puede sobrevivirla.</li>
+        <li>Es el único tipo de SAS que sigue funcionando si deshabilitás Shared Key access.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Componentes de un SAS URI</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Componente</th><th>Param.</th><th>Qué define</th></tr></thead>
+          <tbody>
+            <tr><td>Permisos</td><td><code>sp</code></td><td>Letras acumulables: <code>r</code> read, <code>w</code> write, <code>d</code> delete, <code>l</code> list, <code>a</code> add, <code>c</code> create, <code>u</code> update, <code>p</code> process</td></tr>
+            <tr><td>Ventana de tiempo</td><td><code>st</code> / <code>se</code></td><td>Start y Expiry en UTC. El <em>start</em> es opcional; el <strong>expiry es obligatorio</strong> salvo que venga de una stored access policy</td></tr>
+            <tr><td>IPs permitidas</td><td><code>sip</code></td><td>Una IP pública o un rango. Restringe desde dónde se puede usar</td></tr>
+            <tr><td>Protocolo</td><td><code>spr</code></td><td><code>https</code> (recomendado) o <code>https,http</code>. <strong>HTTP solo no se admite</strong></td></tr>
+            <tr><td>Recurso / servicios</td><td><code>sr</code>, <code>ss</code>, <code>srt</code></td><td>Qué tipo de recurso (blob, container, share) y, en Account SAS, qué servicios y niveles (service / container / object)</td></tr>
+            <tr><td>Policy referenciada</td><td><code>si</code></td><td>Nombre del signed identifier de la stored access policy (solo Service SAS)</td></tr>
+            <tr><td>Firma</td><td><code>sig</code></td><td>HMAC calculado sobre todo lo anterior. Si tocás un carácter del URI, el token deja de validar</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <pre><code>https://mistorage.blob.core.windows.net/datos/informe.pdf
+  ?sp=r&amp;st=2026-08-19T10:00:00Z&amp;se=2026-08-22T10:00:00Z
+  &amp;spr=https&amp;sv=2024-11-04&amp;sr=b&amp;sig=Xf9%2B...</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el <strong>User delegation SAS es el caso de Blob y Data Lake</strong>: es ahí donde lo pregunta el examen. Ojo, ya no es exclusivo de Blob — Microsoft lo soporta también en Azure Files, Queues y Tables en las versiones de servicio más recientes. Y el máximo de <strong>7 días</strong> descarta cualquier respuesta que pida "acceso delegado por 30 días con user delegation SAS".</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Un SAS no es "seguro por ser un link raro": es un <strong>bearer token</strong>. Cualquiera que intercepte la URL tiene el acceso. Por eso siempre <code>spr=https</code>, expiry corto y el mínimo de permisos.</span>
+    </div>
+  </div>
+
+  <!-- ══ 3 ══ -->
+  <div class="section" id="policies">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">📜</div>
+      <span class="section-title">Stored Access Policies</span>
+      <span class="section-tag">Revocación</span>
+    </div>
+
+    <p>Una stored access policy es un conjunto de permisos + fechas guardado <strong>en el recurso contenedor</strong>, no en el token. Un Service SAS que la referencia (<code>si=nombre</code>) hereda esos valores en lugar de traerlos escritos en la URL.</p>
+
+    <div class="card">
+      <div class="card-title">Dónde se definen</div>
+      <ul>
+        <li>Blob <strong>container</strong> · File <strong>share</strong> · <strong>Queue</strong> · <strong>Table</strong></li>
+        <li>Máximo <strong>5 policies</strong> por container / share / queue / table.</li>
+        <li>Solo aplican a <strong>Service SAS</strong>. Un Account SAS o un User delegation SAS nunca las usa.</li>
+      </ul>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla de oro:</strong> borrar la policy, renombrarla o adelantar su fecha de expiración <strong>invalida al instante todos los Service SAS que la referencian</strong>. Es la <strong>única</strong> forma de revocar un Service SAS sin regenerar la account key (y sin romper el resto de las aplicaciones que dependen de esa key).
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Necesitás…</th><th>Hacé</th><th>Efecto colateral</th></tr></thead>
+        <tbody>
+          <tr><td>Revocar <strong>un</strong> Service SAS</td><td>Borrar o modificar su stored access policy</td><td><span class="chip chip-green">Ninguno</span> en otros SAS</td></tr>
+          <tr><td>Revocar un Service SAS <strong>sin</strong> policy</td><td>Regenerar la account key con la que se firmó</td><td><span class="chip chip-red">Rompe</span> todos los SAS y apps con esa key</td></tr>
+          <tr><td>Revocar un <strong>Account SAS</strong></td><td>Regenerar la account key (no hay otra)</td><td><span class="chip chip-red">Rompe</span> todo lo firmado con esa key</td></tr>
+          <tr><td>Revocar un <strong>User delegation SAS</strong></td><td><code>Revoke User Delegation Keys</code> o quitar el rol RBAC</td><td><span class="chip chip-yellow">Invalida</span> todos los user delegation SAS de la cuenta</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Modificar una stored access policy: Set Share ACL vs Container vs Table</div>
+      <p>La policy vive en el <strong>recurso contenedor</strong> del servicio. El examen nombra la operación REST:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Operación</th><th>Servicio</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><strong>Set Share ACL</strong></td><td>Azure Files (file share)</td><td><span class="yes">Sí</span> si el enunciado dice file shares</td></tr>
+            <tr><td>Set Container ACL</td><td>Blob (container)</td><td><span class="no">No</span> — otro servicio. “Public read for blobs” es acceso anónimo, no la policy</td></tr>
+            <tr><td>Set Table ACL</td><td>Table Storage</td><td><span class="no">No</span></td></tr>
+            <tr><td>Set Queue ACL</td><td>Queue</td><td>El cuarto, si aparece</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>az storage share policy update --share-name datos --name partner-ro \
+  --permissions r --account-name mistorage
+# REST: PUT .../share?restype=share&amp;comp=acl  (HTTPS, no el montaje SMB)</code></pre>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> stored access policy en <strong>file shares</strong> = <strong>Set Share ACL</strong>. Container ACL = blobs. Table ACL = tables. El dump a veces dice “with the SMB protocol”: SMB es cómo <em>montás</em> el share; la policy se escribe por <strong>REST/HTTPS</strong> (<code>az storage share policy</code>).</span>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> la stored access policy <strong>no se puede combinar con lo que ya está en el SAS</strong>. Si un parámetro (permisos o expiry) está definido en la policy, el SAS <strong>no puede especificarlo también</strong>: la request falla con error 400. O lo definís en la policy o en el token, nunca en los dos.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SAS best practices: Yes / No / Yes / Yes</div>
+      <p>.NET en PCs de usuarios. SAS con efecto inmediato, hardening de la cuenta.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Se puede configurar una stored access policy</td><td><span class="yes">Yes</span></td><td>Control server-side del Service SAS (permisos/fechas, revocación)</td></tr>
+            <tr><td>El start time del SAS debe ser <em>now</em></td><td><span class="no">No</span></td><td><strong>Clock skew</strong>: el cliente puede ir unos minutos adelantado y el token “aún no vale”. Omití <code>st</code> o ponelo ~15 min en el pasado</td></tr>
+            <tr><td>Hay que validar los datos escritos con el SAS</td><td><span class="yes">Yes</span></td><td>El cliente escribe en tu cuenta: integridad/contenido no se asumen</td></tr>
+            <tr><td>Revocar: borrar la stored access policy</td><td><span class="yes">Yes</span></td><td>Invalida los SAS que la referencian, sin rotar la account key</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Yes / No / Yes / Yes. “Start time = now” parece inmediato y es el clásico clock skew. Acceso inmediato = <strong>sin start</strong> o start en el pasado.</span>
+    </div>
+
+    <pre><code># Crear una policy en un container
+az storage container policy create \
+  --container-name datos --name partner-ro \
+  --permissions r --expiry 2026-09-30T00:00:00Z \
+  --account-name mistorage
+
+# Revocar: borrar la policy mata todos los SAS que la usan
+az storage container policy delete \
+  --container-name datos --name partner-ro --account-name mistorage</code></pre>
+  </div>
+
+  <!-- ══ 4 ══ -->
+  <div class="section" id="rbac">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">👥</div>
+      <span class="section-title">RBAC de plano de datos</span>
+      <span class="section-tag">Entra ID</span>
+    </div>
+
+    <p>Los roles de <strong>plano de control</strong> (Owner, Contributor, Reader) gestionan el <em>recurso</em> Storage Account. Los roles de <strong>plano de datos</strong> —los que llevan "Data" en el nombre— son los que dejan leer y escribir blobs, files, queues y tables con autenticación de Entra ID.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Rol</th><th>Servicio</th><th>Qué habilita</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Storage Blob Data Owner</strong></td><td>Blob / ADLS</td><td>Acceso total a containers y blobs, incluida la gestión de <strong>POSIX ACLs</strong> en Data Lake Gen2</td></tr>
+          <tr><td><strong>Storage Blob Data Contributor</strong></td><td>Blob</td><td>Leer, escribir y <strong>borrar</strong> blobs y containers</td></tr>
+          <tr><td><strong>Storage Blob Data Reader</strong></td><td>Blob</td><td>Solo lectura y listado</td></tr>
+          <tr><td><strong>Storage Blob Delegator</strong></td><td>Blob</td><td>Obtener la user delegation key para firmar user delegation SAS (no da acceso a los datos por sí solo)</td></tr>
+          <tr><td><strong>Storage File Data SMB Share Contributor</strong></td><td>Files (SMB)</td><td>Leer, escribir y borrar sobre file shares por SMB</td></tr>
+          <tr><td><strong>Storage File Data SMB Share Reader</strong></td><td>Files (SMB)</td><td>Solo lectura sobre file shares por SMB</td></tr>
+          <tr><td><strong>Storage File Data SMB Share Elevated Contributor</strong></td><td>Files (SMB)</td><td>Contributor + <strong>modificar NTFS ACLs</strong></td></tr>
+          <tr><td><strong>Storage Queue Data Contributor</strong></td><td>Queues</td><td>Leer, escribir y borrar colas y mensajes</td></tr>
+          <tr><td><strong>Storage Queue Data Message Sender</strong></td><td>Queues</td><td>Solo encolar mensajes</td></tr>
+          <tr><td><strong>Storage Queue Data Message Processor</strong></td><td>Queues</td><td>Solo hacer peek, recibir y borrar mensajes</td></tr>
+          <tr><td><strong>Storage Table Data Contributor / Reader</strong></td><td>Tables</td><td>Escritura / lectura de entidades</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el rol <strong>Contributor</strong> (plano de control) <strong>NO</strong> da acceso a los datos cuando la autenticación es con Entra ID. Un Contributor que abra un container en el portal con "Azure AD User Account" ve <em>AuthorizationPermissionMismatch</em>. Pero sí puede <strong>leer las access keys</strong> y entrar por Shared Key. Si la pregunta pide "que puedan leer blobs con su identidad de Entra ID", la respuesta es <strong>Storage Blob Data Reader</strong>, no Reader ni Contributor. Para tapar el atajo de las keys, deshabilitá Shared Key access.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Las asignaciones de rol de datos se pueden hacer a nivel <strong>suscripción, resource group, storage account o container / queue individual</strong>. El principio de menor privilegio del examen suele apuntar al scope más chico: el container.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Los cambios de asignación de rol pueden tardar unos minutos en propagarse al plano de datos. Si un escenario dice "asigné el rol y sigue dando 403", esperar/refrescar el token es parte de la respuesta.</span>
+    </div>
+  </div>
+
+  <!-- ══ 5 ══ -->
+  <div class="section" id="anonimo">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🌍</div>
+      <span class="section-title">Acceso anónimo (public access)</span>
+      <span class="section-tag">Dos niveles</span>
+    </div>
+
+    <p>El acceso anónimo se controla en <strong>dos capas y la de arriba manda</strong>.</p>
+
+    <div class="flow">
+      <div class="flow-step highlight">Cuenta<br><small>Allow Blob anonymous access</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Container<br><small>Private / Blob / Container</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Acceso<br>anónimo real</div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Nivel del container</th><th>Leer blobs sin credenciales</th><th>Listar los blobs del container</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Private</strong> (default)</td><td><span class="no">No</span></td><td><span class="no">No</span></td></tr>
+          <tr><td><strong>Blob</strong></td><td><span class="yes">Sí</span> — si sabés la URL exacta</td><td><span class="no">No</span></td></tr>
+          <tr><td><strong>Container</strong></td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span> — y también las properties y metadata del container</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si <strong>"Allow Blob anonymous access" está en Disabled a nivel cuenta</strong>, el nivel de acceso del container <strong>no importa</strong>: todas las requests anónimas fallan con 409 / acceso denegado, incluso en containers configurados como <em>Container</em>. Y al revés: para publicar un blob no alcanza con cambiar el container, primero tenés que habilitar el toggle de la cuenta. Las cuentas creadas recientemente vienen con el toggle <strong>deshabilitado por default</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Detalles que aparecen en preguntas</div>
+      <ul>
+        <li>El acceso anónimo existe <strong>solo para Blob</strong>. Files, Queues y Tables no tienen acceso público.</li>
+        <li>El acceso anónimo es siempre de <strong>solo lectura</strong>: nunca permite escribir ni borrar.</li>
+        <li>Cambiar el nivel del container requiere permisos de plano de control (ej. Contributor), no de datos.</li>
+        <li>Podés forzar el bloqueo en toda la organización con <strong>Azure Policy</strong> sobre <code>allowBlobPublicAccess</code>.</li>
+        <li>El <strong>static website</strong> (contenedor <code>$web</code>) sirve contenido públicamente por su propio endpoint <code>web.core.windows.net</code>, sin depender del nivel de acceso del container.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══ 6 ══ -->
+  <div class="section" id="red">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(34,211,238,.15)">🛡️</div>
+      <span class="section-title">Acceso de red: firewall, Service y Private Endpoints</span>
+      <span class="section-tag">Muy preguntado</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Firewall de la Storage Account · pestaña "Networking"</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th>Significa</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Enabled from all networks</strong></td><td>Endpoint público abierto a Internet (la autorización sigue aplicando). Default al crear</td></tr>
+            <tr><td><strong>Enabled from selected virtual networks and IP addresses</strong></td><td>Solo pasan las subredes con service endpoint y los rangos de IP pública que listes. Todo lo demás se rechaza</td></tr>
+            <tr><td><strong>Disabled</strong></td><td>Endpoint público apagado. Se llega <strong>solo por Private Endpoint</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>Allow trusted Microsoft services</strong>: excepción para servicios de plataforma (Backup, Monitor/Log Analytics, Azure Site Recovery, Event Grid, Data Factory con managed identity, etc.) que quedarían bloqueados por el firewall. En muchos escenarios de examen es la casilla que falta tildar.</li>
+        <li>Las reglas de IP aceptan <strong>solo IPs públicas</strong>: no podés poner rangos privados (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16).</li>
+        <li>El firewall <strong>no filtra el plano de control</strong>: seguís pudiendo ver y administrar el recurso en el portal, aunque no puedas listar los blobs.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>Service Endpoint</th><th>Private Endpoint</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Qué es</strong></td><td>Una ruta optimizada desde una subred hacia el <strong>endpoint público</strong> del servicio</td><td>Una <strong>NIC con IP privada</strong> de tu VNet, mapeada al servicio</td></tr>
+          <tr><td><strong>IP del storage</strong></td><td>Sigue siendo <strong>pública</strong></td><td>Pasa a ser una <strong>IP privada</strong> de tu subred</td></tr>
+          <tr><td><strong>Tráfico</strong></td><td>Nunca sale a Internet: va por el <strong>backbone de Azure</strong></td><td>Va por el backbone; el servicio queda dentro de la VNet</td></tr>
+          <tr><td><strong>Granularidad</strong></td><td>Por <strong>subred</strong> + servicio (todas las cuentas de ese servicio quedan alcanzables si el firewall las permite)</td><td>Por <strong>recurso específico y sub-recurso</strong></td></tr>
+          <tr><td><strong>DNS</strong></td><td>No cambia nada</td><td>Necesita <strong>Private DNS Zone</strong>, ej. <code>privatelink.blob.core.windows.net</code>; el nombre público resuelve por CNAME a la IP privada</td></tr>
+          <tr><td><strong>Desde on-premises</strong></td><td><span class="no">No funciona</span></td><td><span class="yes">Sí</span> — por VPN Site-to-Site o ExpressRoute</td></tr>
+          <tr><td><strong>Desde VNets peereadas</strong></td><td>No (salvo que agregues el service endpoint en cada subred)</td><td><span class="yes">Sí</span>, con la resolución DNS bien armada</td></tr>
+          <tr><td><strong>Costo</strong></td><td>Sin cargo</td><td>Se cobra por endpoint y por datos procesados</td></tr>
+          <tr><td><strong>Se configura en</strong></td><td>La <strong>subred</strong> (<code>Microsoft.Storage</code>) + regla en el firewall del storage</td><td>El <strong>recurso</strong> de storage (o desde Private Link Center)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: solo appSubnet llega a storage1</div>
+      <p>Tres pasos, en este orden. El endpoint va en la subred <strong>de la VM</strong> (<code>appSubnet</code> <code>10.0.0.0/24</code>), no en <code>storageSubnet</code>. No podés poner <code>10.0.0.0/24</code> como regla de IP: el firewall de storage solo acepta IPs <strong>públicas</strong>.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Paso</th><th>Cmdlet</th><th>Qué hace</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>Update-AzStorageAccountNetworkRuleSet</code></td><td><code>-DefaultAction Deny</code> (cierra Internet)</td></tr>
+          <tr><td>2</td><td><code>Set-AzVirtualNetworkSubnetConfig</code> → <code>Set-AzVirtualNetwork</code></td><td>Service endpoint <code>Microsoft.Storage</code> en <strong>appSubnet</strong></td></tr>
+          <tr><td>3</td><td><code>Add-AzStorageAccountNetworkRule</code></td><td>Allow con <code>-VirtualNetworkResourceId $subnet.Id</code></td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>Update-AzStorageAccountNetworkRuleSet -ResourceGroupName rg1 -Name storage1 -DefaultAction Deny
+
+Get-AzVirtualNetwork -ResourceGroupName rg1 -Name vnet1 |
+  Set-AzVirtualNetworkSubnetConfig -Name appSubnet -AddressPrefix 10.0.0.0/24 `
+    -ServiceEndpoint Microsoft.Storage |
+  Set-AzVirtualNetwork
+
+$subnet = Get-AzVirtualNetwork -ResourceGroupName rg1 -Name vnet1 |
+  Get-AzVirtualNetworkSubnetConfig -Name appSubnet
+Add-AzStorageAccountNetworkRule -ResourceGroupName rg1 -Name storage1 `
+  -VirtualNetworkResourceId $subnet.Id
+
+az storage account update -g rg1 -n storage1 --default-action Deny
+az network vnet subnet update -g rg1 --vnet-name vnet1 -n appSubnet --service-endpoints Microsoft.Storage
+az storage account network-rule add -g rg1 --account-name storage1 --vnet-name vnet1 --subnet appSubnet</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el endpoint se habilita en <strong>appSubnet</strong> (donde vive la VM), no en <code>storageSubnet</code> aunque el nombre engañe. Sin el pipe a <code>Set-AzVirtualNetwork</code> el cambio de subred no se guarda. Deny primero: si el default sigue en Allow, la regla de VNet no cierra el resto. Esto es <strong>Service Endpoint</strong>, no Private Endpoint.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">storage01: App Services + Backup + Event Hub, solo desde Azure</div>
+      <p>Sin Internet público. PowerShell. El bypass cubre los PaaS de Microsoft (vault, Event Hub) que no viven en tu subnet.</p>
+<pre><code>Get-AzVirtualNetwork -ResourceGroupName RG01 -Name VNET01 |
+  Set-AzVirtualNetworkSubnetConfig -Name VSUBNET01 -AddressPrefix 10.0.0.0/24 `
+    -ServiceEndpoint Microsoft.Storage |
+  Set-AzVirtualNetwork
+
+$subnet = Get-AzVirtualNetwork -ResourceGroupName RG01 -Name VNET01 |
+  Get-AzVirtualNetworkSubnetConfig -Name VSUBNET01
+Add-AzStorageAccountNetworkRule -ResourceGroupName RG01 -Name storage01 `
+  -VirtualNetworkResourceId $subnet.Id
+Update-AzStorageAccountNetworkRuleSet -ResourceGroupName RG01 -Name storage01 `
+  -Bypass AzureServices</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Drop-down</th><th>Valor</th><th>No es</th></tr></thead>
+          <tbody>
+            <tr><td>Service endpoint</td><td><code>Microsoft.Storage</code></td><td><code>Microsoft.Web</code> / <code>Microsoft.EventHub</code> (el endpoint es del storage, no de quien consume)</td></tr>
+            <tr><td>Regla de VNet</td><td><code>Add-AzStorageAccountNetworkRule</code></td><td><code>Set-AzStorageAccount</code> no agrega la VNet</td></tr>
+            <tr><td>Firewall set</td><td><code>Update-AzStorageAccountNetworkRuleSet</code></td><td><code>Add-</code> es la regla; <code>Update-…RuleSet</code> es default/bypass</td></tr>
+            <tr><td><code>-Bypass</code></td><td><strong>AzureServices</strong></td><td><code>None</code> deja afuera al vault y al Event Hub; <code>Logging</code>/<code>Metrics</code> no son esos PaaS</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> App Service / Backup vault / Event Hub “from within Azure only” = endpoint <code>Microsoft.Storage</code> + <code>Add-AzStorageAccountNetworkRule</code> + <code>-Bypass AzureServices</code>. Sin el bypass, el vault y el hub no entran aunque el firewall esté “en Azure”.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> un Private Endpoint es <strong>por sub-recurso</strong>. Si necesitás acceso privado a blobs <em>y</em> a file shares, necesitás <strong>dos private endpoints</strong> (target sub-resource <code>blob</code> y <code>file</code>), cada uno con su Private DNS Zone: <code>privatelink.blob.core.windows.net</code> y <code>privatelink.file.core.windows.net</code>. Los sub-recursos posibles incluyen <code>blob</code>, <code>file</code>, <code>queue</code>, <code>table</code>, <code>web</code> y <code>dfs</code>.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Si algo funciona desde una VM en la VNet pero falla desde on-premises con Private Endpoint, el problema casi siempre es <strong>DNS</strong>: el resolver on-prem tiene que resolver el nombre <code>privatelink</code> (DNS forwarder / Azure DNS Private Resolver), no la Private DNS Zone sola.</span>
+    </div>
+  </div>
+
+  <!-- ══ 7 ══ -->
+  <div class="section" id="cifrado">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,.15)">🔒</div>
+      <span class="section-title">Cifrado en reposo</span>
+      <span class="section-tag">SSE</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>Punto de partida:</strong> <strong>Storage Service Encryption (SSE)</strong> cifra todos los datos en reposo con <strong>AES-256</strong>, está activo por default y <strong>no se puede desactivar</strong>. Aplica a Blob, File, Queue y Table, en todos los tiers y tipos de cuenta, sin costo extra. La pregunta nunca es "¿lo activo?", es "¿quién maneja la clave?".
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>Microsoft-managed keys (MMK)</th><th>Customer-managed keys (CMK)</th><th>Customer-provided keys (CPK)</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Quién genera y rota</strong></td><td>Microsoft</td><td>Vos, en <strong>Key Vault</strong> o Managed HSM</td><td>Vos, fuera de Azure</td></tr>
+          <tr><td><strong>Dónde vive la clave</strong></td><td>Infraestructura de Microsoft</td><td>Key Vault / Managed HSM</td><td>La mandás en el <strong>header de cada request</strong></td></tr>
+          <tr><td><strong>Alcance</strong></td><td>Toda la cuenta</td><td>Cuenta o <strong>encryption scope</strong></td><td><span class="chip chip-purple">Solo Blob</span>, por operación</td></tr>
+          <tr><td><strong>Config</strong></td><td>Default, nada que hacer</td><td>Requiere <strong>Managed Identity</strong> + <strong>soft delete</strong> y <strong>purge protection</strong> habilitados en el vault</td><td>Nada en la cuenta: es cosa del cliente</td></tr>
+          <tr><td><strong>Se puede cambiar después de crear</strong></td><td>—</td><td><span class="yes">Sí</span>, se alterna MMK ⇄ CMK cuando quieras</td><td><span class="yes">Sí</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Customer-managed keys — requisitos que se preguntan</div>
+      <ul>
+        <li>El Key Vault necesita <strong>Soft delete</strong> y <strong>Purge protection</strong> habilitados. Sin eso, el portal ni te deja seleccionarlo.</li>
+        <li>La Storage Account necesita una <strong>managed identity</strong> (system-assigned o user-assigned) a la que le des permiso de <em>Get / Wrap Key / Unwrap Key</em> (access policy o el rol <strong>Key Vault Crypto Service Encryption User</strong>).</li>
+        <li>Podés fijar una versión de clave o usar <strong>rotación automática</strong> apuntando a la clave sin versión.</li>
+        <li>Si borrás la clave o revocás el acceso al vault, <strong>la cuenta deja de servir datos</strong>: es exactamente el escenario de "revocación de emergencia".</li>
+        <li>Por default CMK cubre blobs y files; para incluir <strong>queues y tables</strong> hay que optar por la <em>account-scoped encryption key</em> al crear la cuenta.</li>
+      </ul>
+      <p>Antes de habilitar CMK en todas las cuentas, el examen pide <strong>tres</strong> acciones:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Guardar la key en <strong>Key Vault o Managed HSM</strong></td><td><span class="yes">Sí</span></td><td>CMK no vive en la Storage Account</td></tr>
+            <tr><td>Vault/HSM y la cuenta en la <strong>misma región</strong></td><td><span class="yes">Sí</span></td><td>Requisito de CMK para Storage</td></tr>
+            <tr><td><strong>Managed identity</strong> de la cuenta con Get / Wrap / Unwrap</td><td><span class="yes">Sí</span></td><td>La cuenta tiene que poder usar la key</td></tr>
+            <tr><td>Misma <strong>subnet</strong></td><td><span class="no">No</span></td><td>No hay requisito de red compartida. Private Endpoint es opcional</td></tr>
+            <tr><td>Elegir LRS/GRS “para habilitar CMK”</td><td><span class="no">No</span></td><td>La redundancia no habilita CMK. CMK funciona en LRS, GRS, ZRS…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> CMK = <strong>vault/HSM + misma región + MI con wrap/unwrap</strong>. “Misma subnet” y “cambiar a LRS/GRS” son carnada de red/redundancia. Soft delete + purge protection del vault siguen siendo prerequisito para seleccionar la key.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Infrastructure encryption y Encryption scopes</div>
+      <ul>
+        <li><strong>Infrastructure encryption</strong>: agrega una <strong>segunda capa</strong> de cifrado AES-256 a nivel de infraestructura (doble cifrado) para cumplimiento regulatorio.</li>
+        <li><strong>Encryption scopes</strong>: cifrado con clave distinta a nivel de <strong>container o blob individual</strong> —útil para aislar datos de varios tenants en una misma cuenta—. Cada scope puede usar MMK o CMK. Podés definir un scope default en el container y forzar que se use.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <strong>Infrastructure encryption solo se habilita al crear la Storage Account</strong> y después no se puede activar ni desactivar. Si el escenario dice "una cuenta existente necesita doble cifrado", la respuesta correcta es <strong>crear una cuenta nueva y migrar los datos</strong>, no "ir a Encryption y tildarlo".</span>
+    </div>
+  </div>
+
+  <!-- ══ 8 ══ -->
+  <div class="section" id="extras">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(236,72,153,.15)">⚙️</div>
+      <span class="section-title">Endurecer la cuenta: transporte, TLS, Shared Key y Defender</span>
+      <span class="section-tag">Checklist</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Setting</th><th>Qué hace</th><th>A tener en cuenta</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Secure transfer required</strong></td>
+            <td>Rechaza cualquier request por <strong>HTTP</strong>: obliga HTTPS. Viene <strong>habilitado por default</strong></td>
+            <td>Con esto activo, los file shares SMB exigen <strong>SMB 3.x con cifrado</strong>. No aplica a custom domains sobre el endpoint de storage</td>
+          </tr>
+          <tr>
+            <td><strong>Minimum TLS version</strong></td>
+            <td>Rechaza handshakes por debajo de la versión elegida (1.0 / 1.1 / 1.2)</td>
+            <td>Las cuentas nuevas usan <strong>TLS 1.2</strong> como mínimo. Subirlo puede romper clientes viejos: es la causa típica del "dejó de conectar"</td>
+          </tr>
+          <tr>
+            <td><strong>Allow storage account key access</strong> (<code>AllowSharedKeyAccess = false</code>)</td>
+            <td>Deshabilita la autorización con Shared Key y <strong>fuerza Entra ID</strong></td>
+            <td>Al apagarlo también dejan de funcionar <strong>Service SAS y Account SAS</strong> (van firmados con la key). Solo sobreviven los <strong>user delegation SAS</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Allow cross-tenant replication</strong></td>
+            <td>Permite o bloquea object replication hacia otro tenant de Entra ID</td>
+            <td>Se recomienda dejarlo deshabilitado salvo necesidad concreta. Con policy Deny, un update de una cuenta que lo tenga en <code>true</code> también se bloquea. No se puede pasar a <code>false</code> si hay object replication policies activas: primero borrarlas</td>
+          </tr>
+          <tr>
+            <td><strong>Microsoft Defender for Storage</strong></td>
+            <td>Detección de amenazas: subidas sospechosas, accesos desde IPs anómalas, <strong>escaneo de malware on-upload</strong> y detección de datos sensibles</td>
+            <td>Se activa por suscripción o por cuenta; tiene costo. Es la respuesta cuando piden "alertas ante actividad anómala en la cuenta"</td>
+          </tr>
+          <tr>
+            <td><strong>Resource locks</strong> (CanNotDelete / ReadOnly)</td>
+            <td>Protegen el recurso a nivel plano de control</td>
+            <td>Un lock <strong>no</strong> impide borrar blobs con SAS o access keys: eso es plano de <em>datos</em></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Complementos que se cruzan con seguridad: <strong>soft delete</strong> (blobs y containers) y <strong>versioning</strong> protegen de borrados accidentales o de un ransomware; <strong>immutability policies</strong> (time-based retention o legal hold, WORM) impiden modificar o borrar blobs incluso siendo Owner.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Storage Explorer: List/Get Storage Account(s)</div>
+      <p>Error <code>Read: List/Get Storage Account(s)</code> al loguearse. El user ya es <strong>Contributor de la cuenta</strong>. Least privilege en la subscription:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Rol en la subscription</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Reader</strong></td><td><span class="yes">Sí</span></td><td>Lista RGs y cuentas. No escribe. Explorer necesita ver el árbol</td></tr>
+            <tr><td>Contributor / Owner</td><td><span class="no">No</span></td><td>Funcionan, violan least privilege</td></tr>
+            <tr><td>Storage Blob Data Reader</td><td><span class="no">No</span></td><td>Plano de <strong>datos</strong>. No lista cuentas ARM</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Contributor <em>en la cuenta</em> no alcanza para que Explorer arme el árbol de la subscription. El error nombra <strong>List/Get Storage Account(s)</strong> → control plane de la sub → <strong>Reader</strong>. Blob Data Reader es el distractor de “storage”.</span>
+    </div>
+      <ol>
+        <li>¿Quién accede? Identidad de Entra ID → <strong>RBAC de datos</strong>. Tercero sin identidad → <strong>SAS</strong>.</li>
+        <li>Si es SAS: ¿tiene que ser revocable sin rotar keys? → <strong>User delegation</strong> (blob, ≤7 días) o <strong>Service SAS + stored access policy</strong>.</li>
+        <li>¿Desde dónde? Internet → firewall con reglas de IP. VNet → <strong>service endpoint</strong>. On-prem o IP privada obligatoria → <strong>private endpoint</strong> + Private DNS Zone.</li>
+        <li>¿Requisitos de cumplimiento sobre la clave? → <strong>CMK</strong>; doble cifrado → <strong>infrastructure encryption al crear</strong>.</li>
+        <li>Cerrar: secure transfer, TLS 1.2, anonymous access off, shared key off.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "Apps en key1, key2 de backup, ambas pueden estar comprometidas, cero downtime. ¿Cinco pasos? ¿Se crea key3?", a: "1) Regenerar <strong>key2</strong> (recambio limpio, nadie la usa) · 2) apps → key2 · 3) regenerar <strong>key1</strong> · 4) apps → key1 · 5) verificar y regenerar <strong>key2</strong> otra vez. No existe key3. Regenerar la key en uso = corte. Saltar a key2 sin rotarla primero = producir con una key filtrada. CLI: <code>az storage account keys renew --key secondary|primary</code>.", cat: "Keys" },
+  { q: "¿Cuál es la validez máxima de un User delegation SAS?", a: "<strong>7 días</strong>, porque hereda el límite de la user delegation key con la que se firma.", cat: "SAS" },
+  { q: "¿Para qué servicios existe el User delegation SAS?", a: "<strong>Blob</strong> y Data Lake Storage Gen2 es el caso clásico y el que pregunta el examen. Microsoft ya lo soporta además en Azure Files, Queues y Tables (versiones de servicio recientes). El límite de 7 días vale para todos.", cat: "SAS" },
+  { q: "¿Qué tipo de SAS puede referenciar una Stored Access Policy?", a: "Únicamente el <strong>Service SAS</strong> (parámetro <code>si</code>). Ni el Account SAS ni el User delegation SAS las usan.", cat: "SAS" },
+  { q: "¿Cuántas Stored Access Policies podés tener por container, share, queue o table?", a: "Máximo <strong>5</strong>.", cat: "Policies" },
+  { q: "¿Única forma de revocar un Service SAS sin rotar la account key?", a: "<strong>Borrar o modificar la stored access policy</strong> que referencia. La revocación es inmediata y no afecta a los demás SAS.", cat: "Policies" },
+  { q: "¿Un usuario con rol Contributor puede leer blobs autenticándose con Entra ID?", a: "<strong>No.</strong> Contributor es plano de control: da <em>AuthorizationPermissionMismatch</em> sobre los datos. Sí puede <strong>leer las access keys</strong> y entrar por Shared Key. Para datos hace falta <strong>Storage Blob Data Reader/Contributor/Owner</strong>.", cat: "RBAC" },
+  { q: "Rol mínimo para que una app escriba y borre blobs con su managed identity", a: "<strong>Storage Blob Data Contributor</strong> (Reader no escribe; Owner es más de lo necesario).", cat: "RBAC" },
+  { q: "\"Allow Blob anonymous access\" está deshabilitado en la cuenta pero el container está en nivel Container. ¿Se puede leer anónimamente?", a: "<strong>No.</strong> El toggle de la cuenta manda: si está en Disabled, el nivel del container es irrelevante y toda request anónima falla.", cat: "Public access" },
+  { q: "Diferencia entre nivel de container \"Blob\" y \"Container\"", a: "<strong>Blob</strong>: se leen blobs si conocés la URL exacta, pero <strong>no se puede listar</strong>. <strong>Container</strong>: además permite <strong>listar</strong> los blobs y ver properties/metadata del container.", cat: "Public access" },
+  { q: "Service Endpoint vs Private Endpoint: ¿cuál funciona desde on-premises?", a: "<strong>Private Endpoint</strong>, vía VPN o ExpressRoute, porque le da al storage una <strong>IP privada</strong> en tu VNet. El Service Endpoint solo sirve desde la subred de la VNet y el storage conserva su IP pública.", cat: "Red" },
+  { q: "storage1 solo desde appSubnet (VM ahí; hay un storageSubnet decoy). Tres cmdlets.", a: "1) <code>Update-AzStorageAccountNetworkRuleSet -DefaultAction Deny</code>. 2) <code>Set-AzVirtualNetworkSubnetConfig</code> en <strong>appSubnet</strong> <code>10.0.0.0/24</code> con <code>-ServiceEndpoint Microsoft.Storage</code> | <code>Set-AzVirtualNetwork</code>. 3) <code>Add-AzStorageAccountNetworkRule -VirtualNetworkResourceId $subnet.Id</code>. No uses storageSubnet ni reglas de IP privadas. CLI: <code>az storage account update --default-action Deny</code> + <code>az network vnet subnet update --service-endpoints Microsoft.Storage</code> + <code>az storage account network-rule add</code>.", cat: "Red" },
+  { q: "¿Qué Private DNS Zone crea un Private Endpoint de Blob?", a: "<code>privatelink.blob.core.windows.net</code>. Es <strong>una por sub-recurso</strong>: file, queue, table, web y dfs tienen la suya y necesitan su propio private endpoint.", cat: "Red" },
+  { q: "Requisitos del Key Vault para usar Customer-managed keys", a: "<strong>Soft delete</strong> y <strong>purge protection</strong> habilitados, más una <strong>managed identity</strong> en la Storage Account con permisos Get / Wrap Key / Unwrap Key.", cat: "Cifrado" },
+  { q: "CMK en todas las Storage Accounts. Elegí 3: ¿vault/HSM, misma subnet, LRS/GRS, misma región, MI con permisos?", a: "<strong>Key en Key Vault o Managed HSM</strong> + <strong>misma región</strong> que la cuenta + <strong>MI de la cuenta</strong> con Get/Wrap/Unwrap. Misma subnet no. Redundancia no habilita CMK.", cat: "Cifrado" },
+  { q: "Stored access policy en file shares. ¿Set Share ACL, Set Container ACL o Set Table ACL?", a: "<strong>Set Share ACL</strong> (Files). Container ACL = blobs (+ “public read” es anónimo, no la policy). Table ACL = tables. CLI: <code>az storage share policy update</code>. La policy va por REST, no por el montaje SMB.", cat: "Policies" },
+  { q: "Storage Explorer: “Read: List/Get Storage Account(s)”. Ya es Contributor de la cuenta. Least privilege en la subscription: ¿Reader, Contributor, Blob Data Reader u Owner?", a: "<strong>Reader en la subscription</strong>: lista cuentas/RGs. Contributor de la cuenta no lista el árbol de la sub. Blob Data Reader es plano de datos (blobs), no <code>storageAccounts/read</code> de la sub. Owner/Contributor en la sub sobran privilegio.", cat: "RBAC" },
+  { q: "¿Cuándo se puede habilitar Infrastructure encryption?", a: "<strong>Solo al crear la Storage Account.</strong> En una cuenta existente hay que crear una nueva y migrar los datos.", cat: "Cifrado" },
+  { q: "Si deshabilitás \"Allow storage account key access\", ¿qué SAS siguen funcionando?", a: "Solo los <strong>User delegation SAS</strong>. Los Service SAS y los Account SAS dejan de funcionar porque van firmados con la account key.", cat: "Hardening" },
+  { q: "SAS ad hoc a un blob nuevo, sin portal. Seis pasos. ¿RG? ¿Stored access policy?", a: "Storage Explorer → connect a la cuenta → crear container → upload del blob → Get SAS (start/expiry + permisos) → dar la URL HTTPS. No creás RG (la cuenta existe). No stored access policy: eso no es ad hoc.", cat: "SAS" },
+  { q: "SAS inmediato, best practice. Yes/No: ¿stored access policy? ¿start time = now? ¿validar writes? ¿revoke borrando la policy?", a: "<strong>Yes / No / Yes / Yes</strong>. Policy sí. Start = now falla por clock skew (omití st o 15 min atrás). Validá lo que escribe el cliente. Borrar la policy revoca sin rotar keys.", cat: "SAS" },
+  { q: "CLI: app1 usa key de storage1. Rotar sin corte. ¿query [0] o [1] primero? ¿renew primary o secondary primero?", a: "List <code>[1].value</code> (secondary) → app setting → <code>keys renew --key primary</code> → list <code>[0].value</code> → app setting → <code>renew --key secondary</code>. [0]=primary, [1]=secondary.", cat: "Keys" },
+  { q: "storage01: App Services + Backup vault + Event Hub, solo Azure. PS: ¿endpoint? ¿Add- qué? ¿Update- qué? ¿-Bypass?", a: "<code>Microsoft.Storage</code> · <code>Add-AzStorageAccountNetworkRule</code> · <code>Update-AzStorageAccountNetworkRuleSet</code> · <code>-Bypass AzureServices</code>. El endpoint es del storage, no de Web/EventHub. Sin AzureServices el vault y el hub no pasan el firewall.", cat: "Red" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

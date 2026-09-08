@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azure Monitor — Mapa de señales</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0b1220;
+    --panel: #121b2e;
+    --panel-2: #0f1729;
+    --border: #2A3752;
+    --border-soft: #263553;
+    --text: #e7edf7;
+    --text-dim: #93a4c3;
+    --metrics: #34d8ae;
+    --metrics-dim: #1a3d34;
+    --logs: #f5a623;
+    --logs-dim: #4a3416;
+    --insights: #8b9fff;
+    --insights-dim: #262f57;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 32px 32px;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    padding: 40px 20px 80px;
+    min-height: 100vh;
+  }
+
+  .wrap { max-width: 980px; margin: 0 auto; }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 36px;
+    max-width: 600px;
+  }
+
+  /* Umbrella */
+  .umbrella {
+    border: 1.5px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 18px 20px;
+    background: var(--panel-2);
+    text-align: center;
+    margin-bottom: 4px;
+    position: relative;
+  }
+  .umbrella .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .umbrella .sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .connector {
+    height: 28px;
+    width: 2px;
+    background: var(--border-soft);
+    margin: 0 auto;
+  }
+
+  .fork {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+  .fork-line {
+    height: 2px;
+    background: var(--border-soft);
+  }
+
+  /* Sources row */
+  .sources {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 18px 0 0;
+  }
+  .source {
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-align: center;
+    margin: 22px 0 10px;
+  }
+
+  /* Two-column signal types */
+  .signals {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 8px;
+  }
+
+  .signal-card {
+    border-radius: 12px;
+    padding: 22px;
+    border: 1.5px solid;
+  }
+  .signal-card.metrics {
+    background: linear-gradient(180deg, rgba(52,216,174,0.06), transparent 60%);
+    border-color: var(--metrics-dim);
+  }
+  .signal-card.logs {
+    background: linear-gradient(180deg, rgba(245,166,35,0.06), transparent 60%);
+    border-color: var(--logs-dim);
+  }
+
+  .signal-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .dot.metrics { background: var(--metrics); box-shadow: 0 0 8px var(--metrics); }
+  .dot.logs { background: var(--logs); box-shadow: 0 0 8px var(--logs); }
+
+  .signal-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .signal-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    padding: 7px 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .signal-row .k { color: var(--text-dim); }
+  .signal-row .v { text-align: right; max-width: 60%; }
+
+  .pipe {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--text-dim);
+    opacity: 0.5;
+    margin: 0 4px;
+  }
+
+  .downstream {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(255,255,255,0.1);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    color: var(--text-dim);
+  }
+  .downstream .arrow-label { color: var(--text); }
+
+  .steps {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .step {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+  }
+  .step > div {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--text-dim);
+  }
+  .step b { color: var(--text); font-weight: 600; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  .step-num {
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--logs-dim);
+    color: var(--logs);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    transform: translateY(2px);
+  }
+  .step-num.metrics-num {
+    background: var(--metrics-dim);
+    color: var(--metrics);
+  }
+
+  /* Insights band */
+  .insights-band {
+    margin-top: 30px;
+    border: 1.5px solid var(--insights-dim);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(139,159,255,0.08), rgba(139,159,255,0.02));
+    padding: 22px;
+  }
+  .insights-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .insights-header .dot { background: var(--insights); box-shadow: 0 0 8px var(--insights); }
+  .insights-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .insights-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    max-width: 640px;
+    margin-bottom: 18px;
+    line-height: 1.55;
+  }
+  .insights-desc b { color: var(--text); font-weight: 600; }
+
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .insight-item {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .insight-item .name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .insight-item .desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .uses {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+  }
+  .tag.metrics-tag { background: var(--metrics-dim); color: var(--metrics); }
+  .tag.logs-tag { background: var(--logs-dim); color: var(--logs); }
+
+  /* Key distinction callout */
+  .key-box {
+    margin-top: 28px;
+    border-left: 3px solid var(--insights);
+    background: var(--panel);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 18px;
+  }
+  .key-box .kb-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--insights);
+    margin-bottom: 8px;
+  }
+  .key-box p {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  .key-box p + p { margin-top: 8px; }
+  .key-box code {
+    font-family: 'IBM Plex Mono', monospace;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12.5px;
+  }
+
+  @media (max-width: 700px) {
+    .sources { grid-template-columns: repeat(2, 1fr); }
+    .signals { grid-template-columns: 1fr; }
+    .insights-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<p style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;margin:0 0 16px"><a href="00-indice.html" style="color:#5b8dee;text-decoration:none">← Índice AZ-104</a></p>
+
+<div class="wrap">
+
+  <div class="eyebrow">AZ-104 · Dominio de Monitoreo</div>
+  <h1>Metrics · Logs · Insights</h1>
+  <p class="subtitle">No son tres servicios distintos: son tres capas dentro de Azure Monitor. Insights no compite con Metrics/Logs — los consume.</p>
+
+  <div class="umbrella">
+    <div class="label">AZURE MONITOR</div>
+    <div class="sub">plataforma unificada de observabilidad</div>
+  </div>
+  <div class="connector"></div>
+
+  <div class="section-label">recolecta desde</div>
+  <div class="sources">
+    <div class="source">Recursos Azure</div>
+    <div class="source">SO de la VM</div>
+    <div class="source">Código de la app</div>
+    <div class="source">Suscripción / Tenant</div>
+  </div>
+
+  <div class="section-label">como dos tipos de señal</div>
+
+  <div class="signals">
+    <div class="signal-card metrics">
+      <div class="signal-title"><span class="dot metrics"></span>Metrics</div>
+      <div class="signal-desc">Números en el tiempo. Livianos, casi instantáneos, pensados para "¿cómo va esto ahora mismo?"</div>
+      <div class="signal-row"><span class="k">Formato</span><span class="v">Serie temporal numérica</span></div>
+      <div class="signal-row"><span class="k">Latencia</span><span class="v">Segundos</span></div>
+      <div class="signal-row"><span class="k">Ejemplo</span><span class="v">% CPU, IOPS, bytes/seg</span></div>
+      <div class="steps">
+        <div class="step"><span class="step-num metrics-num">1</span><div><b>Metrics Explorer</b> — el número llega casi al instante y lo ves como gráfico, sin necesidad de guardarlo antes</div></div>
+        <div class="step"><span class="step-num metrics-num">2</span><div><b>Metric Alert</b> — definís un umbral directo sobre ese número (ej. CPU &gt; 80%) y te avisa apenas lo cruza, sin pasar por ninguna query</div></div>
+      </div>
+    </div>
+
+    <div class="signal-card logs">
+      <div class="signal-title"><span class="dot logs"></span>Logs</div>
+      <div class="signal-desc">Registros con contexto. Más pesados, con delay, pensados para "¿qué pasó exactamente y por qué?"</div>
+      <div class="signal-row"><span class="k">Formato</span><span class="v">Filas estructuradas / texto</span></div>
+      <div class="signal-row"><span class="k">Latencia</span><span class="v">Minutos</span></div>
+      <div class="signal-row"><span class="k">Ejemplo</span><span class="v">Excepción, evento de auditoría</span></div>
+      <div class="steps">
+        <div class="step"><span class="step-num">1</span><div><b>Log Analytics Workspace</b> — los logs crudos llegan acá. Plan Analytics vs Basic/Auxiliary; Archive hasta 12 años = search job</div></div>
+        <div class="step"><span class="step-num">2</span><div><b>KQL</b> — es el lenguaje que usás para consultar esos logs (ej. "dame todos los errores de la última hora")</div></div>
+        <div class="step"><span class="step-num">3</span><div><b>Log Alert</b> — tomás esa misma query KQL y la convertís en una regla de alerta, para que te avise solo cuando el resultado cumpla una condición</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insights-band">
+    <div class="insights-header">
+      <span class="dot"></span>
+      <div class="insights-title">"Insights" = soluciones curadas</div>
+    </div>
+    <div class="insights-desc">
+      Un <b>Insight</b> no es un tercer tipo de dato — es un producto terminado que combina Metrics + Logs + visualización lista para un dominio específico, para que no tengas que armar el dashboard vos mismo.
+    </div>
+    <div class="insights-grid">
+      <div class="insight-item">
+        <div class="name">Application Insights</div>
+        <div class="desc">Dominio: código de la app (requests, dependencies, excepciones)</div>
+        <div class="uses"><span class="tag metrics-tag">metrics</span><span class="tag logs-tag">logs</span></div>
+      </div>
+      <div class="insight-item">
+        <div class="name">VM Insights</div>
+        <div class="desc">Dominio: salud y performance de máquinas virtuales</div>
+        <div class="uses"><span class="tag metrics-tag">metrics</span><span class="tag logs-tag">logs</span></div>
+      </div>
+      <div class="insight-item">
+        <div class="name">Container Insights</div>
+        <div class="desc">Dominio: clusters AKS y contenedores</div>
+        <div class="uses"><span class="tag metrics-tag">metrics</span><span class="tag logs-tag">logs</span></div>
+      </div>
+      <div class="insight-item">
+        <div class="name">Network Insights</div>
+        <div class="desc">Dominio: salud y métricas de todos los recursos de red desplegados</div>
+        <div class="uses"><span class="tag metrics-tag">metrics</span><span class="tag logs-tag">logs</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="key-box">
+    <div class="kb-title">La diferenciación en una frase</div>
+    <p><b>Metrics</b> y <b>Logs</b> son los <b>dos tipos de dato crudo</b> que existen dentro de Azure Monitor.</p>
+    <p><b>Insights</b> (App / VM / Container) son <b>soluciones prearmadas</b> que leen esos dos tipos de dato y te los presentan con contexto, para un dominio puntual, sin que tengas que configurar nada desde cero.</p>
+    <p>Por eso Application Insights <i>no reemplaza</i> a Log Analytics: <code>Application Insights → guarda todo en → Log Analytics Workspace</code>. Es consumidor, no competidor.</p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · 134 ejercicios por frecuencia de examen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12151b;
+    --panel:#1a1e26;
+    --panel-2:#20252f;
+    --border:#2a2f3b;
+    --border-strong:#39404f;
+    --text:#e7e9ee;
+    --text-dim:#9aa2b1;
+    --text-faint:#6b7385;
+    --azure:#5b8def;
+    --azure-dim:#2a3b5c;
+    --amber:#f0ad4e;
+    --amber-dim:#4a3a1e;
+    --green:#3ecf8e;
+    --red:#e5626b;
+    --red-dim:#3a2026;
+    --purple:#9d8cf1;
+    --purple-dim:#332c52;
+    --teal:#4fc8c8;
+    --teal-dim:#1c3a3a;
+    --coral:#f08a5d;
+    --coral-dim:#42291c;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    padding:32px 16px 80px;
+    line-height:1.5;
+  }
+  .wrap{max-width:780px;margin:0 auto;}
+
+  header{margin-bottom:24px;}
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--azure);
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:26px;
+    font-weight:700;
+    margin:0 0 6px;
+    letter-spacing:-.01em;
+  }
+  .sub{color:var(--text-dim);font-size:13.5px;margin:0 0 20px;max-width:620px;}
+
+  .legend{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+  }
+  .tier{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    padding:3px 8px;
+    border-radius:5px;
+    font-weight:700;
+  }
+  .tier.t1{background:var(--red-dim);color:var(--red);}
+  .tier.t2{background:var(--amber-dim);color:var(--amber);}
+  .tier.t3{background:var(--azure-dim);color:var(--azure);}
+  .tier.t4{background:var(--teal-dim);color:var(--teal);}
+  .tier.t5{background:var(--panel-2);color:var(--text-dim);}
+  .tier.t6{background:var(--border);color:var(--text-faint);}
+
+  .progress-card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 20px;
+    margin-bottom:24px;
+  }
+  .progress-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:10px;
+  }
+  .progress-top .label{font-size:13px;color:var(--text-dim);}
+  .progress-top .value{
+    font-family:'JetBrains Mono',monospace;
+    font-size:19px;
+    font-weight:700;
+  }
+  .bar-track{height:8px;border-radius:99px;background:var(--panel-2);overflow:hidden;}
+  .bar-fill{
+    height:100%;
+    background:linear-gradient(90deg,var(--azure),var(--teal));
+    border-radius:99px;
+    transition:width .3s ease;
+    width:0%;
+  }
+
+  details.mod{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    margin-bottom:10px;
+    overflow:hidden;
+  }
+  details.mod[open]{border-color:var(--border-strong);}
+  summary{
+    list-style:none;
+    cursor:pointer;
+    padding:14px 18px;
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+  }
+  summary::-webkit-details-marker{display:none;}
+  .rank{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    font-weight:700;
+    color:var(--text-faint);
+    min-width:28px;
+    padding-top:1px;
+  }
+  .mod-body{flex:1;min-width:0;}
+  .mod-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:5px;align-items:center;}
+  .domtag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    padding:2px 7px;
+    border-radius:5px;
+    font-weight:700;
+  }
+  .mod-title{font-size:14.5px;font-weight:600;}
+  .mod-why{font-size:12.5px;color:var(--text-dim);margin-top:3px;}
+  .mod-progress{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--text-dim);
+    white-space:nowrap;
+    padding-top:2px;
+    min-width:44px;
+    text-align:right;
+  }
+  .chevron{color:var(--text-faint);font-size:12px;padding-top:2px;transition:transform .2s ease;}
+  details[open] .chevron{transform:rotate(90deg);}
+
+  .items{padding:0 18px 16px 58px;display:flex;flex-direction:column;gap:9px;}
+  .item{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;}
+  .item.done{color:var(--text-faint);text-decoration:line-through;}
+  .item input[type="checkbox"]{
+    appearance:none;
+    width:16px;height:16px;min-width:16px;
+    border-radius:4px;
+    border:1.5px solid var(--border-strong);
+    background:var(--panel-2);
+    margin-top:1px;
+    cursor:pointer;
+    position:relative;
+  }
+  .item input[type="checkbox"]:checked{background:var(--green);border-color:var(--green);}
+  .item input[type="checkbox"]:checked::after{
+    content:"";
+    position:absolute;left:4px;top:1px;
+    width:4px;height:8px;
+    border:solid #0c1f16;
+    border-width:0 2px 2px 0;
+    transform:rotate(45deg);
+  }
+
+  footer{margin-top:24px;text-align:center;font-size:12px;color:var(--text-faint);}
+  footer button{
+    background:var(--panel);
+    border:1px solid var(--border-strong);
+    color:var(--text-dim);
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    padding:6px 14px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  footer button:hover{border-color:var(--red);color:var(--red);}
+</style>
+</head>
+<body>
+<p style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;margin:0 0 16px"><a href="00-indice.html" style="color:#5b8dee;text-decoration:none">← Índice AZ-104</a></p>
+
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">AZ-104 · Microsoft Azure Administrator</p>
+    <h1>134 labs en el portal, por frecuencia</h1>
+    <p class="sub">Ranking basado en el peso oficial por dominio (Networking y Compute 20-25%, Identity/Storage 15-20%, Monitor 10-15%) cruzado con las anotaciones "why this matters" de cada módulo de tu guía. Módulo 1 = el que más se pregunta.</p>
+    <div class="legend">
+      <span class="tier t1">Muy alta</span>
+      <span class="tier t2">Alta</span>
+      <span class="tier t3">Media</span>
+      <span class="tier t4">Media-baja</span>
+      <span class="tier t5">Baja</span>
+      <span class="tier t6">Repaso</span>
+    </div>
+  </header>
+
+  <div class="progress-card">
+    <div class="progress-top">
+      <span class="label">Progreso total</span>
+      <span class="value" id="totalLabel">0 / 134</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="totalBar"></div></div>
+  </div>
+
+  <div id="mods"></div>
+
+  <footer>
+    <button id="resetBtn">Reiniciar progreso</button>
+  </footer>
+
+</div>
+
+<script>
+const DOM = {
+  net:   {label:'NET',  bg:'var(--azure-dim)',  fg:'var(--azure)'},
+  comp:  {label:'COMP', bg:'var(--coral-dim)',  fg:'var(--coral)'},
+  store: {label:'STOR', bg:'var(--teal-dim)',   fg:'var(--teal)'},
+  gov:   {label:'GOV',  bg:'var(--purple-dim)', fg:'var(--purple)'},
+  mon:   {label:'MON',  bg:'var(--amber-dim)',  fg:'var(--amber)'},
+  rev:   {label:'REV',  bg:'var(--border)',     fg:'var(--text-dim)'}
+};
+
+const MODULES = [
+{ tier:'t1', dom:'net', title:'Azure Load Balancer', why:'Heavily tested en el dominio Networking (20-25%). Diferencias de SKU y health probes aparecen en casi todo simulador.',
+  items:[
+   'Crear un LB Basic y un LB Standard; comparar el SKU de Public IP requerido en cada uno',
+   'Confirmar que el LB Standard bloquea tráfico entrante hasta agregar una regla',
+   'Configurar una Load Balancing Rule HTTP con Health Probe',
+   'Configurar una Inbound NAT Rule para RDP/SSH directo a una VM específica',
+   'Detener el servicio web en una VM backend y observar cómo el Health Probe la marca unhealthy',
+   'Configurar Session Persistence = Client IP y validar con refrescos desde el mismo cliente',
+   'Intentar agregar una VM con Public IP Basic al backend pool de un LB Standard — confirmar el error de incompatibilidad de SKU',
+   'Configurar una Outbound Rule en el LB Standard'
+]},
+{ tier:'t1', dom:'net', title:'Application Gateway', why:'Marcado explícitamente "High" en tu guía. Layer 7, WAF y path-routing son preguntas frecuentes de escenario.',
+  items:[
+   'Crear un Application Gateway v2 (Standard v2) con subnet dedicada y 2 backend pools',
+   'Configurar path-based routing: /images/* → pool A, /* → pool B',
+   'Configurar un listener multi-sitio (hostname-based) para dos dominios distintos',
+   'Subir un certificado y configurar SSL termination en el listener HTTPS; HTTP Settings backend en HTTP plano',
+   'Convertir el Gateway a WAF v2, probar modo Detection con una petición maliciosa simple y luego cambiar a Prevention',
+   'Intentar desplegar otra VM/NIC dentro de la subnet dedicada del Application Gateway — confirmar el bloqueo',
+   'Comparar en una tabla propia Application Gateway vs Load Balancer probando ambos con el mismo backend'
+]},
+{ tier:'t1', dom:'net', title:'NSGs, ASGs, UDR y Peering', why:'Núcleo del dominio Networking. NSG evaluation order y effective rules son de las preguntas más citadas en todos los simuladores.',
+  items:[
+   'Configurar NSGs + ASGs (Application Security Groups) sobre una NIC y ejecutar "Effective security rules"',
+   'Configurar un UDR (User Defined Route) forzando tráfico a través de una NVA/Azure Firewall simulada',
+   'Configurar VNet Peering entre dos VNets (misma región y regiones distintas) y validar transitividad en una topología hub-spoke de 3 VNets'
+]},
+{ tier:'t1', dom:'comp', title:'VM Availability Sets, Zones & Scale Sets', why:'Tu guía la marca "zero coverage" y "high-weight topic". Dominio Compute (20-25%).',
+  items:[
+   'Crear un Availability Set con 2 VMs (mismo tamaño) desde el inicio. Confirmar que no se puede agregar una tercera VM ya existente después',
+   'Revisar en Portal cuántos Fault Domains y Update Domains asignó Azure',
+   'Crear 2 VMs en distintas Availability Zones (zona 1 y 2) en una región compatible',
+   'Crear un VMSS en modo Uniform con 2 instancias iniciales, integrado a un Load Balancer Standard',
+   'Configurar una Autoscale rule basada en CPU > 70% (scale out) y otra de scale-in en <30%. Generar carga con stress y observar el scaling',
+   'Cambiar la scale-in policy a OldestVM y forzar un scale-in manual',
+   'Crear un VMSS en modo Flexible y comparar diferencias de administración individual vs Uniform'
+]},
+{ tier:'t1', dom:'mon', title:'Log Analytics & KQL', why:'"Tested in depth" según tu guía — las queries KQL aparecen directamente en el examen, no solo en teoría.',
+  items:[
+   'Crear un Log Analytics Workspace, conectar 2+ recursos (VM vía Azure Monitor Agent + un NSG Flow Log)',
+   'Instalar el Azure Monitor Agent (AMA) en una VM vía Data Collection Rule para enviar Perf y Event/Syslog',
+   'Ejecutar la query de ejemplo de VMs con alta CPU sobre la tabla Perf',
+   'Ejecutar una query con where, project, summarize, order by, take combinados sobre la tabla Heartbeat',
+   'Practicar un join entre Heartbeat y Perf por Computer',
+   'Practicar union Heartbeat, Event y aplicar ago(24h)',
+   'Probar una comparación case-sensitive (==) vs case-insensitive (=~) con el mismo string',
+   'Cambiar la retención del workspace (30 → 90 días) y revisar el impacto estimado en costo',
+   'Guardar una query como Alert (Log Alert)'
+]},
+
+{ tier:'t2', dom:'gov', title:'RBAC & Custom Roles', why:'"Aparece en cada dominio del examen" — es la base conceptual de casi todo lo demás.',
+  items:[
+   'Crear un Resource Group de pruebas, ir a IAM → Roles y comparar el JSON de Virtual Machine Contributor vs Contributor',
+   'az role definition list --query "[?contains(roleName,\'Virtual Machine\')]" para listar roles built-in de VM',
+   'Asignar rol Reader a un usuario/grupo a nivel Subscription. Verificar que hereda a un RG hijo (Check access)',
+   'Crear un custom role JSON con Actions de start/read y ejecutar az role definition create',
+   'Intentar asignar un rol con un usuario que solo tiene Contributor — confirmar que la opción está bloqueada',
+   'az role assignment list --include-inherited — comparar asignaciones heredadas vs directas',
+   'Revisar la sección Classic Administrators en Subscriptions (solo observar que existe)'
+]},
+{ tier:'t2', dom:'gov', title:'Azure Policy & Resource Locks', why:'"Uno de los temas de mayor peso en Governance" según tu guía.',
+  items:[
+   'Asignar policy built-in "Require a tag on resources" en modo Audit sobre un RG. Ver Compliance blade',
+   'az policy assignment create para asignar una policy Deny (ej. restringir SKU de VM) a nivel RG',
+   'Crear una Initiative custom agrupando 2-3 policies relacionadas a tags',
+   'Probar Exclusions: excluir un recurso específico del assignment scope',
+   'Disparar una Remediation task sobre una policy DeployIfNotExists',
+   'Agregar lock CanNotDelete a un RG no crítico → intentar borrar un recurso → confirmar fallo → remover lock → reintentar',
+   'Agregar lock ReadOnly a una Storage Account → intentar "List keys" → confirmar que falla',
+   'Agregar lock ReadOnly a un App Service Plan → intentar escalar (scale up) → confirmar bloqueo'
+]},
+{ tier:'t2', dom:'comp', title:'Gestión de VMs (resize, disks, move)', why:'Parte central de "Create and configure VMs" del skills-measured oficial, no cubierta explícitamente en tu guía de 18 módulos.',
+  items:[
+   'Configurar Azure Disk Encryption en una VM',
+   'Mover una VM de un Resource Group a otro (az resource move)',
+   'Redimensionar una VM (resize) y agregar un data disk adicional'
+]},
+{ tier:'t2', dom:'store', title:'Storage Networking', why:'Tu guía dice que el examen "consistentemente" testea Service Endpoint vs Private Endpoint.',
+  items:[
+   'Configurar el firewall de una Storage Account en "Selected networks", agregar tu VNet vía Service Endpoint. Verificar acceso desde una VM dentro y otra fuera',
+   'Crear un Private Endpoint para la storage account. Verificar la Private DNS Zone privatelink.blob.core.windows.net creada automáticamente',
+   'Comparar con nslookup desde la VM: resolución de nombre antes y después del Private Endpoint',
+   'Habilitar la excepción "Allow trusted Microsoft services" y probar que Azure Backup puede acceder aunque el firewall esté restringido',
+   'Generar un Service SAS y un Account SAS con az storage blob/account generate-sas. Comparar scopes',
+   'Generar un User Delegation SAS con --auth-mode login --as-user',
+   'Crear una Stored Access Policy sobre un contenedor blob y luego revocarla — confirmar que el SAS asociado deja de funcionar'
+]},
+{ tier:'t2', dom:'store', title:'Storage Redundancy & Failover', why:'"Tested heavily" — tu guía enfatiza el detalle fino entre LRS/ZRS/GRS/GZRS/RA-*.',
+  items:[
+   'Crear 3 storage accounts con LRS, ZRS y RA-GRS respectivamente. Comparar "Data protection" tab',
+   'En la cuenta RA-GRS, verificar el endpoint secundario de lectura (-secondary.blob.core.windows.net)',
+   'Simular un failover manual en la cuenta GRS. Verificar que queda en LRS tras el failover',
+   'az storage account create --sku Premium_LRS y comparar performance tier vs Standard',
+   'Crear un Managed Disk Premium SSD y otro Ultra Disk — comparar blades (snapshots solo en Premium)'
+]},
+{ tier:'t2', dom:'mon', title:'Azure Site Recovery', why:'Marcado "High" — "zero-knowledge territory pero carries high exam weight" según tu guía.',
+  items:[
+   'Crear un segundo Recovery Services Vault en una región TARGET distinta a tus VMs actuales',
+   'Habilitar replicación ASR (Azure VM to Azure VM) hacia la región target. Notar la Cache Storage Account creada automáticamente',
+   'Configurar la Replication Policy (RPO, retención de recovery points)',
+   'Esperar a que la replicación inicial complete (estado "Protected")',
+   'Ejecutar un Test Failover hacia una VNet aislada y validar que arranca sin afectar producción. Hacer cleanup al finalizar',
+   'Crear un Recovery Plan con orden de failover para 2+ VMs, incluyendo un script/Automation Runbook post-failover',
+   '(Opcional, cuidando costos) Ejecutar un Failover real planned y el proceso de re-protect + failback'
+]},
+
+{ tier:'t3', dom:'comp', title:'App Service avanzado', why:'20-25% del examen es Compute. App Service ya lo conocés parcialmente — esto cubre slots, scaling y backup.',
+  items:[
+   'Configurar scaling manual y autoscale en un App Service Plan',
+   'Configurar un custom domain en un App Service',
+   'Configurar backup de un App Service',
+   'Crear deployment slots y hacer un slot swap'
+]},
+{ tier:'t3', dom:'net', title:'Azure DNS', why:'"Frecuentemente testeado pero pasado por alto" por candidatos con experiencia en networking.',
+  items:[
+   'Crear una Public DNS Zone, agregar registros A, CNAME, TXT, MX',
+   'Intentar crear un CNAME en el apex — confirmar el error; usar un Alias record en su lugar',
+   'Crear una Private DNS Zone, vincularla a tu VNet con auto-registration habilitado. Crear una VM y verificar registro automático',
+   'Vincular la misma Private DNS Zone a una segunda VNet solo en modo resolución (sin auto-registration)',
+   'Desde una VM, ejecutar nslookup hacia el privatelink de tu storage account (retomando el lab de Storage Networking)'
+]},
+{ tier:'t3', dom:'net', title:'Network Watcher & Flow Logs', why:'"Zero experience pero tested frequently" — herramientas específicas y qué diagnostica cada una.',
+  items:[
+   'Habilitar Network Watcher en tu región',
+   'Ejecutar IP Flow Verify desde una VM hacia un destino bloqueado por NSG y otro permitido',
+   'Ejecutar Next Hop desde una VM hacia 8.8.8.8 y hacia otra VM en la misma VNet',
+   'Ejecutar Connection Troubleshoot entre dos VMs de la misma VNet y hacia una URL externa',
+   'Habilitar NSG Flow Logs v2 sobre un NSG existente, apuntando a una Storage Account nueva. Explorar el JSON crudo',
+   'Habilitar Traffic Analytics sobre esos Flow Logs y revisar el dashboard generado',
+   'Generar una Topology de tu VNet actual',
+   '(Opcional) Ejecutar VPN Diagnostics si tenés un VPN Gateway de otro laboratorio'
+]},
+{ tier:'t3', dom:'mon', title:'Azure Monitor, Alerts & Action Groups', why:'"Zero experience pero high exam weight" según tu guía.',
+  items:[
+   'Revisar las Metrics nativas de una VM (CPU %, Network In/Out) en Azure Monitor Metrics Explorer',
+   'Habilitar Diagnostic Settings en un recurso (ej. NSG o Storage) enviando Resource Logs a un Log Analytics Workspace',
+   'Crear un Action Group con notificación por Email + un Webhook de prueba',
+   'Crear una Metric Alert (CPU > 70% por 5 min) vinculada al Action Group',
+   'Generar carga de CPU en la VM y confirmar que la alerta se dispara y notifica',
+   'Crear una Activity Log Alert que dispare cuando se elimine cualquier VM en el RG',
+   'Crear una Alert Processing Rule que suprima notificaciones durante una ventana de mantenimiento',
+   'Comparar un alert stateful vs uno configurado como stateless'
+]},
+{ tier:'t3', dom:'comp', title:'ARM Templates', why:'Parte explícita del skills-measured oficial ("Automate deployment of resources by using templates").',
+  items:[
+   'Modificar un ARM template existente y desplegarlo con az deployment group create',
+   'Guardar un deployment existente como template exportado'
+]},
+{ tier:'t3', dom:'mon', title:'Recovery Services Vault (Deep Dive)', why:'Backup policy settings, restore options y cross-region restore — "partial knowledge" en tu guía.',
+  items:[
+   'Crear un Recovery Services Vault, definiendo su redundancy (GRS) antes de cualquier backup',
+   'Crear una Backup Policy custom: frecuencia diaria, retención diaria/semanal/mensual (patrón GFS)',
+   'Habilitar backup de una VM con esa policy y forzar un backup on-demand',
+   'Restaurar usando "Create new VM" desde el recovery point',
+   'Restaurar usando "Restore disk only" y adjuntar el disco a una VM existente',
+   'Habilitar Cross-region restore en el vault (requiere GRS) y ejecutar una restauración en la región secundaria',
+   'Intentar cambiar el vault de GRS a LRS después de haber hecho un backup — confirmar que está bloqueado',
+   'Eliminar un elemento de backup y confirmar que soft delete lo retiene 14 días',
+   'Configurar backup de un Azure File Share en el mismo vault'
+]},
+
+{ tier:'t4', dom:'store', title:'Gestión de datos en Storage', why:'Parte del skills-measured oficial ("Manage data in Azure storage accounts") no cubierta en tu guía de 18 módulos.',
+  items:[
+   'Usar AzCopy para copiar datos masivos entre storage accounts',
+   'Configurar Object Replication entre dos storage accounts (requiere versioning habilitado)',
+   'Crear un Azure file share y montarlo en una VM Windows y en una Linux',
+   'Configurar Lifecycle Management en Blob Storage (mover a Cool tras 30 días, eliminar tras 90)'
+]},
+{ tier:'t4', dom:'comp', title:'Container Registry & ACI', why:'"Ya conocés Docker bien" — solo agrega la capa Azure-específica, tested con escenarios prácticos.',
+  items:[
+   'Crear un ACR Basic, hacer login, tag y push de una imagen',
+   'Usar ACR Tasks (az acr build) para construir la imagen directamente en la nube',
+   'Actualizar el ACR a Premium, habilitar geo-replication a una segunda región',
+   'az acr import para importar una imagen pública desde Docker Hub',
+   'Desplegar un ACI simple desde tu imagen en ACR',
+   'Desplegar un Container Group con 2 contenedores compartiendo IP y volumen',
+   'Configurar la ACI con integración a VNet (delegando el subnet a Microsoft.ContainerInstance/containerGroups)',
+   'Detener y volver a iniciar el ACI, notar el cobro solo por segundos de ejecución'
+]},
+{ tier:'t4', dom:'gov', title:'Objetos de identidad & SSPR', why:'Parte del skills-measured oficial ("Manage Azure AD objects") no cubierta en tu guía de 18 módulos.',
+  items:[
+   'Crear usuarios/grupos manualmente y hacer un bulk import vía CSV; gestionar una guest account (B2B invite)',
+   'Configurar Self-service password reset (SSPR) para un grupo de usuarios'
+]},
+{ tier:'t4', dom:'gov', title:'Management Groups', why:'Baja dificultad según tu guía, pero aparece en preguntas de escenario de governance.',
+  items:[
+   'Crear jerarquía: Root MG → MG "Corp" → MG "Sandbox". Mover tu suscripción a "Sandbox"',
+   'Asignar una Policy a nivel Management Group y verificar que se propaga a la subscription',
+   'az account management-group list y az account management-group show para inspeccionar jerarquía',
+   'Intentar mover la misma suscripción a dos MGs — confirmar que solo puede pertenecer a uno'
+]},
+
+{ tier:'t5', dom:'comp', title:'AKS básico', why:'Explícitamente deprioritizado en tu plan original por bajo ROI frente al tiempo disponible.',
+  items:[
+   'Crear un cluster AKS básico, exponer un servicio y configurar scaling de nodos',
+   'Hacer un upgrade de versión del cluster'
+]},
+{ tier:'t5', dom:'net', title:'Azure Bastion', why:'Tu guía la marca "Low" — fácil y aprendible en 20 minutos.',
+  items:[
+   'Crear la subred AzureBastionSubnet /26 e implementar Azure Bastion Basic SKU',
+   'Conectarte a una VM sin Public IP vía Bastion desde el navegador',
+   'Intentar nombrar la subred de otra forma — confirmar que el deployment falla',
+   'Bloquear el puerto RDP/SSH en el NSG salvo desde el rango de AzureBastionSubnet y confirmar que Bastion deja de conectar',
+   'Actualizar a Standard SKU y probar la conexión vía cliente nativo'
+]},
+{ tier:'t5', dom:'gov', title:'Dynamic Groups & Administrative Units', why:'Requiere Entra ID P1/P2 — verificá disponibilidad en tu suscripción antes de invertir tiempo acá.',
+  items:[
+   'Crear un Dynamic User Group con regla user.department -eq "Sales". Confirmar el ingreso automático de un usuario con ese atributo',
+   'Intentar agregar manualmente un miembro a ese grupo dinámico — confirmar que no está disponible',
+   'Crear una Administrative Unit "NY-Users", agregar 2 usuarios manualmente',
+   'Asignar el rol Helpdesk Administrator con scope limitado a esa AU',
+   'Confirmar que un Global Administrator puede gestionar usuarios fuera de la AU sin restricción'
+]},
+{ tier:'t5', dom:'gov', title:'Cost Management', why:'Parte del skills-measured oficial pero de bajo peso relativo en preguntas técnicas.',
+  items:[
+   'Configurar budgets y cost alerts en Cost Management'
+]},
+
+{ tier:'t6', dom:'rev', title:'Repaso final de Exam Traps', why:'No es contenido nuevo — es la verificación de que ya cubriste cada trampa del examen con un lab real.',
+  items:[
+   'Recorrer la tabla completa de Exam Traps y, por cada uno, señalar en qué laboratorio de esta lista lo comprobaste vos mismo. Si algún trap no tiene lab asociado, es un gap — volvé al módulo correspondiente'
+]}
+];
+
+const container = document.getElementById('mods');
+let allIds = [];
+let rank = 0;
+
+MODULES.forEach(mod=>{
+  rank++;
+  const det = document.createElement('details');
+  det.className = 'mod';
+  det.dataset.mod = rank;
+
+  const d = DOM[mod.dom];
+
+  const itemsHtml = mod.items.map((text,i)=>{
+    const id = `m${rank}i${i}`;
+    allIds.push(id);
+    return `<label class="item" data-id="${id}">
+      <input type="checkbox" data-id="${id}">
+      <span>${text}</span>
+    </label>`;
+  }).join('');
+
+  det.innerHTML = `
+    <summary>
+      <span class="rank">${String(rank).padStart(2,'0')}</span>
+      <div class="mod-body">
+        <div class="mod-tags">
+          <span class="tier ${mod.tier}">${ {t1:'Muy alta',t2:'Alta',t3:'Media',t4:'Media-baja',t5:'Baja',t6:'Repaso'}[mod.tier] }</span>
+          <span class="domtag" style="background:${d.bg};color:${d.fg}">${d.label}</span>
+        </div>
+        <div class="mod-title">${mod.title}</div>
+        <div class="mod-why">${mod.why}</div>
+      </div>
+      <span class="mod-progress" data-modprogress="${rank}">0/${mod.items.length}</span>
+      <span class="chevron">›</span>
+    </summary>
+    <div class="items">${itemsHtml}</div>
+  `;
+  container.appendChild(det);
+});
+
+const STORE_KEY = 'progress134';
+let state = { checked: {} };
+
+async function loadState(){
+  try{
+    const res = await window.storage.get(STORE_KEY, false);
+    if(res && res.value) state = JSON.parse(res.value);
+  }catch(e){ /* sin progreso previo */ }
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+    const id = cb.dataset.id;
+    if(state.checked[id]){
+      cb.checked = true;
+      cb.closest('.item').classList.add('done');
+    }
+  });
+  updateAll();
+}
+
+async function saveState(){
+  try{
+    await window.storage.set(STORE_KEY, JSON.stringify(state), false);
+  }catch(e){ console.error('No se pudo guardar el progreso', e); }
+}
+
+function updateAll(){
+  let totalDone = 0;
+  let rank = 0;
+  MODULES.forEach(mod=>{
+    rank++;
+    let done = 0;
+    mod.items.forEach((_,i)=>{
+      const id = `m${rank}i${i}`;
+      if(state.checked[id]) done++;
+    });
+    totalDone += done;
+    document.querySelector(`[data-modprogress="${rank}"]`).textContent = `${done}/${mod.items.length}`;
+  });
+  document.getElementById('totalLabel').textContent = `${totalDone} / ${allIds.length}`;
+  const pct = Math.round((totalDone/allIds.length)*100);
+  document.getElementById('totalBar').style.width = pct + '%';
+}
+
+container.addEventListener('change', (e)=>{
+  if(e.target.matches('input[type="checkbox"]')){
+    const id = e.target.dataset.id;
+    state.checked[id] = e.target.checked;
+    e.target.closest('.item').classList.toggle('done', e.target.checked);
+    updateAll();
+    saveState();
+  }
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(confirm('¿Reiniciar todo el progreso marcado?')){
+    state.checked = {};
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+      cb.checked = false;
+      cb.closest('.item').classList.remove('done');
+    });
+    updateAll();
+    saveState();
+  }
+});
+
+document.querySelector('.mod[data-mod="1"]').open = true;
+
+loadState();
+</script>
+</body>
+</html>

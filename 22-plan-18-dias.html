@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Plan de 18 días</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12151b;
+    --panel:#1a1e26;
+    --panel-2:#20252f;
+    --border:#2a2f3b;
+    --border-strong:#39404f;
+    --text:#e7e9ee;
+    --text-dim:#9aa2b1;
+    --text-faint:#6b7385;
+    --azure:#5b8def;
+    --azure-dim:#2a3b5c;
+    --amber:#f0ad4e;
+    --amber-dim:#4a3a1e;
+    --green:#3ecf8e;
+    --green-dim:#183828;
+    --red:#e5626b;
+    --red-dim:#3a2026;
+    --purple:#9d8cf1;
+    --purple-dim:#332c52;
+    --teal:#4fc8c8;
+    --teal-dim:#1c3a3a;
+    --coral:#f08a5d;
+    --coral-dim:#42291c;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    padding:32px 16px 80px;
+    line-height:1.5;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  header{margin-bottom:28px;}
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--azure);
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:28px;
+    font-weight:700;
+    margin:0 0 6px;
+    letter-spacing:-.01em;
+  }
+  .sub{color:var(--text-dim);font-size:14px;margin:0 0 24px;}
+
+  .control-row{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    flex-wrap:wrap;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 16px;
+    margin-bottom:16px;
+  }
+  .control-row label{font-size:13px;color:var(--text-dim);}
+  .control-row input[type="date"]{
+    background:var(--panel-2);
+    border:1px solid var(--border-strong);
+    color:var(--text);
+    border-radius:8px;
+    padding:6px 10px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+  }
+  .countdown{
+    margin-left:auto;
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:var(--text-dim);
+    text-align:right;
+  }
+  .countdown b{color:var(--amber);font-size:16px;}
+
+  .progress-card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px 20px;
+    margin-bottom:28px;
+  }
+  .progress-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:10px;
+  }
+  .progress-top .label{font-size:13px;color:var(--text-dim);}
+  .progress-top .value{
+    font-family:'JetBrains Mono',monospace;
+    font-size:20px;
+    font-weight:700;
+    color:var(--text);
+  }
+  .bar-track{
+    height:8px;
+    border-radius:99px;
+    background:var(--panel-2);
+    overflow:hidden;
+  }
+  .bar-fill{
+    height:100%;
+    background:linear-gradient(90deg,var(--azure),var(--teal));
+    border-radius:99px;
+    transition:width .3s ease;
+    width:0%;
+  }
+
+  details.day{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    margin-bottom:10px;
+    overflow:hidden;
+  }
+  details.day[open]{border-color:var(--border-strong);}
+  details.day.today{border-color:var(--azure);}
+  summary{
+    list-style:none;
+    cursor:pointer;
+    padding:14px 18px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  summary::-webkit-details-marker{display:none;}
+  .day-num{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    font-weight:700;
+    color:var(--text-faint);
+    min-width:52px;
+  }
+  details.day.today .day-num{color:var(--azure);}
+  .day-title{flex:1;min-width:180px;}
+  .day-title .modtag-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:3px;}
+  .modtag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    padding:2px 7px;
+    border-radius:5px;
+    font-weight:700;
+    letter-spacing:.02em;
+  }
+  .day-focus{font-size:12.5px;color:var(--text-dim);}
+  .day-date{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--text-faint);
+    white-space:nowrap;
+  }
+  .day-progress{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--text-dim);
+    white-space:nowrap;
+    min-width:42px;
+    text-align:right;
+  }
+  .chevron{
+    color:var(--text-faint);
+    font-size:12px;
+    transition:transform .2s ease;
+  }
+  details[open] .chevron{transform:rotate(90deg);}
+
+  .items{
+    padding:0 18px 16px 82px;
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+  }
+  .item{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    font-size:13.5px;
+    color:var(--text);
+  }
+  .item.done{color:var(--text-faint);text-decoration:line-through;}
+  .item input[type="checkbox"]{
+    appearance:none;
+    width:16px;height:16px;
+    min-width:16px;
+    border-radius:4px;
+    border:1.5px solid var(--border-strong);
+    background:var(--panel-2);
+    margin-top:1px;
+    cursor:pointer;
+    position:relative;
+  }
+  .item input[type="checkbox"]:checked{
+    background:var(--green);
+    border-color:var(--green);
+  }
+  .item input[type="checkbox"]:checked::after{
+    content:"";
+    position:absolute;
+    left:4px;top:1px;
+    width:4px;height:8px;
+    border:solid #0c1f16;
+    border-width:0 2px 2px 0;
+    transform:rotate(45deg);
+  }
+  .note{
+    font-size:12px;
+    color:var(--amber);
+    background:var(--amber-dim);
+    border-left:2px solid var(--amber);
+    padding:8px 10px;
+    border-radius:0 6px 6px 0;
+    margin-top:2px;
+  }
+
+  footer{
+    margin-top:28px;
+    text-align:center;
+    font-size:12px;
+    color:var(--text-faint);
+  }
+  footer button{
+    background:var(--panel);
+    border:1px solid var(--border-strong);
+    color:var(--text-dim);
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    padding:6px 14px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  footer button:hover{border-color:var(--red);color:var(--red);}
+</style>
+</head>
+<body>
+<p style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;margin:0 0 16px"><a href="00-indice.html" style="color:#5b8dee;text-decoration:none">← Índice AZ-104</a></p>
+
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">AZ-104 · Microsoft Azure Administrator</p>
+    <h1>Plan de laboratorios — 18 días</h1>
+    <p class="sub">82 ejercicios priorizados por ROI de examen. Marcá cada lab al completarlo — tu progreso se guarda solo.</p>
+  </header>
+
+  <div class="control-row">
+    <label for="startDate">Fecha de inicio</label>
+    <input type="date" id="startDate">
+    <div class="countdown" id="countdownBox">Elegí una fecha para ver el calendario</div>
+  </div>
+
+  <div class="progress-card">
+    <div class="progress-top">
+      <span class="label">Progreso total</span>
+      <span class="value" id="totalLabel">0 / 82</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="totalBar"></div></div>
+  </div>
+
+  <div id="days"></div>
+
+  <footer>
+    <button id="resetBtn">Reiniciar progreso</button>
+  </footer>
+
+</div>
+
+<script>
+const MOD = {
+  gov:   {label:'GOV',  bg:'var(--purple-dim)', fg:'var(--purple)'},
+  store: {label:'STOR', bg:'var(--teal-dim)',   fg:'var(--teal)'},
+  comp:  {label:'COMP', bg:'var(--coral-dim)',  fg:'var(--coral)'},
+  net:   {label:'NET',  bg:'var(--azure-dim)',  fg:'var(--azure)'},
+  mon:   {label:'MON',  bg:'var(--amber-dim)',  fg:'var(--amber)'},
+  rev:   {label:'REV',  bg:'var(--border)',     fg:'var(--text-dim)'}
+};
+
+const DAYS = [
+{ n:1, mods:['gov','gov'], title:'Módulos 1 + 2 · RBAC / Policy / Locks', focus:'Partial knowledge — solo validar traps',
+  items:[
+   'RBAC: asignar rol Reader a nivel Subscription y verificar herencia en un Resource Group (Check access)',
+   'RBAC: con un usuario que solo tiene Contributor, intentar asignar un rol — confirmar que falla',
+   'RBAC: az role definition list --query "[?contains(roleName,\'Virtual Machine\')]"',
+   'Policy: asignar "Require a tag on resources" en modo Audit y revisar la Compliance blade',
+   'Locks: agregar CanNotDelete a un RG, confirmar bloqueo de delete, remover y reintentar',
+   'Locks: agregar ReadOnly a una Storage Account y confirmar que bloquea "List keys"'
+]},
+{ n:2, mods:['gov','store'], title:'Módulos 3 + 4 · Management Groups / Storage Redundancy', focus:'',
+  items:[
+   'Mgmt Groups: crear jerarquía Root → Corp → Sandbox y mover tu suscripción a Sandbox',
+   'Mgmt Groups: asignar una policy a nivel MG y verificar que se propaga a la subscription',
+   'Storage: crear 3 storage accounts (LRS / ZRS / RA-GRS) y comparar su tab "Data protection"',
+   'Storage: en la cuenta RA-GRS, verificar el endpoint secundario de lectura (-secondary)',
+   'Storage: simular un failover manual en la cuenta GRS y confirmar que queda en LRS tras el failover'
+]},
+{ n:3, mods:['store'], title:'Módulo 5 · Storage Networking', focus:'Service Endpoint vs Private Endpoint — examen seguro',
+  items:[
+   'Firewall en "Selected networks" + Service Endpoint, validar acceso dentro y fuera de la VNet',
+   'Crear un Private Endpoint y revisar la Private DNS Zone auto-creada',
+   'Comparar resolución DNS (nslookup) antes y después del Private Endpoint',
+   'Generar un Service SAS y un Account SAS — comparar scopes',
+   'Generar un User Delegation SAS con --auth-mode login --as-user',
+   'Crear una Stored Access Policy, revocarla y confirmar que el SAS asociado deja de funcionar'
+]},
+{ n:4, mods:['comp'], title:'Módulo 6 (día 1) · Availability Sets & Zones', focus:'Zero coverage — completo',
+  items:[
+   'Crear un Availability Set con 2 VMs desde el inicio; confirmar que no se puede agregar una VM existente después',
+   'Revisar cuántos Fault Domains y Update Domains asignó Azure al set',
+   'Crear 2 VMs en Availability Zones distintas (1 y 2) en una región compatible'
+]},
+{ n:5, mods:['comp'], title:'Módulo 6 (día 2) · VM Scale Sets', focus:'Zero coverage — completo',
+  items:[
+   'Crear un VMSS Uniform con 2 instancias, integrado a un Load Balancer Standard',
+   'Configurar autoscale (CPU>70% scale-out, <30% scale-in) y generar carga con stress',
+   'Cambiar la scale-in policy a OldestVM y forzar un scale-in manual',
+   'Crear un VMSS en modo Flexible y comparar la administración individual vs Uniform'
+]},
+{ n:6, mods:['net'], title:'Módulo 7 · Azure Load Balancer', focus:'Weak experience — completo',
+  items:[
+   'Crear un LB Basic y un LB Standard; comparar el SKU de Public IP requerido en cada uno',
+   'Confirmar que el LB Standard bloquea tráfico entrante hasta agregar una regla',
+   'Configurar una Load Balancing Rule HTTP con Health Probe',
+   'Configurar una Inbound NAT Rule para RDP/SSH directo a una VM específica',
+   'Detener el servicio web en una VM backend y observar cómo el Health Probe la marca unhealthy',
+   'Configurar Session Persistence = Client IP y validar con refrescos desde el mismo cliente'
+]},
+{ n:7, mods:['net'], title:'Módulo 8 · Application Gateway', focus:'High difficulty — priorizar WAF y path-routing',
+  items:[
+   'Crear un Application Gateway v2 con subnet dedicada y 2 backend pools',
+   'Configurar path-based routing: /images/* → pool A, /* → pool B',
+   'Configurar un listener multi-sitio (hostname-based) para dos dominios',
+   'SSL termination con certificado en el listener; HTTP Settings backend en HTTP plano',
+   'Convertir a WAF v2, probar modo Detection y luego Prevention con una petición maliciosa simple'
+]},
+{ n:8, mods:['net','net'], title:'Módulos 9 + 10 · DNS / Bastion', focus:'Quick wins, baja dificultad',
+  items:[
+   'Crear una Public DNS Zone con registros A, CNAME, TXT, MX',
+   'Intentar un CNAME en el apex (falla) y usar un Alias record en su lugar',
+   'Crear una Private DNS Zone con auto-registration; validar el registro automático de una VM',
+   'Implementar Azure Bastion Basic con subred AzureBastionSubnet /26',
+   'Conectarte a una VM sin Public IP vía el navegador',
+   'Confirmar que Bastion sigue dependiendo del NSG de la VM (bloquear el puerto y ver que falla)'
+]},
+{ n:9, mods:['net'], title:'Módulo 11 · Network Watcher & Flow Logs', focus:'Zero coverage — herramientas específicas',
+  items:[
+   'Habilitar Network Watcher en tu región',
+   'Ejecutar IP Flow Verify hacia un destino bloqueado y otro permitido por NSG',
+   'Ejecutar Next Hop hacia 8.8.8.8 y hacia otra VM en la misma VNet',
+   'Habilitar NSG Flow Logs v2 hacia una Storage Account y explorar el JSON crudo',
+   'Habilitar Traffic Analytics sobre esos Flow Logs y revisar el dashboard'
+]},
+{ n:10, mods:['gov'], title:'Módulo 12 · Dynamic Groups & Administrative Units', focus:'Condicional a licencia Entra ID P1',
+  items:[
+   'Verificar en Entra admin center → Licenses si tenés Entra ID P1 disponible',
+   'Si tenés P1: crear un Dynamic User Group con regla user.department -eq "Sales"',
+   'Si tenés P1: crear una Administrative Unit y asignar Helpdesk Administrator con scope limitado',
+   'Si NO tenés P1: repasar en teoría los traps (P1 vs P2, Global Admin bypass de AUs)'
+]},
+{ n:11, mods:['comp'], title:'Módulo 13 · Container Registry & ACI', focus:'Ya conocés Docker — va rápido',
+  items:[
+   'Crear un ACR Basic; login, tag y push de tu imagen nginx',
+   'Usar ACR Tasks (az acr build) para construir la imagen en la nube',
+   'Actualizar a Premium y habilitar geo-replication a una segunda región',
+   'Desplegar un Container Group con 2 contenedores compartiendo IP y volumen'
+]},
+{ n:12, mods:['mon'], title:'Módulo 14 (día 1) · Monitor, Alerts & Action Groups', focus:'',
+  items:[
+   'Habilitar Diagnostic Settings en un recurso, enviando Resource Logs a Log Analytics',
+   'Crear un Action Group con notificación por Email + un Webhook de prueba',
+   'Crear una Metric Alert (CPU > 70% por 5 min) vinculada al Action Group',
+   'Generar carga de CPU en una VM y confirmar que la alerta se dispara y notifica'
+]},
+{ n:13, mods:['mon','mon'], title:'Módulos 14 + 15 · Log Analytics & KQL', focus:'Alto peso de examen — no te lo saltes',
+  items:[
+   'Crear un Log Analytics Workspace y conectar una VM (Azure Monitor Agent) + los NSG Flow Logs',
+   'Ejecutar la query de VMs con alta CPU sobre la tabla Perf',
+   'Practicar where / project / summarize / order by / take sobre la tabla Heartbeat',
+   'Practicar un join entre Heartbeat y Perf por Computer',
+   'Practicar union Heartbeat, Event combinado con ago(24h)'
+]},
+{ n:14, mods:['mon'], title:'Módulo 15 (día 2) · Refuerzo KQL', focus:'',
+  items:[
+   'Comparar una comparación case-sensitive (==) vs case-insensitive (=~) con el mismo string',
+   'Cambiar la retención del workspace de 30 a 90 días y revisar el impacto estimado de costo',
+   'Escribir y ejecutar 10 queries propias combinando los operadores esenciales',
+   'Guardar una query como Log Alert (conectando con el Módulo 14)'
+]},
+{ n:15, mods:['mon'], title:'Módulo 16 · Recovery Services Vault', focus:'Restore options + soft delete',
+  items:[
+   'Crear un vault definiendo su redundancy (GRS) antes de cualquier backup',
+   'Crear una Backup Policy custom con patrón GFS (diaria / semanal / mensual)',
+   'Habilitar backup de una VM con esa policy y forzar un backup on-demand',
+   'Restaurar usando "Create new VM" desde el recovery point',
+   'Intentar cambiar el vault de GRS a LRS después de un backup — confirmar que está bloqueado',
+   'Eliminar un elemento de backup y confirmar que soft delete lo retiene 14 días'
+]},
+{ n:16, mods:['mon'], title:'Módulo 17 · Azure Site Recovery', focus:'Test Failover es lo más preguntado',
+  items:[
+   'Crear un segundo Recovery Services Vault en una región TARGET distinta',
+   'Habilitar replicación Azure VM to Azure VM hacia la región target',
+   'Configurar la Replication Policy (RPO, retención de recovery points)',
+   'Ejecutar un Test Failover hacia una VNet aislada y hacer el cleanup al finalizar'
+]},
+{ n:17, mods:['rev'], title:'Módulo 18 + repaso general', focus:'Detectar gaps finales',
+  items:[
+   'Recorrer la tabla de Exam Traps del Módulo 18 y marcar en qué lab comprobaste cada uno',
+   'Resolver un examen de práctica completo, con tiempo',
+   'Anotar los temas donde fallaste para el repaso final de mañana'
+]},
+{ n:18, mods:['rev'], title:'Día previo al examen', focus:'Nada nuevo — solo consolidar',
+  items:[
+   'Repasar únicamente tus notas de errores del día 17',
+   'Descansar — no estudiar contenido nuevo'
+]}
+];
+
+const container = document.getElementById('days');
+let allIds = [];
+
+DAYS.forEach(day=>{
+  const det = document.createElement('details');
+  det.className = 'day';
+  det.dataset.day = day.n;
+
+  const tags = day.mods.map(m=>{
+    const c = MOD[m];
+    return `<span class="modtag" style="background:${c.bg};color:${c.fg}">${c.label}</span>`;
+  }).join('');
+
+  const itemsHtml = day.items.map((text,i)=>{
+    const id = `d${day.n}i${i}`;
+    allIds.push(id);
+    return `<label class="item" data-id="${id}">
+      <input type="checkbox" data-id="${id}">
+      <span>${text}</span>
+    </label>`;
+  }).join('');
+
+  det.innerHTML = `
+    <summary>
+      <span class="day-num">DÍA ${String(day.n).padStart(2,'0')}</span>
+      <div class="day-title">
+        <div class="modtag-row">${tags}</div>
+        <div style="font-size:13.5px;font-weight:500;margin-top:2px">${day.title}</div>
+        ${day.focus ? `<div class="day-focus">${day.focus}</div>` : ''}
+      </div>
+      <span class="day-date" data-daydate="${day.n}"></span>
+      <span class="day-progress" data-dayprogress="${day.n}">0/${day.items.length}</span>
+      <span class="chevron">›</span>
+    </summary>
+    <div class="items">${itemsHtml}</div>
+  `;
+  container.appendChild(det);
+});
+
+const STORE_KEY = 'progress';
+let state = { checked: {}, startDate: null };
+
+async function loadState(){
+  try{
+    const res = await window.storage.get(STORE_KEY, false);
+    if(res && res.value) state = JSON.parse(res.value);
+  }catch(e){ /* no previous state, use defaults */ }
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+    const id = cb.dataset.id;
+    if(state.checked[id]){
+      cb.checked = true;
+      cb.closest('.item').classList.add('done');
+    }
+  });
+  if(state.startDate){
+    document.getElementById('startDate').value = state.startDate;
+  }
+  updateAll();
+}
+
+async function saveState(){
+  try{
+    await window.storage.set(STORE_KEY, JSON.stringify(state), false);
+  }catch(e){ console.error('No se pudo guardar el progreso', e); }
+}
+
+function updateAll(){
+  let totalDone = 0;
+  DAYS.forEach(day=>{
+    let dayDone = 0;
+    day.items.forEach((_,i)=>{
+      const id = `d${day.n}i${i}`;
+      if(state.checked[id]) dayDone++;
+    });
+    totalDone += dayDone;
+    document.querySelector(`[data-dayprogress="${day.n}"]`).textContent = `${dayDone}/${day.items.length}`;
+  });
+  document.getElementById('totalLabel').textContent = `${totalDone} / ${allIds.length}`;
+  const pct = Math.round((totalDone/allIds.length)*100);
+  document.getElementById('totalBar').style.width = pct + '%';
+  updateDates();
+}
+
+function updateDates(){
+  const startVal = document.getElementById('startDate').value;
+  const box = document.getElementById('countdownBox');
+  document.querySelectorAll('.day').forEach(d=>d.classList.remove('today'));
+  if(!startVal){
+    box.textContent = 'Elegí una fecha para ver el calendario';
+    document.querySelectorAll('[data-daydate]').forEach(el=>el.textContent='');
+    return;
+  }
+  const start = new Date(startVal + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const msPerDay = 86400000;
+  let todayDayNum = Math.floor((today - start)/msPerDay) + 1;
+
+  DAYS.forEach(day=>{
+    const d = new Date(start.getTime() + (day.n-1)*msPerDay);
+    const label = d.toLocaleDateString('es', {day:'2-digit', month:'short'});
+    document.querySelector(`[data-daydate="${day.n}"]`).textContent = label;
+    if(day.n === todayDayNum){
+      document.querySelector(`.day[data-day="${day.n}"]`).classList.add('today');
+    }
+  });
+
+  const examDate = new Date(start.getTime() + 17*msPerDay);
+  const daysLeft = Math.ceil((examDate - today)/msPerDay);
+  const examLabel = examDate.toLocaleDateString('es', {day:'2-digit', month:'long', year:'numeric'});
+  if(daysLeft > 0){
+    box.innerHTML = `Examen estimado: <b>${examLabel}</b> · faltan <b>${daysLeft}</b> días`;
+  } else if(daysLeft === 0){
+    box.innerHTML = `Hoy es el examen — <b>éxitos</b>`;
+  } else {
+    box.innerHTML = `Fecha de examen (${examLabel}) ya pasó`;
+  }
+}
+
+container.addEventListener('change', (e)=>{
+  if(e.target.matches('input[type="checkbox"]')){
+    const id = e.target.dataset.id;
+    state.checked[id] = e.target.checked;
+    e.target.closest('.item').classList.toggle('done', e.target.checked);
+    updateAll();
+    saveState();
+  }
+});
+
+document.getElementById('startDate').addEventListener('change', (e)=>{
+  state.startDate = e.target.value;
+  updateDates();
+  saveState();
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(confirm('¿Reiniciar todo el progreso marcado?')){
+    state.checked = {};
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+      cb.checked = false;
+      cb.closest('.item').classList.remove('done');
+    });
+    updateAll();
+    saveState();
+  }
+});
+
+const firstOpen = DAYS[0];
+document.querySelector(`.day[data-day="${firstOpen.n}"]`).open = true;
+
+loadState();
+</script>
+</body>
+</html>

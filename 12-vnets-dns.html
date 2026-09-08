@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · VNets, IPs y DNS</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">VNets, IPs y DNS</div>
+    <div class="nav-sub">Subredes, peering, endpoints y resolución de nombres</div>
+    <div class="nav-weight">Dominio 4 · 15–20%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#sec-vnet"><span class="dot"></span>VNets y subredes</a>
+  <a href="#sec-ip"><span class="dot"></span>Direcciones IP</a>
+  <a href="#sec-peering"><span class="dot"></span>VNet Peering</a>
+  <a href="#sec-endpoints"><span class="dot"></span>Service vs Private Endpoints</a>
+  <a href="#sec-dns-publico"><span class="dot"></span>Azure DNS público</a>
+  <a href="#sec-dns-privado"><span class="dot"></span>Private DNS Zones</a>
+  <a href="#sec-resolucion"><span class="dot"></span>Resolución de nombres</a>
+  <a href="#sec-rutas"><span class="dot"></span>Rutas del sistema y UDR</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> este dominio se gana con tres cosas: saber contar IPs (Azure te come <strong>5 por subred</strong>), saber por qué un peering "que está configurado" no pasa tráfico (<strong>no es transitivo</strong> y hay que armarlo de los dos lados), y saber cuándo la respuesta es <strong>Private Endpoint + Private DNS Zone</strong> y no Service Endpoint. Sumale dos números que se memorizan sí o sí: <code>168.63.129.16</code> y el mínimo <code>/29</code> de subred. En Azure DNS: apex = <code>@</code>, TTL 1 h = <code>3600</code>, Set vs Config, delegar el dominio = <strong>cambiar NS en el registrar</strong>, y delegar un subdominio = <strong>NS llamado como el hijo, en la zona padre</strong> (nunca tocando el SOA).
+  </div>
+
+  <!-- ══════════ SECCIÓN 1 ══════════ -->
+  <div class="section" id="sec-vnet">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🌐</div>
+      <span class="section-title">Virtual Networks y subredes</span>
+      <span class="section-tag">Fundamento</span>
+    </div>
+
+    <p>Una <strong>VNet</strong> es tu red privada dentro de Azure. Vive en <strong>una sola región</strong> y en <strong>una sola subscription</strong>, y no se puede mover de región. Se define con uno o más <strong>address spaces</strong> en notación CIDR (rangos privados RFC 1918 o públicos que te pertenezcan), y adentro se corta en <strong>subredes</strong> que no pueden solaparse entre sí ni salirse del address space.</p>
+
+    <div class="card">
+      <div class="card-title">Reglas de direccionamiento</div>
+      <ul>
+        <li>Podés <strong>agregar</strong> address spaces a una VNet existente y <strong>quitarlos</strong>, siempre que no queden subredes dentro del rango que sacás.</li>
+        <li>Para <strong>cambiar el rango de una subred</strong> lo clásico es que la subred esté vacía: si tiene NICs, gateways o endpoints asociados, la operación falla.</li>
+        <li>Prefijo de subred más chico soportado: <span class="chip chip-yellow">/29</span> (3 IPs utilizables). Prefijo más grande para el address space: <span class="chip chip-blue">/2</span>. En la práctica el diseño típico es un <code>/16</code> de VNet con subredes <code>/24</code>.</li>
+        <li>Los address spaces de VNets que vayas a <strong>peerear o conectar a on-premises</strong> no pueden solaparse. Planificá el IPAM antes, no después.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">Cambiar 172.16.0.0/16 → 192.168.0.0/16 (todavía sin VMs)</div>
+      <p>corp-vnet ya tiene tres subnets 172.16.x. Hay que redefinir el address space ya, antes de migrar VMs.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Borrar y redesplegar</strong> la VNet</td><td><span class="yes">Sí</span></td><td>Sin VMs es lo más limpio: address space + subnets de una. <code>az network vnet delete</code> + create</td></tr>
+            <tr><td>Solo borrar las tres subnets</td><td><span class="no">No</span></td><td>Necesario si editaras el rango, pero <em>solo</em> no cambia el address space</td></tr>
+            <tr><td>Editar el address range a 192.168.0.0/16</td><td><span class="no">No</span></td><td>Falla: las subnets 172.16 quedan fuera del nuevo CIDR</td></tr>
+            <tr><td>Agregar 192.168.0.0/16</td><td><span class="no">No</span></td><td>Queda el 172.16, que es el conflicto con on-prem</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> no podés achicar/cambiar el address space si hay subnets que no caben. “Add” no saca el rango viejo. Sin recursos, <strong>delete + recreate</strong> gana a “delete subnets y después edit” (incompleto si solo borrás).</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Las 5 IPs que Azure te reserva en CADA subred</div>
+      <p>Sobre un ejemplo de subred <code>10.0.1.0/24</code>:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Dirección</th><th>Ejemplo</th><th>Para qué</th></tr></thead>
+          <tbody>
+            <tr><td>Primera (network address)</td><td><code>10.0.1.0</code></td><td>Identificador de la red</td></tr>
+            <tr><td>Segunda</td><td><code>10.0.1.1</code></td><td><strong>Default gateway</strong> de la subred</td></tr>
+            <tr><td>Tercera</td><td><code>10.0.1.2</code></td><td>Mapeo del <strong>DNS de Azure</strong> a <code>168.63.129.16</code></td></tr>
+            <tr><td>Cuarta</td><td><code>10.0.1.3</code></td><td>Segundo mapeo de <strong>DNS de Azure</strong></td></tr>
+            <tr><td>Última (broadcast)</td><td><code>10.0.1.255</code></td><td>Dirección de broadcast</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Regla mental: <strong>IPs utilizables = 2^(32−prefijo) − 5</strong>.</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Prefijo</th><th>Total de IPs</th><th>Utilizables</th><th>Comentario</th></tr></thead>
+        <tbody>
+          <tr><td><code>/29</code></td><td>8</td><td><span class="chip chip-yellow">3</span></td><td>El mínimo soportado</td></tr>
+          <tr><td><code>/28</code></td><td>16</td><td>11</td><td>Mínimo del Azure DNS Private Resolver</td></tr>
+          <tr><td><code>/27</code></td><td>32</td><td>27</td><td>Tamaño recomendado de GatewaySubnet</td></tr>
+          <tr><td><code>/26</code></td><td>64</td><td>59</td><td>Mínimo de Firewall y Bastion</td></tr>
+          <tr><td><code>/24</code></td><td>256</td><td><span class="chip chip-green">251</span></td><td>El número que más aparece en el examen</td></tr>
+          <tr><td><code>/16</code></td><td>65.536</td><td>65.531</td><td>Address space típico de VNet</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si te preguntan "cuántas VMs entran en una subred <code>/24</code>", la respuesta NO es 254 (el cálculo de networking clásico) ni 256. Es <strong>251</strong>, porque Azure reserva <strong>5</strong> direcciones y no 2. El mismo razonamiento aplica a un <code>/27</code>: 27 utilizables, no 30.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Subredes con nombre obligatorio</div>
+      <p>Algunos servicios exigen una subred <strong>dedicada</strong> con un <strong>nombre exacto</strong>. Si el nombre no coincide carácter por carácter, el despliegue falla.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Nombre exacto</th><th>Servicio</th><th>Tamaño</th><th>Detalle</th></tr></thead>
+          <tbody>
+            <tr><td><code>GatewaySubnet</code></td><td>VPN Gateway / ExpressRoute Gateway</td><td>Mínimo <code>/29</code>, recomendado <code>/27</code></td><td>No se le asocian NSG ni se le ponen otros recursos</td></tr>
+            <tr><td><code>AzureFirewallSubnet</code></td><td>Azure Firewall</td><td>Mínimo <span class="chip chip-blue">/26</span></td><td>Los NSG no se aplican acá</td></tr>
+            <tr><td><code>AzureBastionSubnet</code></td><td>Azure Bastion</td><td>Mínimo <span class="chip chip-blue">/26</span></td><td>El examen clásico espera <strong>sin UDR</strong>. Hoy se pueden asociar route tables con rutas específicas. NSG solo con las reglas requeridas</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Subnet delegation</div>
+      <p>Delegar una subred es <strong>cederle el control</strong> a un servicio PaaS para que inyecte sus propios recursos ahí dentro. Se hace con el proveedor y el tipo de recurso, por ejemplo:</p>
+      <ul>
+        <li><code>Microsoft.Web/serverFarms</code> → VNet integration de <strong>App Service</strong>.</li>
+        <li><code>Microsoft.ContainerInstance/containerGroups</code> → <strong>Azure Container Instances</strong>.</li>
+        <li><code>Microsoft.Sql/managedInstances</code> → <strong>SQL Managed Instance</strong>.</li>
+      </ul>
+      <p>Una subred delegada queda <strong>reservada para ese servicio</strong>: no le metés VMs comunes al lado.</p>
+      <pre>az network vnet create -g rg-net -n vnet-prod --address-prefix 10.0.0.0/16 \
+  --subnet-name snet-app --subnet-prefix 10.0.1.0/24
+
+az network vnet subnet create -g rg-net --vnet-name vnet-prod \
+  -n AzureBastionSubnet --address-prefix 10.0.250.0/26
+
+az network vnet subnet update -g rg-net --vnet-name vnet-prod -n snet-aci \
+  --delegations Microsoft.ContainerInstance/containerGroups</pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen (Bastion / CIDR):</strong> VNet <code>10.3.2.0/23</code> + subnet existente <code>10.3.2.0/24</code>. “IP address details” = el CIDR de <code>AzureBastionSubnet</code> → <strong><code>10.3.3.0/26</code></strong> (mitad libre del /23, /26 alineado). <code>10.3.2.0/26</code> solapa. /27 es chico. El detalle y los cmdlets están en <a href="13-seguridad-de-red.html#bastion">13 · Azure Bastion</a>.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Una VNet es un recurso <strong>regional</strong>, pero las subredes <strong>no</strong> están atadas a una zona de disponibilidad. Una misma subred abarca las tres AZ de la región: la zonalidad la definís en la VM o en la IP pública, no en la subred.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 2 ══════════ -->
+  <div class="section" id="sec-ip">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">📍</div>
+      <span class="section-title">Direcciones IP privadas y públicas</span>
+      <span class="section-tag">Muy preguntado</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">IP privada (en la NIC)</div>
+      <ul>
+        <li><strong>Dynamic</strong> (por defecto): Azure asigna la siguiente libre de la subred vía DHCP. Puede cambiar si la VM se deallocatea.</li>
+        <li><strong>Static</strong>: la fijás vos dentro del rango de la subred y no cambia. Necesaria para DCs, DNS servers y appliances.</li>
+        <li>La IP privada <strong>sigue reservada</strong> mientras la VM esté detenida (deallocated), porque pertenece a la NIC y no a la VM.</li>
+        <li>Una NIC puede tener <strong>varias configuraciones IP</strong> (una primaria y varias secundarias).</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> una IP privada estática se configura <strong>desde Azure</strong> (propiedades de la NIC), <strong>nunca desde el sistema operativo invitado</strong>. Si entrás al Windows/Linux y ponés la IP a mano en el adaptador, el guest y la plataforma se desincronizan y la VM pierde conectividad. La respuesta correcta siempre es "cambiar la asignación a Static en la IP configuration de la NIC" y dejar el SO en DHCP.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Puerto 80 desde Internet: ¿qué primero?</div>
+      <p>Blade de vm1: NIC Public IP = <code>-</code>, privada 10.0.1.4, “this NIC does not contain NSGs”.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Crear una Public IP y asociarla a <code>ipconfig1</code></td><td><span class="yes">Sí</span></td><td>Sin PIP no hay camino desde Internet. El dash del exhibit es la pista</td></tr>
+            <tr><td>JIT en vm1</td><td><span class="no">No</span></td><td>JIT abre 22/3389 bajo demanda; no da IP pública ni es HTTP 80</td></tr>
+            <tr><td>NSG en la subnet default</td><td><span class="no">No</span></td><td>Paso 2 (Allow 80). Primero hace falta la PIP. Además Standard PIP es deny hasta el NSG</td></tr>
+            <tr><td>Enable accelerated networking</td><td><span class="no">No</span></td><td>Throughput de la NIC, no conectividad pública</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “what should you do <em>first</em>” + Public IP = <code>-</code> → <strong>asociar la PIP</strong>. El NSG hace falta después (sobre todo SKU Standard). JIT y accelerated networking no resuelven HTTP público.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">IP pública</div>
+      <ul>
+        <li>Es un <strong>recurso propio</strong> con su ciclo de vida: podés desasociarla y reutilizarla.</li>
+        <li>Se asocia a una <strong>NIC de VM</strong>, a un <strong>Load Balancer</strong> (frontend), a un <strong>VPN Gateway</strong>, a <strong>Application Gateway</strong>, <strong>Azure Firewall</strong>, <strong>NAT Gateway</strong> o <strong>Bastion</strong>.</li>
+        <li>Soporta <strong>IPv4 e IPv6</strong>.</li>
+        <li>Un <strong>Public IP Prefix</strong> reserva un <strong>rango contiguo</strong> de IPs públicas estáticas (SKU Standard). Sirve cuando necesitás que un tercero ponga tus salidas en una allowlist: sabés el rango de antemano y no cambia.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Característica</th><th>Public IP <strong>Basic</strong></th><th>Public IP <strong>Standard</strong></th></tr></thead>
+        <tbody>
+          <tr><td>Asignación</td><td>Dynamic o Static</td><td><strong>Siempre Static</strong></td></tr>
+          <tr><td>Seguridad por defecto</td><td><span class="chip chip-red">Abierta</span> — permite el inbound si no hay NSG</td><td><span class="chip chip-green">Cerrada</span> — <em>secure by default</em>: hay que permitir explícitamente con un NSG</td></tr>
+          <tr><td>Availability Zones</td><td><span class="no">✗</span> No soporta</td><td><span class="yes">✓</span> Zone-redundant o zonal</td></tr>
+          <tr><td>Combina con Load Balancer</td><td>Solo con LB <strong>Basic</strong></td><td>Solo con LB <strong>Standard</strong></td></tr>
+          <tr><td>Estado del producto</td><td><span class="chip chip-red">En retiro</span> — no usar para diseños nuevos</td><td><span class="chip chip-green">Recomendada</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "creé la VM con una IP pública Standard y no puedo llegar por RDP/SSH aunque no toqué ningún NSG". Causa: la Standard es <strong>cerrada por defecto</strong>, así que la ausencia de un NSG que permita el puerto significa <em>bloqueado</em>, al revés de la Basic. Además, el <strong>SKU de la IP pública tiene que coincidir con el del Load Balancer</strong>: no podés colgar una IP Standard de un LB Basic.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>Para <strong>salida a internet predecible</strong> desde VMs sin exponerlas, la respuesta de diseño es <strong>NAT Gateway</strong> con IP pública Standard o Public IP Prefix, no darle IP pública a cada VM.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 3 ══════════ -->
+  <div class="section" id="sec-peering">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">🔗</div>
+      <span class="section-title">VNet Peering</span>
+      <span class="section-tag">Estrella del dominio</span>
+    </div>
+
+    <p>El peering conecta dos VNets para que se hablen con <strong>IPs privadas</strong> como si fueran una sola red. El tráfico viaja por el <strong>backbone de Microsoft</strong> — nunca por la internet pública — con <strong>baja latencia y ancho de banda alto</strong>, y <strong>no requiere gateway, VPN ni appliance</strong>.</p>
+
+    <div class="flow">
+      <div class="flow-step">VNet A<br><small>10.1.0.0/16</small></div>
+      <div class="flow-arrow">↔</div>
+      <div class="flow-step highlight">Peering<br><small>backbone MSFT</small></div>
+      <div class="flow-arrow">↔</div>
+      <div class="flow-step">VNet B<br><small>10.2.0.0/16</small></div>
+      <div class="flow-arrow">✗</div>
+      <div class="flow-step">VNet C<br><small>no alcanzable desde A</small></div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Escenario</th><th>¿Soportado?</th><th>Nombre</th></tr></thead>
+        <tbody>
+          <tr><td>Dos VNets en la misma región</td><td><span class="yes">✓</span></td><td>Virtual network peering</td></tr>
+          <tr><td>Dos VNets en regiones distintas</td><td><span class="yes">✓</span></td><td><strong>Global VNet peering</strong></td></tr>
+          <tr><td>VNets en subscriptions distintas</td><td><span class="yes">✓</span></td><td>Requiere permisos en ambas</td></tr>
+          <tr><td>VNets en tenants de Entra ID distintos</td><td><span class="yes">✓</span></td><td>Se configura con CLI/PowerShell</td></tr>
+          <tr><td>Address spaces que se solapan</td><td><span class="no">✗</span></td><td>El peering directamente no se crea</td></tr>
+          <tr><td>Tránsito A → B → C</td><td><span class="no">✗</span></td><td><strong>No es transitivo</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">¿Con cuáles peerea VNet1-1? (otro tenant, otra sub)</div>
+      <p>Sub <strong>S1</strong> (tenant A): VNet1-1, VNet1-2, VNet1-3. Sub <strong>S2</strong> (tenant B): VNet2-1, VNet2-2. “Usá peering lo más posible.” ¿Con quién puede peerear VNet1-1?</p>
+      <p><strong>Con las cuatro:</strong> VNet1-2, VNet1-3, VNet2-1 y VNet2-2. Distinta subscription y distinto tenant <strong>no</strong> bloquean el peering (sí hace falta permiso en ambos lados, típico CLI/PS).</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Solo VNet1-2</td><td><span class="no">No</span></td><td>Inventa un límite “una sola VNet”</td></tr>
+            <tr><td>Solo las de S1</td><td><span class="no">No</span></td><td>Peering cruza subscriptions</td></tr>
+            <tr><td>Solo VNet2-1</td><td><span class="no">No</span></td><td>También peerea con las de su propia sub</td></tr>
+            <tr><td>Las cuatro</td><td><span class="yes">Sí</span></td><td>Mismo o distinto tenant / sub. El techo es overlap de CIDR, no el directorio</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “otro tenant de Entra” <strong>no</strong> obliga a VPN Gateway. Peering cross-tenant existe. El distractor recorta a “solo la misma subscription” o “solo el mismo tenant”.</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>Las 3 reglas que se preguntan:</strong> 1) el peering <strong>no es transitivo</strong>: si A↔B y B↔C, A <em>no</em> llega a C (hay que peerear A↔C, o usar hub-and-spoke con un NVA/Azure Firewall y UDRs). 2) los <strong>address spaces no pueden solaparse</strong>. 3) el peering se configura en <strong>los dos lados</strong>: hasta que ambos links estén en estado <span class="chip chip-green">Connected</span> no pasa tráfico.
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "creé el peering desde VNet1 y no hay conectividad". El estado del link queda en <strong>Initiated</strong> hasta que se cree el peering recíproco desde VNet2; recién ahí ambos pasan a <strong>Connected</strong>. Si el escenario menciona un solo peering creado, la acción correcta es <strong>crear el peering del otro lado</strong>, no tocar NSGs ni rutas.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: tres VNets, peering no transitivo</div>
+      <p>vnet1 10.0.0.0/16 · vnet2 10.1.0.0/16 · vnet3 10.2.0.0/16. Links listados: vnet1→vnet2, vnet2→vnet3, vnet3→vnet2. <strong>No</strong> hay vnet2→vnet1.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Origen</th><th>Puede hablar con</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>VMs de vnet1</td><td><strong>vnet2 only</strong></td><td>Hay link a vnet2. A vnet3 no: peering <strong>no es transitivo</strong></td></tr>
+            <tr><td>VMs de vnet2</td><td><strong>vnet3 only</strong></td><td>Hay link a vnet3. A vnet1 no: falta el lado vnet2→vnet1</td></tr>
+            <tr><td>VMs de vnet3</td><td><strong>vnet2 only</strong></td><td>Hay link a vnet2. A vnet1 no (no transitivo)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> leé los links como <strong>unidireccionales</strong> si el enunciado los enumera así. A↔B y B↔C <strong>no</strong> implica A↔C. “vnet1 and vnet3” es el cebo de transitividad.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">PowerShell: un solo <code>Add-AzVirtualNetworkPeering</code></div>
+      <p>VM1 East US (<code>VNet1</code> 10.10.0.0/16) y VM2 East US 2 (<code>VNet2</code> 10.20.0.0/16). Corrés esto y el ping privado de VM1 a VM2 falla:</p>
+<pre><code>$vnet1 = Get-AzVirtualNetwork -Name 'VNet1' -ResourceGroupName 'RG1'
+$vnet2 = Get-AzVirtualNetwork -Name 'VNet2' -ResourceGroupName 'RG2'
+Add-AzVirtualNetworkPeering -Name 'VNet1-VNet2' -VirtualNetwork $vnet1 `
+  -RemoteVirtualNetworkId $vnet2.Id</code></pre>
+      <p>El portal arma los dos lados; PowerShell/CLI <strong>no</strong>. Falta el link recíproco. Global peering East US ↔ East US 2 es válido; los CIDR no se solapan.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Add peering VNet2 → VNet1</strong></td><td><span class="yes">Sí</span></td><td>El único lado que falta. Después ambos = Connected</td></tr>
+            <tr><td>Usar la IP pública</td><td><span class="no">No</span></td><td>El objetivo es privado. El peering es para eso</td></tr>
+            <tr><td>Cambiar el address space / subnet de VNet2</td><td><span class="no">No</span></td><td>10.10 y 10.20 no se pisan</td></tr>
+            <tr><td>NSG en ambas subnets</td><td><span class="no">No</span></td><td>Sin NSG, el default AllowVNetInBound alcanza cuando hay peering Connected</td></tr>
+            <tr><td>Mover VM2 a East US</td><td><span class="no">No</span></td><td>Global peering existe. Distinta región no es el bug</td></tr>
+            <tr><td>Crear un VNet gateway</td><td><span class="no">No</span></td><td>Peering no usa gateway</td></tr>
+            <tr><td><code>New-NetFirewallRule</code> ICMPv4</td><td><span class="no">Carnada</span></td><td>El enunciado ya lo corrió en las dos VMs. El ping sigue fallando por el peering incompleto</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>Add-AzVirtualNetworkPeering -Name 'VNet2-VNet1' -VirtualNetwork $vnet2 `
+  -RemoteVirtualNetworkId $vnet1.Id
+# CLI: az network vnet peering create --vnet-name VNet2 --remote-vnet VNet1 --allow-vnet-access</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> un <code>Add-AzVirtualNetworkPeering</code> deja el link en <strong>Initiated</strong>. El ping, el NSG, el gateway y “mover de región” son distractores. East US / East US 2 = global peering, válido.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Opciones del peering (memorizar los nombres)</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th>Qué hace</th><th>Cuándo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Allow virtual network access</strong></td><td>Habilita la comunicación entre ambas VNets (etiqueta <code>VirtualNetwork</code> del NSG incluye el rango peereado)</td><td>Activada por defecto</td></tr>
+            <tr><td><strong>Allow forwarded traffic</strong></td><td>Acepta tráfico que <em>no se originó</em> en la VNet peereada, es decir, reenviado por un NVA</td><td>Hub-and-spoke con firewall o NVA en el hub</td></tr>
+            <tr><td><strong>Allow gateway transit</strong></td><td>Se activa en el <strong>hub</strong>: comparte su VPN/ER Gateway con la otra VNet</td><td>Lado de la VNet que <em>tiene</em> el gateway</td></tr>
+            <tr><td><strong>Use remote gateways</strong></td><td>Se activa en la <strong>spoke</strong>: usa el gateway de la VNet remota para llegar a on-premises</td><td>Lado que <em>no</em> tiene gateway (y no puede tener uno propio)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><em>Gateway transit</em> y <em>use remote gateways</em> son un par: uno se prende de cada lado. Una VNet que usa el gateway remoto <strong>no puede tener su propio gateway</strong>.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SUBNET1 usa el ExpressRoute de VNET2, sin recursos extra</div>
+      <p>VNET1/SUBNET1 → VNET2 y un proxy on-prem vía <code>EXP-ROUTE1</code> (ya en VNET2). Mínimo costo: no crear recursos nuevos. Elegí 2.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Peering VNET1 ↔ VNET2</td><td><span class="yes">Sí</span></td><td>Sin peering no hay camino privado ni transit</td></tr>
+            <tr><td>VNET1 peering: <strong>Use remote gateway</strong></td><td><span class="yes">Sí</span></td><td>La spoke consume el ER del hub. En VNET2: Allow gateway transit</td></tr>
+            <tr><td>Crear un VNet gateway en VNET1</td><td><span class="no">No</span></td><td>Recurso extra + costo. El enunciado lo prohíbe</td></tr>
+            <tr><td>Linkear un gateway de VNET1 a EXP-ROUTE1</td><td><span class="no">No</span></td><td>Implica crear ese gateway</td></tr>
+            <tr><td>VNET2: Use remote gateway</td><td><span class="no">No</span></td><td>VNET2 <em>tiene</em> el circuito. Use remote va en la spoke (VNET1)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “no additional resources” mata el gateway en VNET1. Use remote = <strong>spoke</strong>. El hub pone Allow gateway transit (a menudo no está en las opciones).</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Gateway vs forward: no son el mismo problema</div>
+      <p>El peering es un cable privado entre dos VNets. Por defecto, por ese cable solo pasa tráfico <strong>nacido</strong> en una de las dos. Hay dos checkboxes extra porque hay dos formas distintas de “usar al vecino como intermediario”.</p>
+
+      <p><strong>1. Gateway transit = compartir la puerta a on-premises (VPN / ExpressRoute).</strong></p>
+      <ul>
+        <li>El <strong>gateway</strong> es un recurso de Azure (<code>Virtual network gateway</code>) en la <code>GatewaySubnet</code> del hub: túnel VPN o circuito ExpressRoute hacia el datacenter.</li>
+        <li><strong>Allow gateway transit</strong> (solo hub): “mis spokes pueden usar <em>mi</em> puerta”. Se prende en el peering del lado de VN02.</li>
+        <li><strong>Use remote gateways</strong> (solo spokes): “voy a usar la puerta del hub, no instalo la mía”. Se prende en VN01 y VN03. Una VNet no puede tener gateway propio y remoto a la vez.</li>
+        <li>Eso hace que una VM de VN01 llegue a <strong>on-prem</strong> por el hub. <strong>No</strong> hace, por sí solo, que VN01 hable con VN03: el peering sigue sin ser transitivo.</li>
+      </ul>
+
+      <p><strong>2. Forwarded traffic = aceptar paquetes que un router reenvió (NVA / Azure Firewall).</strong></p>
+      <ul>
+        <li>La NVA en VN02 es un cartero. Un paquete sale de VN01, entra a VN02, la NVA lo reenvía a VN03.</li>
+        <li>Cuando VN03 lo recibe, el origen IP es VN01, pero llegó por el cable de VN02. Azure, por defecto: “este cable es de VN02, descarto correo de VN01”.</li>
+        <li><strong>Allow forwarded traffic</strong> en la VNet que <strong>recibe</strong> (las spokes): “acepto tráfico que mi peer reenvió desde otro lado”.</li>
+        <li>Por eso <em>“solo en VN02”</em> está mal: quien necesita el permiso es sobre todo <strong>VN01 y VN03</strong> (y suele ir en ambos lados del peering). El hub también lo puede tener, pero no “only VN02”.</li>
+        <li>Además hace falta: <strong>IP forwarding</strong> en la NIC de la NVA, y <strong>UDRs</strong> en las subredes spoke (next hop <code>Virtual appliance</code> = IP de la NVA) para que el tráfico a la otra spoke no intente ir “directo” (el peering no es transitivo, no hay ruta).</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>Allow gateway transit + Use remote gateways</th><th>Allow forwarded traffic</th></tr></thead>
+        <tbody>
+          <tr><td>¿Qué intermediario?</td><td>VPN Gateway / ExpressRoute Gateway del hub</td><td>NVA, Azure Firewall, o cualquier VM que rutea</td></tr>
+          <tr><td>¿Para qué tráfico?</td><td>Spoke → <strong>on-premises</strong> (y rutas BGP que anuncie el gateway)</td><td>Spoke → NVA → <strong>otra spoke</strong> (u otro origen reenviado)</td></tr>
+          <tr><td>¿Dónde se prende?</td><td>Transit = <strong>hub</strong>. Use remote = <strong>spokes</strong></td><td>En quien <strong>recibe</strong> el paquete reenviado (típicamente las spokes)</td></tr>
+          <tr><td>¿Sustituye al peering VN01–VN03?</td><td>No</td><td>Sí, junto con UDR + IP forwarding: es el “mínimo cambio” vs mallar peerings</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Yes/No del examen: VN02 hub + NVA, hablar VN01 ↔ VN03</div>
+      <div class="tbl-wrap" style="margin:0;border:none">
+      <table>
+        <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td>Allow gateway transit <strong>solo en VN02</strong></td><td><span class="yes">Yes</span></td><td>Esa casilla es del que <em>ofrece</em> el gateway/router del hub. No se prende en las spokes.</td></tr>
+          <tr><td>Use remote gateways <strong>solo en VN01 y VN03</strong></td><td><span class="yes">Yes</span></td><td>Las spokes <em>consumen</em> el gateway remoto. El hub no usa un gateway ajeno.</td></tr>
+          <tr><td>Allow forwarded traffic <strong>solo en VN02</strong></td><td><span class="no">No</span></td><td>Las spokes tienen que aceptar el paquete que la NVA reenvió (origen = la otra spoke). “Only hub” no alcanza.</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “gateway” ≠ “forward”. Gateway = compartir la <strong>VPN/ER del hub</strong> (par transit / remote). Forward = la NVA <strong>reenvía</strong> paquetes ajenos y el destino tiene que aceptarlos. Minimizar cambios para que las spokes se hablen: <strong>no</strong> creés peering VN01–VN03; usás NVA + UDR + forwarded traffic en las spokes. IP forwarding en la NIC de la NVA es otro ítem aparte (<code>EnableIPForwarding</code>).</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Costos y límites</div>
+      <ul>
+        <li>Se factura por <strong>GB de ingress y de egress</strong>, en ambos extremos. El peering global cuesta más que el regional.</li>
+        <li>Un <strong>Load Balancer Basic interno</strong> no es alcanzable a través de <strong>global peering</strong> (sí con Standard). Detalle clásico de pregunta.</li>
+        <li>Alternativa a mallar N×N peerings: <strong>Azure Virtual WAN</strong> o hub-and-spoke con ruteo por NVA.</li>
+      </ul>
+      <pre>az network vnet peering create -g rg-net -n hub-to-spoke1 \
+  --vnet-name VN02 --remote-vnet VN01 \
+  --allow-vnet-access --allow-forwarded-traffic --allow-gateway-transit
+
+az network vnet peering create -g rg-net -n spoke1-to-hub \
+  --vnet-name VN01 --remote-vnet VN02 \
+  --allow-vnet-access --allow-forwarded-traffic --use-remote-gateways
+
+# Lo mismo VN02 ↔ VN03. IP forwarding en la NVA:
+az network nic update -g rg-net -n nva-nic --ip-forwarding true</pre>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 4 ══════════ -->
+  <div class="section" id="sec-endpoints">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🔒</div>
+      <span class="section-title">Service Endpoints vs Private Endpoints</span>
+      <span class="section-tag">Comparativa clave</span>
+    </div>
+
+    <p>Los dos sirven para que una VM llegue a un servicio PaaS (Storage, SQL, Key Vault) sin pasar por internet abierta, pero funcionan de forma distinta y el examen los enfrenta constantemente.</p>
+
+    <div class="card">
+      <div class="card-title">Orden: front-end + back-end + Azure SQL, mínimo esfuerzo</div>
+      <p>VMs front-end, VMs back-end y <strong>Azure SQL Database</strong> (PaaS). Filtrado de seguridad independiente por capa, mínimo admin.</p>
+      <p>Orden correcto:</p>
+      <ol>
+        <li>Crear el <strong>resource group</strong></li>
+        <li>Crear <strong>una sola VNet</strong></li>
+        <li>Crear <strong>dos subnets</strong> (front y back)</li>
+        <li><strong>Enable service endpoints</strong> en esas subnets (<code>Microsoft.Sql</code>)</li>
+      </ol>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Una VNet por capa + peering</td><td><span class="no">No</span></td><td>Más admin. Una VNet con subnets aísla igual (NSG por subnet) sin peering</td></tr>
+            <tr><td>Tres subnets</td><td><span class="no">No</span></td><td>SQL Database PaaS <strong>no vive en una subnet</strong> de tu VNet. Solo hacen falta dos (las VMs)</td></tr>
+            <tr><td>Service endpoints</td><td><span class="yes">Sí</span></td><td>Las subnets de las VMs hablan con SQL por backbone, con firewall de SQL atado a la VNet. Mínimo esfuerzo vs Private Endpoint</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “tres capas” no son tres subnets si una es <strong>Azure SQL Database</strong>. PaaS no se mete en subnet; se alcanza con <strong>service endpoint</strong> (o Private Endpoint si piden IP privada). Una VNet por capa + peering es el distractor de “más trabajo”.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Aspecto</th><th>Service Endpoint</th><th>Private Endpoint</th></tr></thead>
+        <tbody>
+          <tr><td>Dónde se configura</td><td>En la <strong>subred</strong> (se habilita <code>Microsoft.Storage</code>, <code>Microsoft.Sql</code>, etc.)</td><td>Es un <strong>recurso propio</strong>: crea una <strong>NIC con IP privada</strong> dentro de tu subred</td></tr>
+          <tr><td>IP del servicio PaaS</td><td>Sigue siendo <strong>pública</strong>; lo que cambia es que el servicio ve tu identidad de VNet/subred</td><td>Pasa a tener una <strong>IP privada de tu VNet</strong></td></tr>
+          <tr><td>Granularidad</td><td>Todo el <strong>servicio</strong> (todas las cuentas de ese tipo permitidas por firewall)</td><td>Una <strong>instancia concreta</strong> y hasta un <strong>sub-resource</strong> (blob, file, table…)</td></tr>
+          <tr><td>Acceso desde on-premises</td><td><span class="no">✗</span> No funciona</td><td><span class="yes">✓</span> Sí, por <strong>VPN o ExpressRoute</strong></td></tr>
+          <tr><td>Acceso desde VNets peereadas</td><td><span class="no">✗</span> No se extiende al peering</td><td><span class="yes">✓</span> Sí (con la Private DNS Zone linkeada)</td></tr>
+          <tr><td>DNS</td><td>Sin cambios</td><td>Requiere <strong>Private DNS Zone</strong> <code>privatelink.*</code></td></tr>
+          <tr><td>Costo</td><td><span class="chip chip-green">Gratis</span></td><td><span class="chip chip-yellow">Se cobra</span> por hora y por datos procesados</td></tr>
+          <tr><td>Protege contra data exfiltration</td><td>Parcial</td><td><span class="yes">✓</span> Mejor: solo esa instancia</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cómo trabaja el Private Endpoint con DNS</div>
+      <p>El punto entero es que el <strong>FQDN público no cambia</strong> (tus apps siguen usando <code>mystorage.blob.core.windows.net</code>) pero resuelve a una IP privada. La cadena es:</p>
+      <div class="flow">
+        <div class="flow-step">mystorage.<br><small>blob.core.windows.net</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">CNAME a<br><small>mystorage.privatelink.blob.core.windows.net</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step highlight">Private DNS Zone<br><small>A record → 10.0.1.4</small></div>
+      </div>
+      <p>Por eso hay que crear la zona privada <code>privatelink.&lt;servicio&gt;.core.windows.net</code>, <strong>linkearla a la VNet</strong> y dejar que el Private Endpoint registre ahí su A record.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Servicio</th><th>Sub-resource</th><th>Private DNS Zone</th></tr></thead>
+          <tbody>
+            <tr><td>Storage — Blob</td><td><code>blob</code></td><td><code>privatelink.blob.core.windows.net</code></td></tr>
+            <tr><td>Storage — File</td><td><code>file</code></td><td><code>privatelink.file.core.windows.net</code></td></tr>
+            <tr><td>Azure SQL Database</td><td><code>sqlServer</code></td><td><code>privatelink.database.windows.net</code></td></tr>
+            <tr><td>Key Vault</td><td><code>vault</code></td><td><code>privatelink.vaultcore.azure.net</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "creé el Private Endpoint pero la app sigue conectándose por la IP pública". El recurso está bien: falta el <strong>DNS</strong>. Sin la Private DNS Zone <code>privatelink.*</code> vinculada a la VNet (o sin el forwarder correspondiente para on-premises), el FQDN sigue resolviendo a la IP pública. Nunca es "reiniciar la VM": es <strong>crear/linkear la zona privada</strong>.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Si el escenario pide acceso <strong>desde on-premises</strong> a un PaaS por la conexión privada, la respuesta es <strong>Private Endpoint</strong>. El Service Endpoint solo aplica a tráfico que sale de una subred de la VNet — y se habilita en la subred <strong>de origen</strong> (la de la VM: <code>appSubnet</code>), no en una subred que se llame <code>storageSubnet</code>. Y si querés cerrar del todo el servicio, ponelo con <em>Public network access = Disabled</em> además del Private Endpoint.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Private Link <em>service</em>: <code>privateLinkServiceNetworkPolicies</code></div>
+      <p>No es lo mismo que Private Endpoint. El PLS (tu servicio detrás de un Standard LB, IP de origen en la subnet) exige <code>"privateLinkServiceNetworkPolicies": "Disabled"</code> en esa subnet.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Disabled aplica <strong>solo</strong> a la IP de origen del Private Link service</td><td><span class="yes">Yes</span></td><td>La property es del PLS, no apaga NSG/UDR del resto de la subnet</td></tr>
+            <tr><td>El <strong>portal</strong> la pone en Disabled al crear el PLS</td><td><span class="yes">Yes</span></td><td>ARM / CLI / PS hay que setearla a mano</td></tr>
+            <tr><td>El resto del tráfico de la subnet se filtra por <strong>ACL</strong></td><td><span class="no">No</span></td><td>Se filtra por <strong>NSG</strong> (security rules). ACL es carnada</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>az network vnet subnet update -g rg --vnet-name vnet -n default \
+  --private-link-service-network-policies Disabled</code></pre>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <code>privateLinkServiceNetworkPolicies</code> ≠ <code>privateEndpointNetworkPolicies</code>. Yes / Yes / No. El No es “ACL”: el resto usa <strong>NSG</strong>. Portal = auto; template = tenés que escribir <code>Disabled</code>.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 5 ══════════ -->
+  <div class="section" id="sec-dns-publico">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">🌍</div>
+      <span class="section-title">Azure DNS público</span>
+      <span class="section-tag">Zonas y registros</span>
+    </div>
+
+    <p>Azure DNS hostea tus dominios públicos. Ojo con el alcance: <strong>Azure DNS no registra dominios</strong> por sí mismo (eso lo hace un registrar o App Service Domains); lo que hace es <strong>alojar la zona</strong> y responder consultas con una red anycast global.</p>
+
+    <div class="card">
+      <div class="card-title">Qué es “delegar” (el concepto)</div>
+      <p>DNS es un árbol. La pregunta “¿cuál es la IP de <code>company.com</code>?” no llega directo a Azure: el resolver pregunta a la raíz → a <code>.com</code> → a <strong>los name servers que el registrar publicó para ese dominio</strong>. <strong>Delegar</strong> es cambiar esa flecha: decirle al registrar “a partir de ahora, los autoritativos son estos NS”. Hasta que no lo hagas, podés tener la zona y el registro A perfectos en Azure y el mundo sigue preguntándole al host viejo.</p>
+      <div class="flow" style="flex-wrap:wrap;margin:12px 0">
+        <div class="flow-step">Usuario<br><small>company.com</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Resolver<br><small>ISP / 8.8.8.8</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">.com<br><small>TLD</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">NS del registrar<br><small>¿host viejo o Azure?</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Zona + A<br><small>IP de App Service</small></div>
+      </div>
+      <ul>
+        <li><strong>Registrar</strong> = dónde compraste el dominio (GoDaddy, Namecheap, App Service Domains). Ahí viven los NS del apex.</li>
+        <li><strong>Azure DNS</strong> = el servidor que <em>responde</em> A, MX, TXT… Azure <strong>no vende</strong> el dominio; solo lo hostea si lo delegás.</li>
+        <li>Hay dos delegaciones distintas: <strong>todo el dominio</strong> (cambiar NS en el registrar → esta pregunta) vs <strong>un subdominio</strong> (NS en la zona padre, más abajo).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Delegación del dominio al registrar (apex → Azure)</div>
+      <ol>
+        <li>Si el dominio no es tuyo: <strong>compralo en un registrar</strong> (GoDaddy, Namecheap, App Service Domains). Azure DNS <strong>no vende</strong> <code>company1.com</code>.</li>
+        <li>Creás la <strong>DNS zone</strong> pública en Azure. Azure asigna <strong>4 name servers</strong> y crea solo el <code>SOA</code> y los <code>NS</code> del apex — no los creás a mano.</li>
+        <li>En el <strong>registrar</strong>, los NS apuntan a esos 4 <code>azure-dns</code>. Eso <strong>es</strong> delegar. El SOA no se toca en el registrar.</li>
+        <li>Hasta que eso no propague, la zona existe pero <strong>nadie la consulta</strong>.</li>
+      </ol>
+<pre><code>az network dns zone create -g RG -n company1.com
+az network dns zone show -g RG -n company1.com --query nameServers -o tsv
+New-AzDnsZone -Name company1.com -ResourceGroupName RG
+Get-AzDnsZone -Name company1.com -ResourceGroupName RG |
+  Select-Object -ExpandProperty NameServers</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí tres: company1.com resoluble en Internet</div>
+      <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Acción</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Purchase the domain with a <strong>domain name registrar</strong></td><td><span class="yes">Sí</span></td></tr>
+          <tr><td>Create a <strong>DNS zone</strong> in Azure</td><td><span class="yes">Sí</span></td></tr>
+          <tr><td>Create an <strong>NS</strong> record <strong>in the registrar</strong> pointing to azure-dns</td><td><span class="yes">Sí</span> — la delegación</td></tr>
+          <tr><td>Purchase with Azure DNS / Create SOA or NS <em>in Azure</em> a mano / Reverse DNS / SOA en el registrar</td><td><span class="no">No</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> tres acciones para que <code>company1.com</code> resuelva en Internet: <strong>comprar en un registrar</strong> + <strong>crear la zona en Azure</strong> + <strong>NS en el registrar</strong> hacia azure-dns. No “purchase using Azure DNS”. SOA y NS del apex los crea Azure solos. Reverse DNS es PTR, no hace al dominio resoluble. La gemela “ya hay zona + A”: solo falta delegar.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Tipo</th><th>Propósito</th><th>Detalle de examen</th></tr></thead>
+        <tbody>
+          <tr><td><code>A</code></td><td>Nombre → <strong>IPv4</strong></td><td>Válido en el apex (<code>@</code>). Varios A en el mismo set = round-robin.</td></tr>
+          <tr><td><code>AAAA</code></td><td>Nombre → <strong>IPv6</strong></td><td>Igual que A, para IPv6.</td></tr>
+          <tr><td><code>CNAME</code></td><td>Un nombre es <strong>alias de otro FQDN</strong></td><td><strong>Un solo valor</strong> por set. <strong>Prohibido en el apex</strong> (ahí ya hay SOA+NS). No puede coexistir con otro tipo en el mismo nombre.</td></tr>
+          <tr><td><code>MX</code></td><td>Servidores de <strong>correo</strong>, con prioridad</td><td>Prioridad más baja = más preferido. El valor es un hostname, no una IP.</td></tr>
+          <tr><td><code>TXT</code></td><td>Texto libre: SPF, DKIM, DMARC, verificación</td><td>Verificar un dominio custom en Entra ID / App Service. Varios TXT en el mismo nombre sí se pueden.</td></tr>
+          <tr><td><code>NS</code></td><td>Qué <strong>name servers</strong> son autoritativos para una zona o subzona</td><td>En el apex los crea Azure y <strong>no se borran</strong>. Para delegar un subdominio, el NS va en la <strong>zona padre</strong>, con el nombre del subdominio.</td></tr>
+          <tr><td><code>SOA</code></td><td><strong>Start of Authority</strong>: dueño de la zona, serial, timers de refresh/retry/expire y TTL mínimo</td><td>Se crea <strong>solo</strong> al crear la zona. No se crea a mano. <strong>No se toca para delegar</strong>.</td></tr>
+          <tr><td><code>SRV</code></td><td>Localiza un <strong>servicio</strong> (protocolo, puerto, peso, prioridad)</td><td>Típico de AD DS y SIP. Nombre: <code>_servicio._protocolo</code> (ej. <code>_sip._tls</code>).</td></tr>
+          <tr><td><code>PTR</code></td><td><strong>Reverse lookup</strong>: IP → nombre</td><td>Vive en una zona reverse (<code>in-addr.arpa</code> / <code>ip6.arpa</code>), no en la zona del dominio.</td></tr>
+          <tr><td><code>CAA</code></td><td>Qué <strong>CAs</strong> pueden emitir certificados para el dominio</td><td>Restringir Let's Encrypt / DigiCert, etc. No resuelve nombres.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Delegación de un subdominio a otra zona Azure</div>
+      <p>Querés que <code>development.company.com</code> lo sirvan <strong>otros</strong> name servers (otra zona DNS, a menudo en otra suscripción o con otro equipo). Eso no se hace tocando el SOA.</p>
+      <ol>
+        <li>Creás la zona hija <code>development.company.com</code>. Azure le pone su propio <code>SOA</code> y sus 4 <code>NS</code> en <code>@</code>.</li>
+        <li>En la zona <strong>padre</strong> <code>company.com</code> creás un record set <strong>NS llamado <code>development</code></strong> (nombre relativo) apuntando a esos 4 NS de la hija.</li>
+      </ol>
+<pre><code># 1) Zona hija (Azure crea SOA + NS del apex sola)
+New-AzDnsZone -Name development.company.com -ResourceGroupName RG
+$childNs = (Get-AzDnsRecordSet -ZoneName development.company.com `
+  -ResourceGroupName RG -Name "@" -RecordType NS).Records
+
+# 2) Delegación: NS "development" EN company.com  ← la respuesta del examen
+New-AzDnsRecordSet -Name "development" -ZoneName "company.com" `
+  -ResourceGroupName RG -Ttl 3600 -RecordType NS -DnsRecords $childNs
+
+# CLI
+az network dns zone create -g RG -n development.company.com
+az network dns record-set ns create -g RG -z company.com -n development --ttl 3600
+az network dns record-set ns add-record -g RG -z company.com -n development \
+  --nsdname ns1-01.azure-dns.com.</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “delegar <code>development.company.com</code> a otros DNS de Azure”. La respuesta es <strong>crear un NS record set llamado <code>development</code> en la zona <code>company.com</code></strong>. No se modifica el SOA del padre, no se crea un SOA a mano en la hija (Azure ya lo crea), y <strong>no</strong> se pone el NS llamado <code>development</code> dentro de la zona hija — ahí el NS del apex ya existe como <code>@</code>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">TTL y record sets</div>
+      <ul>
+        <li>El <strong>TTL</strong> se define por <strong>record set</strong> (no por registro individual) y determina cuánto cachean los resolvers. 1 hora = <strong>3600</strong> segundos (no 60, no 1).</li>
+        <li>Antes de una migración, <strong>bajá el TTL</strong> (por ejemplo a 300 s) con anticipación para que el cambio propague rápido.</li>
+        <li>Los registros <code>SOA</code> y <code>NS</code> del apex se crean automáticamente y <strong>no se pueden borrar</strong>.</li>
+        <li>El apex (root de la zona, <code>company1.com</code> sin prefijo) se nombra <code>@</code>. Un <strong>A en el apex es válido</strong>; un CNAME en el apex no.</li>
+        <li>Varios A en el <strong>mismo</strong> record set = <strong>round-robin DNS</strong> (Azure devuelve todas las IPs). No creás dos record sets llamados <code>www</code>.</li>
+      </ul>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla Set vs Config:</strong> <code>New-AzDnsRecordSet</code> crea el <em>nombre</em> en la zona (<code>-Name</code>, <code>-ZoneName</code>, <code>-RecordType</code>, <code>-Ttl</code>, <code>-DnsRecords</code>). <code>New-AzDnsRecordConfig</code> crea <em>una IP</em> (<code>-IPv4Address</code>) y se pasa al Set. Si el cmdlet lleva <code>-IPv4Address</code>, es Config; si lleva <code>-Name</code> / <code>-ZoneName</code>, es Set.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Script del examen: apex + www round-robin</div>
+<pre><code>New-AzDnsRecordSet -Name "@" -RecordType A -ZoneName "company1.com" `
+  -ResourceGroupName "MyResourceGroup" -Ttl 3600 -DnsRecords `
+  (New-AzDnsRecordConfig -IPv4Address "1.2.3.4")
+
+$aRecords = @()
+$aRecords += New-AzDnsRecordConfig -IPv4Address "2.3.4.5"
+$aRecords += New-AzDnsRecordConfig -IPv4Address "3.4.5.6"
+New-AzDnsRecordSet -Name "www" -ZoneName "company1.com" `
+  -ResourceGroupName MyResourceGroup -Ttl 3600 -RecordType A -DnsRecords $aRecords</code></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Hueco</th><th>Correcto</th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td>Línea del <code>@</code> con <code>-Name</code> / <code>-ZoneName</code></td><td><code>New-AzDnsRecordSet</code></td><td>Estás creando el record set del apex</td></tr>
+          <tr><td>TTL de 1 hora</td><td><code>3600</code></td><td>TTL siempre en segundos</td></tr>
+          <tr><td>Cada <code>-IPv4Address</code></td><td><code>New-AzDnsRecordConfig</code></td><td>Es un registro individual, no el set</td></tr>
+          <tr><td>Línea de <code>-Name "www"</code></td><td><code>New-AzDnsRecordSet</code></td><td>El set <code>www</code> recibe el array <code>$aRecords</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Comandos DNS que hay que reconocer</div>
+      <div class="tbl-wrap" style="margin:0;border:none">
+      <table>
+        <thead><tr><th>Qué</th><th>PowerShell</th><th>Azure CLI</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Crear la zona</td>
+            <td><code>New-AzDnsZone</code></td>
+            <td><code>az network dns zone create</code></td>
+          </tr>
+          <tr>
+            <td>Crear un record set</td>
+            <td><code>New-AzDnsRecordSet</code></td>
+            <td><code>az network dns record-set a create</code></td>
+          </tr>
+          <tr>
+            <td>Una IP (objeto / agregar)</td>
+            <td><code>New-AzDnsRecordConfig</code></td>
+            <td><code>az network dns record-set a add-record --ipv4-address</code></td>
+          </tr>
+          <tr>
+            <td>Leer un set existente</td>
+            <td><code>Get-AzDnsRecordSet</code></td>
+            <td><code>az network dns record-set a show</code></td>
+          </tr>
+          <tr>
+            <td>Agregar una IP a un set ya creado</td>
+            <td><code>Add-AzDnsRecordConfig</code> + <code>Set-AzDnsRecordSet</code></td>
+            <td><code>az network dns record-set a add-record</code></td>
+          </tr>
+          <tr>
+            <td>Delegar un subdominio (NS en el padre)</td>
+            <td><code>New-AzDnsRecordSet -Name development -RecordType NS</code></td>
+            <td><code>az network dns record-set ns create</code> + <code>ns add-record --nsdname</code></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <ul>
+        <li>Zona privada usa otro módulo: <code>New-AzPrivateDnsRecordSet</code> / <code>New-AzPrivateDnsRecordConfig</code> y <code>az network private-dns …</code>. No mezclar con los cmdlets públicos.</li>
+        <li>CLI no tiene el par Set/Config: <code>add-record</code> crea el set si no existe y le suma la IP. En PowerShell el drop-down obliga a distinguirlos.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen (drop-down DNS):</strong> el script pide A en el apex <code>@</code> y dos A en <code>www</code> para round-robin, TTL 1 hora. <code>New-AzDnsRecordSet</code> va en las líneas con <code>-Name</code>. <code>New-AzDnsRecordConfig</code> va en cada <code>-IPv4Address</code>. Si invertís Set/Config, el script no corre. Round-robin <strong>no</strong> es Traffic Manager ni un Load Balancer: son varios A en el mismo record set.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Alias records: la solución al apex</div>
+      <p>El estándar DNS <strong>prohíbe un CNAME en el apex</strong> (el root domain <code>contoso.com</code>, sin <code>www</code>), porque ahí ya conviven los registros <code>SOA</code> y <code>NS</code>. Los <strong>alias records</strong> resuelven eso: son record sets de tipo <code>A</code>, <code>AAAA</code> o <code>CNAME</code> que apuntan directo a un recurso de Azure.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th></th><th>CNAME normal</th><th>Alias record</th></tr></thead>
+          <tbody>
+            <tr><td>Se puede en el apex</td><td><span class="no">✗</span> No</td><td><span class="yes">✓</span> Sí</td></tr>
+            <tr><td>Apunta a</td><td>Otro FQDN</td><td><strong>Public IP</strong>, <strong>Traffic Manager</strong>, <strong>Front Door / CDN endpoint</strong> u otro record set de la misma zona</td></tr>
+            <tr><td>Si el recurso cambia de IP</td><td>N/A</td><td>Se <strong>actualiza solo</strong></td></tr>
+            <tr><td>Si el recurso se borra</td><td>Queda apuntando a la nada (riesgo de <em>dangling DNS</em> / subdomain takeover)</td><td>El record set devuelve <strong>NXDOMAIN</strong>: previene el takeover</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "hay que apuntar <code>contoso.com</code> (sin www) a un Traffic Manager profile / a una Public IP de Azure". Un <strong>CNAME no se puede crear en el apex</strong>, así que la respuesta es un <strong>alias record</strong> de tipo A. Para <code>www.contoso.com</code> sí serviría un CNAME común, pero para el root domain no.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><code>webapp.companycs.com</code> sigue a <code>app</code></div>
+      <p>Zona <code>companycs.com</code>. A record <code>app</code> → App Service. Nuevo nombre <code>webapp</code> debe apuntar a la misma PIP y <strong>actualizarse o borrarse solo</strong> si <code>app</code> cambia o se elimina.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Record set</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>A alias</strong> apuntando al record set <code>app</code></td><td><span class="yes">Sí</span></td><td>Alias A sigue el ciclo de vida de otro record/recurso Azure. Si <code>app</code> se borra → NXDOMAIN</td></tr>
+            <tr><td>CNAME común a <code>app.companycs.com</code></td><td><span class="no">No</span></td><td>Resuelve el nombre, pero <strong>no se borra/actualiza solo</strong> si el A de origen desaparece</td></tr>
+            <tr><td>A record común (IP pegada)</td><td><span class="no">No</span></td><td>IP estática: si la PIP de la app cambia, queda huérfano</td></tr>
+            <tr><td>CNAME alias</td><td><span class="no">No</span></td><td>El origen es un A (IP). El alias del mismo tipo es <strong>A alias</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “updated or deleted automatically” = <strong>alias</strong>, no CNAME. Tipo A porque el record fuente es un A (PIP). CNAME alias es el distractor de nombre parecido.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 6 ══════════ -->
+  <div class="section" id="sec-dns-privado">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🏠</div>
+      <span class="section-title">Private DNS Zones</span>
+      <span class="section-tag">Resolución interna</span>
+    </div>
+
+    <p>Una <strong>Private DNS zone</strong> resuelve nombres <strong>solo dentro de las VNets que le vinculás</strong>. No es visible desde internet, no necesita delegación en ningún registrar y podés usar cualquier nombre de dominio, incluso uno que no te pertenezca públicamente (por ejemplo <code>corp.internal</code>).</p>
+
+    <div class="card">
+      <div class="card-title">Virtual network links</div>
+      <ul>
+        <li>La zona se conecta a una VNet mediante un <strong>virtual network link</strong>. <strong>Una zona puede tener links a muchas VNets</strong>, y una VNet puede estar linkeada a muchas zonas.</li>
+        <li>Los links <strong>cruzan regiones y subscriptions</strong>: la zona privada es un recurso global.</li>
+        <li>Sin link, las VMs de esa VNet <strong>no ven</strong> los registros de la zona, aunque la zona exista en la misma subscription.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Primera acción: zona privada nueva, VNet con VMs y zonas ya linkeadas</div>
+      <p>La VNet ya tiene VMs y Private DNS zones. Hay que soportar namespaces de una zona nueva.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Linkear la zona nueva a la VNet existente</strong></td><td><span class="yes">Sí</span></td><td>Una VNet admite <strong>muchos</strong> virtual network links. Es lo primero y alcanza</td></tr>
+            <tr><td>VNet nueva + mover las VMs</td><td><span class="no">No</span></td><td>Overkill. No hace falta otra red</td></tr>
+            <tr><td>Poner el DNS en el NIC / Windows de cada VM</td><td><span class="no">No</span></td><td>Private DNS se resuelve por el link de Azure, no por el guest</td></tr>
+            <tr><td>Sacar las VMs de la VNet</td><td><span class="no">No</span></td><td>Rompe todo lo demás</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Auto-registration sigue limitado a <strong>una</strong> zona. Los links extra van con registration <strong>off</strong>.</p>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “la VNet ya tiene zonas privadas” no impide sumar otra. Primera acción = <strong>virtual network link</strong> a la zona nueva. No creés otra VNet ni tocás el DNS del SO.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Auto-registration</div>
+      <ul>
+        <li>Si activás <strong>auto-registration</strong> en el link, Azure crea y mantiene automáticamente el <strong>A record</strong> de cada VM de esa VNet, y lo <strong>borra cuando la VM se elimina</strong>.</li>
+        <li>Registra la <strong>IP privada primaria de la NIC de la VM</strong>. Otros recursos (Private Endpoints, LBs) <strong>no</strong> se autoregistran: esos records los creás vos o los crea la integración del endpoint.</li>
+        <li><strong>Una VNet solo puede tener auto-registration habilitado en un único link</strong>, es decir, hacia una sola Private DNS zone. Podés tener más links a otras zonas, pero sin auto-registration.</li>
+      </ul>
+      <pre>az network private-dns zone create -g rg-net -n corp.internal
+
+az network private-dns link vnet create -g rg-net -n link-vnet-prod \
+  -z corp.internal -v vnet-prod --registration-enabled true
+
+# zona para Private Endpoint: SIN auto-registration
+az network private-dns link vnet create -g rg-net -n link-pe \
+  -z privatelink.blob.core.windows.net -v vnet-prod --registration-enabled false</pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> las zonas <code>privatelink.*</code> de Private Endpoints se linkean con <strong>auto-registration DESACTIVADO</strong>. Si lo prendés, las VMs de la VNet empiezan a registrarse en esa zona y podés pisar la resolución del endpoint. Y recordá el límite conceptual: <strong>una VNet, un solo link con auto-registration</strong>.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>Escenario típico de hub-and-spoke: <strong>una sola</strong> Private DNS zone <code>privatelink.blob.core.windows.net</code> centralizada en el hub, con <strong>virtual network links a todas las spokes</strong>. No hace falta duplicar la zona por VNet.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 7 ══════════ -->
+  <div class="section" id="sec-resolucion">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">🧭</div>
+      <span class="section-title">Resolución de nombres en Azure</span>
+      <span class="section-tag">Memorizar la IP</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>168.63.129.16</strong> — la IP virtual "mágica" de Azure. Es la misma en <em>todas</em> las regiones y VNets, no se puede cambiar ni bloquear. Hace tres cosas: 1) <strong>DNS provisto por Azure</strong>; 2) origen de los <strong>health probes</strong> del Load Balancer y de Application Gateway; 3) canal de <strong>comunicación con la plataforma</strong> (agente de VM, heartbeat, DHCP). Si un NSG o un firewall del SO la bloquea, se rompen los probes y el agente.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Las tres opciones de DNS de una VNet</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th>Qué resuelve</th><th>Límites</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Azure-provided DNS</strong> (default, <code>168.63.129.16</code>)</td><td>Nombres de VMs <strong>dentro de la misma VNet</strong> y nombres públicos de internet</td><td>No resuelve entre VNets peereadas, ni on-premises, ni permite crear registros propios</td></tr>
+            <tr><td><strong>Custom DNS servers</strong> (a nivel VNet o por NIC)</td><td>Lo que definan tus servidores: un DC de AD, un BIND, un forwarder</td><td>Vos gestionás la alta disponibilidad. Suelen reenviar a <code>168.63.129.16</code> lo que no conocen</td></tr>
+            <tr><td><strong>Private DNS zones</strong></td><td>Nombres propios entre VNets linkeadas y FQDNs <code>privatelink.*</code></td><td>Necesita el virtual network link</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li>El DNS configurado a nivel de <strong>NIC pisa</strong> al de la VNet para esa VM.</li>
+        <li>Se pueden listar varios servidores: se usan <strong>en orden</strong>, el segundo solo si el primero no responde (no es balanceo).</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> cambiar los custom DNS servers de una VNet <strong>no aplica de inmediato</strong> a las VMs existentes. La configuración llega por <strong>DHCP</strong>, así que hay que <strong>reiniciar la VM</strong> (o renovar el lease) para que la tome. Si el escenario dice "cambié el DNS y las VMs siguen usando el viejo", la acción es reiniciar las VMs, no recrear la VNet.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Resolución entre VNets peereadas</div>
+      <p>El peering da <strong>conectividad IP</strong>, pero el DNS de Azure <strong>no resuelve nombres de host entre VNets distintas</strong>. Una VM de VNet-A puede hacer ping a la IP de una VM de VNet-B, pero no a su nombre. Soluciones:</p>
+      <ul>
+        <li><strong>Private DNS zone</strong> con auto-registration en una VNet y <strong>links a las demás</strong> (la más simple y la respuesta típica).</li>
+        <li><strong>Custom DNS servers</strong> propios en el hub, apuntados desde todas las VNets.</li>
+      </ul>
+      <p>Global peering West US ↔ East US. VMs de ambas tienen que resolver el FQDN de cualquier otra VM en Azure:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Private DNS zone</strong> + links a las dos VNets</td><td><span class="yes">Sí</span></td><td>Cloud-native. Auto-registration en una, link en la otra</td></tr>
+            <tr><td>Azure-provided DNS en cada VNet</td><td><span class="no">No</span></td><td>Solo nombres <strong>dentro de la misma VNet</strong></td></tr>
+            <tr><td>Definir <strong>peering</strong> entre las VNets</td><td><span class="no">No</span></td><td>Da IP privada, <strong>no FQDN</strong>. El ping por IP no implica resolución</td></tr>
+            <tr><td>VPN VNet-to-VNet</td><td><span class="no">No</span></td><td>Conectividad (más cara que peering). Tampoco resuelve nombres</td></tr>
+            <tr><td>DNS servers propios en cada VNet</td><td><span class="no">No</span></td><td>Funciona, pero más admin (VMs que mantener)</td></tr>
+            <tr><td>Service endpoints</td><td><span class="no">No</span></td><td>Salida a PaaS (Storage/SQL), no DNS interno</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> la pregunta es <strong>hostname resolution</strong>, no conectividad. Peering y VPN VNet-to-VNet no resuelven FQDN. Azure-provided DNS no cruza VNets. La respuesta es <strong>Private DNS zone</strong> + links. Service endpoints son carnada de PaaS.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Azure DNS Private Resolver (híbrido)</div>
+      <p>Servicio PaaS que reemplaza a las VMs con rol de DNS forwarder. Se despliega en una VNet con <strong>subredes dedicadas y delegadas</strong> a <code>Microsoft.Network/dnsResolvers</code> (mínimo <code>/28</code>):</p>
+      <ul>
+        <li><strong>Inbound endpoint</strong>: recibe consultas <em>desde on-premises</em> hacia Azure. Los DNS de on-prem apuntan a su IP privada para resolver zonas privadas y FQDNs <code>privatelink.*</code>.</li>
+        <li><strong>Outbound endpoint</strong> + <strong>DNS forwarding ruleset</strong>: manda consultas <em>de Azure hacia on-premises</em> según reglas por dominio. El ruleset se vincula a las VNets que lo usan.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Regla rápida: <strong>on-prem → Azure = inbound endpoint</strong>; <strong>Azure → on-prem = outbound endpoint + forwarding ruleset</strong>. Si la pregunta pide resolución híbrida <em>sin administrar VMs de DNS</em>, la respuesta es Azure DNS Private Resolver.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 8 ══════════ -->
+  <div class="section" id="sec-rutas">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">🛣️</div>
+      <span class="section-title">Rutas del sistema y User Defined Routes</span>
+      <span class="section-tag">Resumen</span>
+    </div>
+
+    <p>Azure crea <strong>rutas del sistema</strong> en cada subred automáticamente; no se ven en una route table pero existen. El detalle fino de NSG, ASG y Azure Firewall va en el archivo de seguridad de red: acá queda lo que se cruza con VNets y DNS.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Prefijo</th><th>Next hop type</th><th>Cuándo aparece</th></tr></thead>
+        <tbody>
+          <tr><td>Address space de la VNet</td><td><code>Virtual network</code></td><td>Siempre: <strong>todas las subredes de una VNet se hablan por defecto</strong></td></tr>
+          <tr><td><code>0.0.0.0/0</code></td><td><code>Internet</code></td><td>Siempre: salida a internet por defecto</td></tr>
+          <tr><td>Address space de la VNet remota</td><td><code>VNet peering</code></td><td>Al crear un peering</td></tr>
+          <tr><td>Prefijos anunciados por BGP</td><td><code>Virtual network gateway</code></td><td>Con VPN Gateway o ExpressRoute</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">User Defined Routes (UDR)</div>
+      <ul>
+        <li>Se agrupan en una <strong>route table</strong> que se asocia a una o varias <strong>subredes</strong> (no a NICs ni a VMs).</li>
+        <li>Una subred puede tener <strong>una sola route table</strong> asociada; una route table puede servir a varias subredes.</li>
+        <li>Primero gana el <strong>prefijo más específico</strong> (longest prefix match) entre todas las rutas; sólo cuando dos rutas tienen <strong>exactamente el mismo prefijo</strong> decide la precedencia <strong>UDR &gt; rutas BGP &gt; rutas del sistema</strong>.</li>
+        <li>Next hop types disponibles: <code>Virtual appliance</code> (le pasás la IP privada del NVA/Firewall), <code>Virtual network gateway</code>, <code>Virtual network</code>, <code>Internet</code> y <code>None</code> (descartar tráfico).</li>
+        <li>Patrón <strong>forced tunneling</strong>: UDR de <code>0.0.0.0/0</code> con next hop <em>Virtual appliance</em> apuntando a Azure Firewall, para inspeccionar todo el egress.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Para el hub-and-spoke con inspección: en las spokes ponés un <strong>UDR</strong> hacia el Firewall del hub, y en el peering activás <strong>Allow forwarded traffic</strong>. Sin esa opción, la VNet destino descarta el tráfico que reenvió el NVA. Las dos piezas van juntas.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Cuántas IPs reserva Azure en cada subred y cuáles son?", a: "<strong>5</strong>: la <strong>network address</strong> (.0), el <strong>default gateway</strong> (.1), <strong>dos para el DNS de Azure</strong> (.2 y .3) y la de <strong>broadcast</strong> (la última).", cat: "Subredes" },
+  { q: "¿Cuántas IPs utilizables tiene una subred /24 en Azure?", a: "<strong>251</strong> (256 − 5). Fórmula: <code>2^(32−prefijo) − 5</code>.", cat: "Subredes" },
+  { q: "¿Cuál es el prefijo de subred más chico soportado en Azure?", a: "<strong>/29</strong>, que deja solo <strong>3 IPs utilizables</strong>. El address space de la VNet puede llegar hasta <code>/2</code>.", cat: "Subredes" },
+  { q: "Nombrá las tres subredes con nombre obligatorio y su tamaño mínimo", a: "<code>GatewaySubnet</code> (mín. <code>/29</code>, recomendado <code>/27</code>), <code>AzureFirewallSubnet</code> (<strong>/26</strong>) y <code>AzureBastionSubnet</code> (<strong>/26</strong>).", cat: "Subredes" },
+  { q: "¿Dónde se configura una IP privada estática de una VM?", a: "<strong>En Azure</strong>, en la IP configuration de la <strong>NIC</strong> (Assignment = Static). <strong>Nunca</strong> dentro del sistema operativo invitado: eso desincroniza el guest de la plataforma y rompe la conectividad.", cat: "IPs" },
+  { q: "Public IP Standard vs Basic: tres diferencias clave", a: "Standard es <strong>siempre Static</strong>, soporta <strong>Availability Zones</strong> y es <strong>segura por defecto</strong> (cerrada hasta que un NSG permita). Basic puede ser dinámica, no soporta zonas, está <strong>abierta por defecto</strong> y está <strong>en retiro</strong>.", cat: "IPs" },
+  { q: "¿El VNet peering es transitivo?", a: "<strong>No.</strong> Si A↔B y B↔C, <strong>A no llega a C</strong>. Hay que peerear A↔C directamente, o usar hub-and-spoke con un NVA/Azure Firewall y <strong>UDRs</strong> + <em>Allow forwarded traffic</em>.", cat: "Peering" },
+  { q: "El peering está creado desde VNet1 y no hay tráfico. ¿Qué falta?", a: "El peering <strong>recíproco desde VNet2</strong>. El link queda en <strong>Initiated</strong> hasta que existan ambos lados; recién entonces pasan a <span class='chip chip-green'>Connected</span> y fluye el tráfico.", cat: "Peering" },
+  { q: "Un solo Add-AzVirtualNetworkPeering VNet1→VNet2 (East US / East US 2). Ping privado falla. ¿NSG, gateway, mover de región o el otro peering?", a: "<strong>Add-AzVirtualNetworkPeering desde VNet2 a VNet1</strong>. Portal arma los dos lados; PS/CLI no. Global peering es válido. CIDR que no se pisan, ping ya habilitado y NSG/gateway son distractores.", cat: "Peering" },
+  { q: "¿Qué par de opciones permite que una spoke use el VPN Gateway del hub?", a: "En el <strong>hub</strong>: <strong>Allow gateway transit</strong>. En la <strong>spoke</strong>: <strong>Use remote gateways</strong>. La spoke no puede tener su propio gateway. Eso es para llegar a <strong>on-prem</strong>, no para spoke↔spoke.", cat: "Peering" },
+  { q: "Hub VN02 con NVA, spokes VN01 y VN03. Gateway transit solo hub? Use remote solo spokes? Forwarded traffic solo hub?", a: "<strong>Yes · Yes · No.</strong> Transit es oferta del hub; Use remote es consumo de las spokes. Forwarded traffic <strong>no</strong> va solo en VN02: las spokes tienen que aceptar el paquete que la NVA reenvió (origen = la otra spoke). Sumá UDR next hop Virtual appliance + IP forwarding en la NIC de la NVA.", cat: "Peering" },
+  { q: "Service Endpoint vs Private Endpoint: ¿cuál funciona desde on-premises?", a: "Solo el <strong>Private Endpoint</strong> (por VPN o ExpressRoute), porque crea una <strong>NIC con IP privada</strong> en tu VNet. El Service Endpoint se habilita en la subred, el servicio conserva su <strong>IP pública</strong>, es <strong>gratis</strong> y <strong>no</strong> sirve desde on-prem.", cat: "Endpoints" },
+  { q: "¿Qué se necesita para que el FQDN público resuelva a la IP privada de un Private Endpoint?", a: "Una <strong>Private DNS Zone</strong> del tipo <code>privatelink.&lt;servicio&gt;.core.windows.net</code> (ej. <code>privatelink.blob.core.windows.net</code>), <strong>vinculada a la VNet</strong> con un virtual network link.", cat: "Endpoints" },
+  { q: "¿Por qué no se puede usar un CNAME para apuntar el apex (contoso.com) a un recurso de Azure?", a: "El estándar DNS <strong>prohíbe un CNAME en el apex</strong> porque ahí ya viven los registros <code>SOA</code> y <code>NS</code>. La solución es un <strong>alias record</strong> (tipo A/AAAA/CNAME) hacia una <strong>Public IP, Traffic Manager, Front Door o CDN endpoint</strong>. Un <strong>A en el apex sí se puede</strong>: se nombra <code>@</code>.", cat: "Azure DNS" },
+  { q: "Drop-down: A en @ y dos A en www (round-robin), TTL 1 hora. ¿New-AzDnsRecordSet o New-AzDnsRecordConfig?", a: "<code>New-AzDnsRecordSet</code> en las líneas con <code>-Name</code> / <code>-ZoneName</code> / <code>-Ttl</code>. <code>New-AzDnsRecordConfig -IPv4Address</code> para cada IP. Apex = <code>@</code>. TTL 1 h = <strong>3600</strong>. Varios Config en un mismo Set = round-robin DNS.", cat: "Azure DNS" },
+  { q: "¿Cómo agregás una IP a un record set A que ya existe (PowerShell y CLI)?", a: "PS: <code>Get-AzDnsRecordSet</code> → <code>Add-AzDnsRecordConfig -IPv4Address</code> → <code>Set-AzDnsRecordSet</code>. CLI: <code>az network dns record-set a add-record --ipv4-address</code> (crea el set si no existe). Zona nueva: <code>New-AzDnsZone</code> / <code>az network dns zone create</code>.", cat: "Azure DNS" },
+  { q: "Tipos de registro DNS: A, CNAME, MX, TXT, NS, SOA, SRV, PTR, CAA. ¿Para qué cada uno?", a: "<strong>A/AAAA</strong> → IPv4/IPv6. <strong>CNAME</strong> → alias a otro FQDN (no en apex, un solo valor). <strong>MX</strong> → correo con prioridad. <strong>TXT</strong> → SPF/DKIM/verificar dominio. <strong>NS</strong> → name servers (delegación). <strong>SOA</strong> → autoridad de la zona (lo crea Azure, no se toca para delegar). <strong>SRV</strong> → servicio/puerto (AD, SIP). <strong>PTR</strong> → reverse IP→nombre. <strong>CAA</strong> → qué CAs pueden emitir certs.", cat: "Azure DNS" },
+  { q: "Delegar development.company.com a otros DNS de Azure. ¿Qué hacés?", a: "Creás la zona hija (Azure pone SOA+NS en <code>@</code>) y en la zona <strong>padre</strong> <code>company.com</code> un record set <strong>NS llamado <code>development</code></strong> apuntando a los NS de la hija. No se modifica el SOA del padre, no se crea un SOA a mano, y el NS <code>development</code> <strong>no</strong> va dentro de la zona hija.", cat: "Azure DNS" },
+  { q: "Sitio en App Service, zona company.com + A ya creados. ¿Qué sigue para que el mundo resuelva a Azure?", a: "<strong>Delegar</strong> la zona en el <strong>registrar</strong>: reemplazar los NS por los 4 de Azure (<code>az network dns zone show --query nameServers</code> / <code>Get-AzDnsZone</code> → NameServers). No CNAME en el apex, no TTL 10 s, no Azure como secondary. Delegar = cambiar quién es autoritativo, no crear más registros.", cat: "Azure DNS" },
+  { q: "company1.com está libre. Tres acciones para que resuelva en Internet (best practice).", a: "1) <strong>Comprar en un registrar</strong> (no con Azure DNS). 2) <strong>Crear la DNS zone</strong> en Azure (<code>New-AzDnsZone</code> / <code>az network dns zone create</code> — SOA y NS del apex los crea Azure). 3) <strong>NS en el registrar</strong> apuntando a azure-dns. No SOA en el registrar, no reverse zone, no crear NS/SOA a mano en Azure.", cat: "Azure DNS" },
+  { q: "¿Qué hace el auto-registration de una Private DNS Zone y qué límite tiene?", a: "Crea y borra automáticamente el <strong>A record</strong> de las VMs de la VNet vinculada. Una VNet solo puede tener auto-registration en <strong>un único virtual network link</strong> (una sola zona).", cat: "Private DNS" },
+  { q: "Global peering West US ↔ East US. Las VMs deben resolver el FQDN de las de la otra VNet. ¿Private DNS, Azure-provided DNS, DNS propio o service endpoints?", a: "<strong>Private DNS zone</strong> + virtual network links a las dos VNets. Azure-provided DNS solo resuelve <strong>dentro de la misma VNet</strong>. Peering y VPN VNet-to-VNet dan IP, no nombres. DNS custom funciona con más admin. Service endpoints = PaaS, no nombres de VM.", cat: "Private DNS" },
+  { q: "¿Qué es 168.63.129.16?", a: "La IP virtual de Azure, igual en todas las regiones: <strong>DNS provisto por Azure</strong>, origen de los <strong>health probes</strong> del Load Balancer y canal de <strong>comunicación con la plataforma</strong>. Si la bloqueás, se rompen probes y agente.", cat: "Resolución" },
+  { q: "Front-end VMs + back-end VMs + Azure SQL. Filtrado por capa, mínimo esfuerzo. ¿Una VNet o tres? ¿Dos subnets o tres? ¿Service endpoints?", a: "RG → <strong>una VNet</strong> → <strong>dos subnets</strong> (solo las VMs) → <strong>service endpoints</strong> Microsoft.Sql. SQL PaaS no va en subnet. Una VNet por capa + peering es más admin. Private Endpoint si pidieran IP privada.", cat: "Endpoints" },
+  { q: "VNet con VMs y zonas privadas ya linkeadas. Zona nueva. ¿Primera acción? ¿Otra VNet? ¿DNS en el guest?", a: "<strong>Virtual network link</strong> de la zona nueva a la VNet existente. Una VNet admite muchos links (auto-registration solo en uno). No creés otra VNet ni configurás DNS en Windows.", cat: "Private DNS" },
+  { q: "S1 (tenant A): VNet1-1/1-2/1-3. S2 (tenant B): VNet2-1/2-2. ¿Con cuáles peerea VNet1-1?", a: "<strong>Las cuatro.</strong> Peering cruza subscription y tenant (CLI/PS, permiso en ambos). Distinto tenant no obliga VPN. El techo es CIDR overlap, no el directorio.", cat: "Peering" },
+  { q: "corp-vnet 172.16.0.0/16 con 3 subnets, sin VMs. Hay que pasar a 192.168.0.0/16 ya. ¿Borrar subnets, editar el rango, agregar 192.168, o borrar y recrear la VNet?", a: "<strong>Remove and redeploy</strong> la VNet. Editar falla (subnets 172.16 no caben). Solo borrar subnets no cambia el address space. Add deja el 172.16 (conflicto on-prem).", cat: "Subredes" },
+  { q: "PLS: privateLinkServiceNetworkPolicies Disabled. Yes/No: ¿solo la IP de origen del PLS? ¿el portal lo pone solo? ¿el resto se filtra por ACL?", a: "<strong>Yes / Yes / No</strong>. Disabled es del Private Link <em>service</em> (no del Private Endpoint). Portal lo setea; ARM/CLI a mano. El resto de la subnet usa <strong>NSG</strong>, no ACL. CLI: <code>az network vnet subnet update --private-link-service-network-policies Disabled</code>.", cat: "Endpoints" },
+  { q: "vnet1→vnet2, vnet2→vnet3, vnet3→vnet2. ¿vnet1 habla con? ¿vnet2? ¿vnet3?", a: "vnet1 → <strong>vnet2 only</strong>. vnet2 → <strong>vnet3 only</strong> (falta vnet2→vnet1). vnet3 → <strong>vnet2 only</strong>. Peering no es transitivo y, si el enunciado lista un solo lado, no asumas el recíproco.", cat: "Peering" },
+  { q: "vm1 blade: Public IP = dash, puerto 80 desde Internet. ¿Primero: JIT, PIP en ipconfig1, NSG en subnet o accelerated networking?", a: "<strong>Crear y asociar una Public IP a ipconfig1</strong>. Sin PIP no hay camino. JIT no es HTTP. NSG es el paso 2. Accelerated networking = throughput.", cat: "IPs" },
+  { q: "app.companycs.com es un A. webapp debe seguir esa PIP y borrarse si app se borra. ¿A alias, CNAME, A, o CNAME alias?", a: "<strong>A alias</strong> al record set <code>app</code>. CNAME no hereda el delete. A común queda con IP vieja. CNAME alias es el tipo incorrecto (el origen es un A).", cat: "Azure DNS" },
+  { q: "VNET1 usa el ER de VNET2, sin recursos extra. Elegí 2: ¿gateway en VNET1, Use remote en VNET1, link ER a VNET1, peering, Use remote en VNET2?", a: "<strong>Peering VNET1↔VNET2</strong> + <strong>Use remote gateway en VNET1</strong>. Crear/linkear gateway en VNET1 viola “no additional resources”. Use remote en VNET2 está del lado equivocado (VNET2 ya tiene el circuito).", cat: "Peering" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

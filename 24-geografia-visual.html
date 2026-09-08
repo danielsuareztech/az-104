@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azure – Geografía y Disponibilidad</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #0a0f1e;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #e0e8ff;
+    padding: 20px 24px 40px;
+    min-height: 100vh;
+    overflow-x: auto;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7eb3ff;
+    margin-bottom: 22px;
+  }
+  .scenario-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+  .label-az { background: #0e3a5a; color: #3a9efd; border: 1px solid #1e5a9e; }
+  .label-as { background: #2a1a5a; color: #a78bfa; border: 1px solid #4a3a9e; }
+
+  /* ── GEOGRAPHY ── */
+  .geo {
+    border: 1.5px solid #1e3a6e;
+    border-radius: 14px;
+    padding: 20px 20px 22px;
+    background: #0d1530;
+    position: relative;
+    display: inline-block;
+    min-width: calc(100% - 48px);
+    width: max-content;
+    margin-bottom: 32px;
+  }
+  .geo-label {
+    position: absolute;
+    top: -11px; left: 18px;
+    background: #0d1530;
+    padding: 0 8px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #4a7fd4;
+    white-space: nowrap;
+  }
+
+  /* ── MAIN ROW ── */
+  .main-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  /* ── REGION ── */
+  .region {
+    width: 520px;
+    flex-shrink: 0;
+    border: 1.5px solid #1a4080;
+    border-radius: 10px;
+    padding: 14px 14px 16px;
+    background: #0f1d3a;
+    position: relative;
+  }
+  .region-label {
+    position: absolute;
+    top: -10px; left: 14px;
+    background: #0f1d3a;
+    padding: 0 7px;
+    font-size: 0.63rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #2d8cf0;
+    white-space: nowrap;
+  }
+  .region-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #a8c8ff;
+    margin-bottom: 12px;
+    margin-top: 4px;
+  }
+  .region-sub { font-size: 0.62rem; color: #4a9a4a; font-weight: 400; margin-left: 4px; }
+
+  /* ── PAIR ARROW ── */
+  .pair-arrow {
+    width: 90px; flex-shrink: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px; padding: 0 4px;
+  }
+  .pair-arrow .arr { font-size: 1.6rem; color: #2d8cf0; line-height: 1; }
+  .pair-arrow .lbl {
+    font-size: 0.57rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #4a7fd4;
+    white-space: nowrap; text-align: center;
+  }
+
+  /* ── AZ ROW ── */
+  .az-row { display: flex; gap: 0; align-items: stretch; }
+  .az-wrap { display: flex; flex-direction: row; align-items: center; flex: 1; }
+  .az-connector {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    width: 28px; flex-shrink: 0; gap: 2px;
+  }
+  .az-connector .conn-line { width: 100%; height: 1px; background: #1e5a9e; }
+  .az-connector .conn-label {
+    font-size: 0.45rem; color: #1a7a5a;
+    text-align: center; white-space: nowrap;
+    font-weight: 700; letter-spacing: 0.04em;
+  }
+
+  /* ── AZ ── */
+  .az {
+    flex: 1;
+    border: 1.5px dashed #1e5a9e;
+    border-radius: 8px;
+    padding: 10px 7px 12px;
+    background: #122040;
+    position: relative;
+  }
+  .az-label {
+    position: absolute; top: -9px; left: 7px;
+    background: #122040; padding: 0 4px;
+    font-size: 0.55rem; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    color: #3a9efd; white-space: nowrap;
+  }
+  .az-name {
+    font-size: 0.68rem; font-weight: 600;
+    color: #6eadff; text-align: center;
+    margin-bottom: 8px; margin-top: 3px;
+  }
+
+  /* ── DC ── */
+  .dc-row { display: flex; gap: 4px; margin-bottom: 5px; }
+  .dc-row:last-child { margin-bottom: 0; }
+  .dc {
+    flex: 1; background: #1a2e5a;
+    border: 1px solid #2a4a8a;
+    border-radius: 6px; padding: 5px 4px;
+  }
+  .dc-title {
+    font-size: 0.56rem; font-weight: 700;
+    color: #90c0ff; text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 2px;
+    text-align: center;
+  }
+  .dc-note { font-size: 0.46rem; color: #5080a0; text-align: center; font-style: italic; }
+
+  /* ── VMs in AZ (scenario 1) ── */
+  .vm-az-row { display: flex; gap: 3px; margin-top: 5px; flex-wrap: wrap; justify-content: center; }
+  .vm-az {
+    background: #0e3a5a; border: 1px solid #1e5a9e;
+    border-radius: 4px; padding: 3px 5px;
+    font-size: 0.52rem; font-weight: 700; color: #3a9efd;
+  }
+
+  /* ── Availability Set (scenario 2) ── */
+  .avset {
+    border: 1.5px solid #4a3a9e;
+    border-radius: 5px; padding: 6px 5px 5px;
+    background: #1a1040; margin-top: 5px;
+    position: relative;
+  }
+  .avset-label {
+    position: absolute; top: -8px; left: 8px;
+    background: #1a1040; padding: 0 5px;
+    font-size: 0.52rem; font-weight: 700;
+    color: #a78bfa; text-transform: uppercase;
+    letter-spacing: 0.06em; white-space: nowrap;
+  }
+  .avset-title {
+    font-size: 0.53rem; font-weight: 700;
+    color: #a78bfa; text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 4px;
+    text-align: center;
+  }
+  .vm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+  .vm-cell {
+    background: #2a1a5a; border: 1px solid #4a3a9e;
+    border-radius: 4px; padding: 3px 2px; text-align: center;
+  }
+  .vm-cell .vm-name { font-size: 0.48rem; font-weight: 700; color: #c4b5fd; display: block; margin-bottom: 2px; }
+  .vm-cell .vm-tags { display: flex; gap: 2px; justify-content: center; flex-wrap: wrap; }
+  .tag { font-size: 0.4rem; font-weight: 700; padding: 1px 2px; border-radius: 2px; }
+  .tag-fd { background: #7c3a12; color: #fcd9b6; }
+  .tag-ud { background: #3a2a6a; color: #ddd6fe; }
+
+  .az-internal-note { font-size: 0.46rem; color: #3a6a9a; text-align: center; margin-top: 5px; font-style: italic; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    margin-top: 16px; background: #0d1a38;
+    border-left: 3px solid #2d8cf0; border-radius: 6px;
+    padding: 10px 14px; font-size: 0.67rem;
+    color: #90b8e8; line-height: 1.7;
+  }
+  .callout strong { color: #a8d0ff; }
+
+  /* ── COMPARISON BOX ── */
+  .compare {
+    margin-top: 20px; display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .compare-box {
+    flex: 1; min-width: 220px;
+    border-radius: 8px; padding: 12px 14px;
+    font-size: 0.65rem; line-height: 1.7;
+  }
+  .compare-az { background: #0e2a3a; border: 1px solid #1e5a9e; }
+  .compare-as { background: #1a0e3a; border: 1px solid #4a3a9e; }
+  .compare-box h3 { font-size: 0.7rem; margin-bottom: 6px; }
+  .compare-az h3 { color: #3a9efd; }
+  .compare-as h3 { color: #a78bfa; }
+  .compare-box li { margin-left: 14px; color: #90b8e8; }
+
+  /* ── LEGEND ── */
+  .legend { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: center; }
+  .leg-item { display: flex; align-items: center; gap: 6px; font-size: 0.63rem; color: #8aaad8; }
+  .leg-box { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+
+  .badge {
+    display: inline-block; font-size: 0.5rem; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 1px 5px; border-radius: 20px; margin-left: 4px; vertical-align: middle;
+  }
+  .badge-geo { background: #1e3a6e; color: #4a7fd4; }
+  .badge-reg { background: #1a4080; color: #2d8cf0; }
+  .badge-az  { background: #1e5a9e; color: #3a9efd; }
+
+  .divider {
+    border: none; border-top: 1px dashed #1e3a6e;
+    margin: 24px 0 20px;
+  }
+</style>
+</head>
+<body>
+
+<p style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;margin:0 0 16px"><a href="00-indice.html" style="color:#5b8dee;text-decoration:none">← Índice AZ-104</a></p>
+<div style="max-width:1100px;margin:0 auto 22px;padding:12px 16px;background:rgba(107,113,148,.12);border:1px solid rgba(107,113,148,.35);border-radius:8px;font-family:system-ui,sans-serif;font-size:13px;color:#cfd5ea;line-height:1.55">
+  <strong style="color:#99a0bd">Opcional · anexo visual.</strong> No agrega bullets del outline. El contenido examinable está en <a href="08-alta-disponibilidad-vmss.html" style="color:#5b8dee">08 · Alta disponibilidad</a>. Este diagrama solo ayuda a ver Geography → Region → AZ vs Availability Set (el AS vive en <em>un</em> datacenter). Separación del region pair: <strong>≥ 300 millas ≈ 480 km</strong>, no 300 km.
+</div>
+
+<h1>Azure — Geografía &amp; Disponibilidad</h1>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- ESCENARIO 1: VMs en Availability Zone      -->
+<!-- ══════════════════════════════════════════ -->
+<div><span class="scenario-label label-az">📌 Escenario 1 — VMs en Availability Zone</span></div>
+
+<div class="geo">
+  <span class="geo-label">Geography — United States <span class="badge badge-geo">Nivel 1</span></span>
+  <div class="main-row">
+
+    <!-- REGION LEFT -->
+    <div class="region">
+      <span class="region-label">Region <span class="badge badge-reg">Nivel 2</span></span>
+      <div class="region-name">🌎 East US</div>
+      <div class="az-row">
+
+        <div class="az-wrap">
+          <div class="az">
+            <span class="az-label">AZ <span class="badge badge-az">Nivel 3</span></span>
+            <div class="az-name">Zona 1</div>
+            <div class="dc-row">
+              <div class="dc"><div class="dc-title">🏢 DC-A1</div><div class="dc-note">energía propia</div></div>
+              <div class="dc"><div class="dc-title">🏢 DC-A2</div><div class="dc-note">energía propia</div></div>
+            </div>
+            <div class="vm-az-row">
+              <div class="vm-az">VM1</div>
+            </div>
+            <div class="az-internal-note">VM fijada a esta zona</div>
+          </div>
+        </div>
+
+        <div class="az-connector">
+          <div class="conn-line"></div>
+          <div class="conn-label">&lt; 2ms</div>
+          <div class="conn-line"></div>
+        </div>
+
+        <div class="az-wrap">
+          <div class="az">
+            <span class="az-label">AZ</span>
+            <div class="az-name">Zona 2</div>
+            <div class="dc-row">
+              <div class="dc"><div class="dc-title">🏢 DC-B1</div><div class="dc-note">energía propia</div></div>
+              <div class="dc"><div class="dc-title">🏢 DC-B2</div><div class="dc-note">energía propia</div></div>
+            </div>
+            <div class="vm-az-row">
+              <div class="vm-az">VM2</div>
+            </div>
+            <div class="az-internal-note">VM fijada a esta zona</div>
+          </div>
+        </div>
+
+        <div class="az-connector">
+          <div class="conn-line"></div>
+          <div class="conn-label">&lt; 2ms</div>
+          <div class="conn-line"></div>
+        </div>
+
+        <div class="az-wrap">
+          <div class="az">
+            <span class="az-label">AZ</span>
+            <div class="az-name">Zona 3</div>
+            <div class="dc-row">
+              <div class="dc"><div class="dc-title">🏢 DC-C1</div><div class="dc-note">energía propia</div></div>
+              <div class="dc"><div class="dc-title">🏢 DC-C2</div><div class="dc-note">energía propia</div></div>
+            </div>
+            <div class="vm-az-row">
+              <div class="vm-az">VM3</div>
+            </div>
+            <div class="az-internal-note">VM fijada a esta zona</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="pair-arrow">
+      <span class="arr">⇄</span>
+      <span class="lbl">Region</span>
+      <span class="lbl">Pair</span>
+      <span class="lbl">≥ 300 mi</span>
+    </div>
+
+    <!-- REGION RIGHT -->
+    <div class="region">
+      <span class="region-label">Region <span class="badge badge-reg">Nivel 2</span></span>
+      <div class="region-name">🌎 West US <span class="region-sub">(par de East US)</span></div>
+      <div class="az-row">
+        <div class="az-wrap">
+          <div class="az">
+            <span class="az-label">AZ</span>
+            <div class="az-name">Zona 1</div>
+            <div class="dc-row">
+              <div class="dc"><div class="dc-title">🏢 DC-X1</div></div>
+              <div class="dc"><div class="dc-title">🏢 DC-X2</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="az-connector"><div class="conn-line"></div><div class="conn-label">&lt; 2ms</div><div class="conn-line"></div></div>
+        <div class="az-wrap">
+          <div class="az">
+            <span class="az-label">AZ</span>
+            <div class="az-name">Zona 2</div>
+            <div class="dc-row">
+              <div class="dc"><div class="dc-title">🏢 DC-Y1</div></div>
+              <div class="dc"><div class="dc-title">🏢 DC-Y2</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="az-connector"><div class="conn-line"></div><div class="conn-label">&lt; 2ms</div><div class="conn-line"></div></div>
+        <div class="az-wrap">
+          <div class="az">
+            <span class="az-label">AZ</span>
+            <div class="az-name">Zona 3</div>
+            <div class="dc-row">
+              <div class="dc"><div class="dc-title">🏢 DC-Z1</div></div>
+              <div class="dc"><div class="dc-title">🏢 DC-Z2</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- ESCENARIO 2: VMs en Availability Set       -->
+<!-- ══════════════════════════════════════════ -->
+<div><span class="scenario-label label-as">📌 Escenario 2 — VMs en Availability Set</span></div>
+
+<div class="geo">
+  <span class="geo-label">Geography — United States <span class="badge badge-geo">Nivel 1</span></span>
+  <div class="main-row">
+
+    <!-- REGION LEFT -->
+    <div class="region">
+      <span class="region-label">Region <span class="badge badge-reg">Nivel 2</span></span>
+      <div class="region-name">🌎 East US</div>
+      <div class="az-row">
+
+        <!-- Zona 1: tiene AS dentro de UN solo DC -->
+        <div class="az-wrap">
+          <div class="az">
+            <span class="az-label">AZ <span class="badge badge-az">Nivel 3</span></span>
+            <div class="az-name">Zona 1</div>
+
+            <!-- DC-A1 con AS adentro -->
+            <div class="dc-row">
+              <div class="dc" style="flex: 2;">
+                <div class="dc-title">🏢 DC-A1</div>
+                <div class="avset">
+                  <span class="avset-label">Availability Set</span>
+                  <div class="vm-grid">
+                    <div class="vm-cell"><span class="vm-name">VM1</span><div class="vm-tags"><span class="tag tag-fd">FD0</span><span class="tag tag-ud">UD0</span></div></div>
+                    <div class="vm-cell"><span class="vm-name">VM2</span><div class="vm-tags"><span class="tag tag-fd">FD1</span><span class="tag tag-ud">UD1</span></div></div>
+                    <div class="vm-cell"><span class="vm-name">VM3</span><div class="vm-tags"><span class="tag tag-fd">FD0</span><span class="tag tag-ud">UD2</span></div></div>
+                    <div class="vm-cell"><span class="vm-name">VM4</span><div class="vm-tags"><span class="tag tag-fd">FD1</span><span class="tag tag-ud">UD0</span></div></div>
+                  </div>
+                </div>
+              </div>
+              <!-- DC-A2 sin AS -->
+              <div class="dc" style="flex: 1;">
+                <div class="dc-title">🏢 DC-A2</div>
+                <div class="dc-note" style="margin-top:4px;">sin AS</div>
+              </div>
+            </div>
+            <div class="az-internal-note">AS vive en UN solo DC</div>
+          </div>
+        </div>
+
+        <div class="az-connector"><div class="conn-line"></div><div class="conn-label">&lt; 2ms</div><div class="conn-line"></div></div>
+
+        <div class="az-wrap">
+          <div class="az">
+            <span class="az-label">AZ</span>
+            <div class="az-name">Zona 2</div>
+            <div class="dc-row">
+              <div class="dc"><div class="dc-title">🏢 DC-B1</div><div class="dc-note">energía propia</div></div>
+              <div class="dc"><div class="dc-title">🏢 DC-B2</div><div class="dc-note">energía propia</div></div>
+            </div>
+            <div class="az-internal-note">detalle interno no publicado</div>
+          </div>
+        </div>
+
+        <div class="az-connector"><div class="conn-line"></div><div class="conn-label">&lt; 2ms</div><div class="conn-line"></div></div>
+
+        <div class="az-wrap">
+          <div class="az">
+            <span class="az-label">AZ</span>
+            <div class="az-name">Zona 3</div>
+            <div class="dc-row">
+              <div class="dc"><div class="dc-title">🏢 DC-C1</div><div class="dc-note">energía propia</div></div>
+              <div class="dc"><div class="dc-title">🏢 DC-C2</div><div class="dc-note">energía propia</div></div>
+            </div>
+            <div class="az-internal-note">detalle interno no publicado</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="pair-arrow">
+      <span class="arr">⇄</span>
+      <span class="lbl">Region</span>
+      <span class="lbl">Pair</span>
+      <span class="lbl">≥ 300 mi</span>
+    </div>
+
+    <!-- REGION RIGHT -->
+    <div class="region">
+      <span class="region-label">Region <span class="badge badge-reg">Nivel 2</span></span>
+      <div class="region-name">🌎 West US <span class="region-sub">(par de East US)</span></div>
+      <div class="az-row">
+        <div class="az-wrap">
+          <div class="az">
+            <span class="az-label">AZ</span>
+            <div class="az-name">Zona 1</div>
+            <div class="dc-row">
+              <div class="dc"><div class="dc-title">🏢 DC-X1</div></div>
+              <div class="dc"><div class="dc-title">🏢 DC-X2</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="az-connector"><div class="conn-line"></div><div class="conn-label">&lt; 2ms</div><div class="conn-line"></div></div>
+        <div class="az-wrap">
+          <div class="az">
+            <span class="az-label">AZ</span>
+            <div class="az-name">Zona 2</div>
+            <div class="dc-row">
+              <div class="dc"><div class="dc-title">🏢 DC-Y1</div></div>
+              <div class="dc"><div class="dc-title">🏢 DC-Y2</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="az-connector"><div class="conn-line"></div><div class="conn-label">&lt; 2ms</div><div class="conn-line"></div></div>
+        <div class="az-wrap">
+          <div class="az">
+            <span class="az-label">AZ</span>
+            <div class="az-name">Zona 3</div>
+            <div class="dc-row">
+              <div class="dc"><div class="dc-title">🏢 DC-Z1</div></div>
+              <div class="dc"><div class="dc-title">🏢 DC-Z2</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CALLOUT -->
+<div class="callout">
+  <strong style="color:#3a9efd">Escenario 1 — AZ:</strong> cada VM va en una zona distinta → si cae un DC entero o toda la Zona 1, VM2 y VM3 siguen vivas. SLA 99.99%.<br>
+  <strong style="color:#a78bfa">Escenario 2 — AS:</strong> todas las VMs en un solo DC (DC-A1), distribuidas en FDs y UDs → si cae el rack FD0, VM2 y VM4 siguen vivas. Si cae DC-A1 entero, todas caen. SLA 99.95%.
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="leg-item"><div class="leg-box" style="background:#1e3a6e;border:1px solid #4a7fd4"></div> Geography</div>
+  <div class="leg-item"><div class="leg-box" style="background:#1a4080;border:1px solid #2d8cf0"></div> Region</div>
+  <div class="leg-item"><div class="leg-box" style="background:#122040;border:1.5px dashed #1e5a9e"></div> Availability Zone</div>
+  <div class="leg-item"><div class="leg-box" style="background:#1a2e5a;border:1px solid #2a4a8a"></div> Datacenter</div>
+  <div class="leg-item"><div class="leg-box" style="background:#1a1040;border:1px solid #4a3a9e"></div> Availability Set (dentro de 1 DC)</div>
+  <div class="leg-item"><div class="leg-box" style="background:#7c3a12"></div> Fault Domain (FD)</div>
+  <div class="leg-item"><div class="leg-box" style="background:#3a2a6a"></div> Update Domain (UD)</div>
+  <div class="leg-item"><div class="leg-box" style="background:#0e3a5a;border:1px solid #1e5a9e"></div> VM en AZ</div>
+</div>
+
+</body>
+</html>

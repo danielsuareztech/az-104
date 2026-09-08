@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Storage Accounts</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Storage Accounts</div>
+    <div class="nav-sub">Tipos, performance, access tiers y redundancia</div>
+    <div class="nav-weight">Dominio 2 · 15–20%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#sec1"><span class="dot"></span>Tipos de cuenta</a>
+  <a href="#sec2"><span class="dot"></span>Standard vs Premium</a>
+  <a href="#sec3"><span class="dot"></span>Access tiers de Blob</a>
+  <a href="#sec4"><span class="dot"></span>Redundancia</a>
+  <a href="#sec5"><span class="dot"></span>Failover</a>
+  <a href="#sec6"><span class="dot"></span>Cambiar redundancia</a>
+  <a href="#sec7"><span class="dot"></span>Naming y endpoints</a>
+  <a href="#sec8"><span class="dot"></span>Servicios de la cuenta</a>
+  <a href="#sec9"><span class="dot"></span>Tipos de blob</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen no te pide crear una storage account, te pide <em>elegir</em> la combinación correcta. Casi siempre es un escenario con tres o cuatro requisitos (costo, latencia, tolerancia a caída de zona, tolerancia a caída de región, lectura desde el secundario) y cuatro opciones que difieren en una sola letra. Dominá tres ejes — <strong>tipo de cuenta</strong>, <strong>access tier</strong> y <strong>redundancia</strong> — más los números de permanencia mínima (30 / 90 / 180) y de rehidratación (<strong>Standard hasta 15 h</strong>; High &lt; 1 h si &lt; 10 GB; no se cancela). Si pide el <strong>default access tier de la cuenta</strong>, Archive queda fuera: solo Hot, Cool o Cold.
+  </div>
+
+  <div class="section" id="sec1">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🗄️</div>
+      <span class="section-title">Tipos de storage account</span>
+      <span class="section-tag">Elegir bien</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla madre:</strong> si el escenario no pide explícitamente latencia de milisegundo, NFS, o discos de VM sin manejar, la respuesta es <strong>Standard general-purpose v2 (GPv2)</strong>. Es el default de Microsoft y el único tipo que junta los cuatro servicios, los access tiers y las seis redundancias — con un asterisco: <strong>Archive no está disponible en cuentas ZRS / GZRS / RA-GZRS</strong>.
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Tipo de cuenta</th><th>Servicios que soporta</th><th>Performance</th><th>Redundancia</th><th>Cuándo</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Standard GPv2</strong><br><span class="chip chip-green">default</span></td>
+            <td>Blob (block, append, page), Files, Queues, Tables, Data Lake Gen2</td>
+            <td>Standard</td>
+            <td>LRS, ZRS, GRS, RA-GRS, GZRS, RA-GZRS</td>
+            <td>Todo escenario genérico</td>
+          </tr>
+          <tr>
+            <td><strong>Premium block blobs</strong><br><code>BlockBlobStorage</code></td>
+            <td>Solo block blobs y append blobs</td>
+            <td>Premium (SSD)</td>
+            <td>LRS, ZRS</td>
+            <td>Transacciones altas, objetos chicos, latencia muy baja</td>
+          </tr>
+          <tr>
+            <td><strong>Premium file shares</strong><br><code>FileStorage</code></td>
+            <td>Solo Azure Files (SMB y NFS)</td>
+            <td>Premium (SSD)</td>
+            <td>LRS, ZRS</td>
+            <td>Enterprise file share de alta performance; <strong>obligatorio para NFS</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Premium page blobs</strong><br><code>Storage</code> (page blob)</td>
+            <td>Solo page blobs</td>
+            <td>Premium (SSD)</td>
+            <td>LRS</td>
+            <td>VHDs / unmanaged disks de alta performance</td>
+          </tr>
+          <tr>
+            <td><strong>GPv1</strong> <span class="chip chip-yellow">legacy</span></td>
+            <td>Blob, Files, Queues, Tables</td>
+            <td>Standard / Premium</td>
+            <td>LRS, GRS, RA-GRS</td>
+            <td>No elegir. Se puede <em>upgrade</em> a GPv2</td>
+          </tr>
+          <tr>
+            <td><strong>BlobStorage</strong> <span class="chip chip-yellow">legacy</span></td>
+            <td>Solo block y append blobs</td>
+            <td>Standard</td>
+            <td>LRS, GRS, RA-GRS</td>
+            <td>No elegir. GPv2 la reemplaza</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Lo que hay que memorizar de las legacy</div>
+      <ul>
+        <li><strong>GPv1 no soporta access tiers.</strong> Si el escenario dice "quiero mover blobs a Cool/Archive" y la cuenta es GPv1 → primero hay que hacer <em>upgrade a GPv2</em>.</li>
+        <li>El upgrade GPv1 → GPv2 es <strong>gratis, en vivo y sin downtime</strong>, pero es <strong>irreversible</strong>: no se puede volver a GPv1.</li>
+        <li>GPv1 tampoco soporta ZRS ni las variantes GZRS.</li>
+        <li>BlobStorage sí tiene access tiers, pero no soporta Files, Queues ni Tables.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "necesitamos un file share con NFS 4.1" no se resuelve con GPv2 Standard. NFS en Azure Files exige una cuenta <strong>Premium file shares (FileStorage)</strong>. Análogamente, "necesitamos un file share sobre SMB, barato" sí es GPv2 Standard. El protocolo es el que decide, no el tamaño.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Los tres tipos Premium son <strong>excluyentes y se eligen al crear la cuenta</strong>: una cuenta Premium block blobs nunca va a poder hostear un file share. Con Standard GPv2, en cambio, una sola cuenta te da blob + file + queue + table a la vez.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">CLI: Hot/Cool/Archive + lifecycle + falla de región, mín. costo</div>
+      <p><code>az storage account create -n mystorageaccount -g MyResourceGroup --kind … --sku …</code></p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Parámetro</th><th>Valor</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>--kind</code></td><td><strong>StorageV2</strong></td><td>Tiers Hot/Cool/Archive + lifecycle. GPv1 (<code>Storage</code>) no. BlobStorage es legado</td></tr>
+            <tr><td><code>--sku</code></td><td><strong>Standard_GRS</strong></td><td>Copia a otra región. LRS/ZRS no cubren falla regional. RA-GRS y GZRS cubren pero salen más caros</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>az storage account create -n mystorageaccount -g MyResourceGroup \
+  --kind StorageV2 --sku Standard_GRS
+# PS: New-AzStorageAccount -Kind StorageV2 -SkuName Standard_GRS</code></pre>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> región-wide failure = geo (GRS+). “Minimize cost” descarta RA-GRS (lectura al secondary) y GZRS. Premium_LRS no tiene tiers ni geo.</span>
+    </div>
+  </div>
+
+  <div class="section" id="sec2">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">⚡</div>
+      <span class="section-title">Performance: Standard vs Premium</span>
+      <span class="section-tag">HDD vs SSD</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>Standard</th><th>Premium</th></tr></thead>
+        <tbody>
+          <tr><td>Medio físico</td><td>Discos magnéticos (HDD)</td><td>SSD</td></tr>
+          <tr><td>Optimizada para</td><td>Costo por GB. Volumen grande, acceso poco frecuente</td><td>Latencia baja y consistente, tasa de transacciones alta</td></tr>
+          <tr><td>Tipos de cuenta</td><td>GPv2 (y legacy GPv1 / BlobStorage)</td><td>Hay que elegir <strong>cuál</strong>: block blobs, file shares o page blobs</td></tr>
+          <tr><td>Access tiers Hot/Cool/Cold/Archive</td><td><span class="yes">Sí</span></td><td><span class="no">No</span> (los blobs premium no se mueven a Cool/Archive dentro de la cuenta)</td></tr>
+          <tr><td>Redundancia disponible</td><td>Las seis (LRS → RA-GZRS)</td><td><strong>Solo LRS y ZRS</strong> (page blobs: solo LRS)</td></tr>
+          <tr><td>Modelo de facturación</td><td>Se paga capacidad usada + transacciones</td><td>Se paga capacidad aprovisionada; transacciones mucho más baratas</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "necesitamos latencia de un solo dígito en milisegundos <em>y</em> resiliencia ante la caída de una región completa" en una misma cuenta de storage es <strong>imposible con Premium</strong> — Premium no ofrece geo-redundancia (nada de GRS/GZRS). Si el escenario exige geo-redundancia, la respuesta tiene que ser Standard GPv2; si exige premium + resiliencia, lo máximo es <strong>ZRS</strong> (zonas, no regiones).</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">FileStorage, solo UK South, máxima disponibilidad</div>
+      <p>Cuenta <strong>FileStorage</strong> (Premium Files). Policy: <strong>solo región UK South</strong>. Optimizar availability.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Redundancia</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>ZRS</strong></td><td><span class="yes">Sí</span></td><td>Tres zonas <em>dentro</em> de UK South. Lo más disponible sin salir de la región. Premium lo soporta</td></tr>
+            <tr><td>LRS</td><td><span class="no">No</span></td><td>Cabe en UK South, pero un solo datacenter. No “optimiza”</td></tr>
+            <tr><td>GRS / GZRS</td><td><span class="no">No</span></td><td>Copian a la región <strong>pareada</strong> (fuera de UK South). Violan la policy. Además Premium <strong>no tiene geo</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “optimize availability” empuja a GZRS. La frase <strong>can only use UK South</strong> mata GRS/GZRS. En FileStorage/Premium el techo es <strong>ZRS</strong>.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Contraintuitivo pero preguntado: Premium <strong>no siempre es más caro en total</strong>. Con muchísimas transacciones chicas, el costo por operación de Standard puede superar al de Premium. Si el escenario habla de "millones de transacciones pequeñas" y pregunta por costo <em>y</em> performance, Premium block blobs es una respuesta legítima.</span>
+    </div>
+  </div>
+
+  <div class="section" id="sec3">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">🌡️</div>
+      <span class="section-title">Access tiers de Blob: Hot, Cool, Cold, Archive</span>
+      <span class="section-tag">Números duros</span>
+    </div>
+
+    <p>La lógica es una balanza invertida: <strong>a medida que baja el costo de almacenamiento, sube el costo de acceso</strong> (lectura y transacciones). Elegir mal el tier no rompe nada, pero infla la factura — y eso es exactamente lo que el examen te pide detectar.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Tier</th><th>Costo de storage</th><th>Costo de acceso</th><th>Permanencia mínima</th><th>¿Default de cuenta?</th><th>Disponibilidad</th><th>Caso típico</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip chip-red">Hot</span></td><td>El más alto</td><td>El más bajo</td><td>Ninguna</td><td><span class="yes">Sí</span></td><td>Online, inmediato</td><td>Datos en uso activo</td></tr>
+          <tr><td><span class="chip chip-blue">Cool</span></td><td>Menor que Hot</td><td>Mayor que Hot</td><td><strong>30 días</strong></td><td><span class="yes">Sí</span></td><td>Online, inmediato</td><td>Backups de corto plazo, datos de 30+ días</td></tr>
+          <tr><td><span class="chip chip-purple">Cold</span></td><td>Menor que Cool</td><td>Mayor que Cool</td><td><strong>90 días</strong></td><td><span class="yes">Sí</span></td><td>Online, inmediato</td><td>Datos que casi no se tocan pero se necesitan al instante</td></tr>
+          <tr><td><span class="chip chip-yellow">Archive</span></td><td>El más bajo</td><td>El más alto</td><td><strong>180 días</strong></td><td><span class="no">No</span></td><td><strong>Offline</strong> — hay que rehidratar</td><td>Retención legal, compliance, archivo muerto</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cargo por eliminación temprana (early deletion)</div>
+      <ul>
+        <li>Si borrás, sobrescribís o <strong>movés a otro tier</strong> un blob antes de cumplir la permanencia mínima, te cobran los días que faltaban como si hubiera estado ahí.</li>
+        <li>Ejemplo típico de examen: blob puesto en Archive y borrado a los 40 días → se pagan los <strong>140 días restantes</strong> de los 180. Variante: datos estáticos ~100 días → Archive también cobra penalidad (faltan 80 de 180); Cold no (mínimo 90).</li>
+        <li>El cargo también aplica al <em>subir</em> de tier: pasar de Archive a Hot al día 20 dispara la penalidad.</li>
+        <li>Hot no tiene permanencia mínima, así que mover Hot → Cool nunca genera este cargo.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Archive: es offline, punto</div>
+      <ul>
+        <li>Un blob en Archive <strong>no se puede leer ni modificar</strong> hasta rehidratarlo a un tier online (Hot, Cool o Cold). Listar y ver propiedades sí; el contenido, no.</li>
+        <li>Dos formas: (a) <em>Set Blob Tier</em> — el mismo blob pasa a online; (b) <em>Copy Blob</em> — copia a un blob nuevo online y deja el original en Archive.</li>
+        <li>Archive solo aplica a <strong>block blobs</strong> en cuentas Standard. No ZRS / GZRS / RA-GZRS.</li>
+      </ul>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Dato del examen</th><th>Valor</th></tr></thead>
+        <tbody>
+          <tr><td>Prioridad <strong>Standard</strong> (default)</td><td><strong>Hasta 15 horas</strong></td></tr>
+          <tr><td>Prioridad <strong>High</strong></td><td><strong>&lt; 1 hora</strong> si el objeto es <strong>&lt; 10 GB</strong> (más cara)</td></tr>
+          <tr><td>¿Se puede cancelar?</td><td><span class="no">No</span> — una vez disparada, corre hasta el final</td></tr>
+          <tr><td>¿Cambia Last-Modified?</td><td><span class="no">No</span></td></tr>
+          <tr><td>¿Se puede subir Standard → High en curso?</td><td><span class="yes">Sí</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>az storage blob set-tier --account-name cuenta --container-name data \
+  --name archivo.bin --tier Hot --rehydrate-priority Standard
+
+Set-AzStorageBlobTier -Container data -Blob archivo.bin -Tier Hot `
+  -RehydratePriority High -Context $ctx</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “¿cuánto tarda leer un blob en Archive?”. No es inmediato. Default = <strong>hasta 15 horas</strong> (Standard). High Priority &lt; 1 h solo si &lt; 10 GB. No se cancela. Last-Modified no cambia. Cool/Cold se leen al toque; Archive no.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tier a nivel cuenta vs a nivel blob</div>
+      <ul>
+        <li>La cuenta tiene un <strong>default access tier</strong>: <strong>Hot, Cool o Cold</strong>. Todo blob que no tenga tier explícito hereda ese default (el portal lo muestra como <em>Hot (inferred)</em>, <em>Cool (inferred)</em> o <em>Cold (inferred)</em>).</li>
+        <li>Cada blob puede tener su propio tier, que <strong>pisa</strong> al de la cuenta.</li>
+        <li>Cambiar el default de la cuenta afecta a todos los blobs sin tier explícito — y puede disparar cargos de eliminación temprana en masa.</li>
+        <li><strong>Archive nunca puede ser el default de la cuenta.</strong> Se setea blob por blob (a mano, con AzCopy/PowerShell, o con una lifecycle management policy).</li>
+      </ul>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla de default + días:</strong> si la pregunta pide el <em>default access tier de la cuenta</em>, Archive queda fuera de entrada. Entre Hot / Cool / Cold, elegí el más barato cuya permanencia mínima <strong>no supere</strong> el tiempo que los datos van a estar: &lt;30 días → Hot · 30–89 días → Cool · 90–179 días → <strong>Cold</strong>. Archive solo entra si el enunciado pide 180+ días <em>y</em> acepta horas de rehidratación <em>y</em> el tier se setea por blob, no como default.
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen (esta sale tal cual):</strong> “4 TB de datos de archivo, estáticos ~100 días, optimizar costo y evitar early deletion, ¿default access tier de la cuenta?”. La palabra <em>archive</em> es el cebo. <strong>Archive está mal dos veces:</strong> (1) no puede ser default de cuenta; (2) mínimo 180 días → a los 100 días cobrás 80 días de penalidad. Cool no cobra penalidad (mínimo 30) pero es más caro. La respuesta es <strong>Cold</strong>: default válido, mínimo 90 &lt; 100, el más barato de los tres online.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "los usuarios tienen que poder recuperar el archivo en el momento, pero casi nunca lo consultan" <strong>no</strong> es Archive — es Cool o Cold, porque Archive es offline y requiere horas de rehidratación. Archive solo entra cuando el enunciado acepta explícitamente una demora de horas o habla de retención legal a años.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Hot / Cool / Archive: 2 TB, muchos años, raro, inmediato</div>
+      <p>On-prem → cuenta Azure. Retención larga, casi nunca se lee, <strong>available for immediate access</strong>, minimizar costo. Si el drop-down <strong>no trae Cold</strong>:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Tier</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Cool</strong></td><td><span class="yes">Sí</span></td><td>Online, inmediato, más barato que Hot. Mínimo 30 días (años lo cubren)</td></tr>
+            <tr><td>Archive</td><td><span class="no">No</span></td><td>Offline: rehydrate <strong>hasta 15 h</strong>. Rompe “immediate access”</td></tr>
+            <tr><td>Hot</td><td><span class="no">No</span></td><td>Inmediato sí, pero el más caro de guardar</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Si aparece <strong>Cold</strong>, para “años y casi nunca” Cold suele ganar a Cool (mínimo 90, más barato, sigue online). Sin Cold en las opciones, Cool es la respuesta.</p>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Las <strong>lifecycle management policies</strong> son la forma canónica de automatizar todo esto: reglas del estilo "si el blob no se modificó en 30 días → Cool; en 180 días → Archive; en 2 años → delete", evaluadas a nivel cuenta y filtradas por prefijo o blob index tag.</span>
+    </div>
+  </div>
+
+  <div class="section" id="sec4">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🔁</div>
+      <span class="section-title">Redundancia: LRS, ZRS, GRS, RA-GRS, GZRS, RA-GZRS</span>
+      <span class="section-tag">El core del dominio</span>
+    </div>
+
+    <p>Toda cuenta guarda <strong>siempre tres copias en la región primaria</strong>. Lo que cambia es <em>dónde</em> están esas tres copias y <em>si además</em> hay tres más en otra región. Diagrama opcional: <a href="26-storage-redundancy-visual.html" style="color:var(--accent)">26 · Redundancia visual</a>.</p>
+
+    <div class="flow">
+      <div class="flow-step">LRS<br><small>3 copias, 1 datacenter</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">ZRS<br><small>3 copias, 3 AZ</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">GRS<br><small>3 + 3, otra región</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step highlight">GZRS<br><small>3 AZ + 3 remotas</small></div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Opción</th><th>Copias</th><th>Dónde</th><th>Protege contra</th><th>Lectura del secundario</th></tr></thead>
+        <tbody>
+          <tr><td><strong>LRS</strong></td><td>3</td><td>Un solo datacenter de la región primaria</td><td>Falla de disco / rack / servidor</td><td><span class="no">N/A</span></td></tr>
+          <tr><td><strong>ZRS</strong></td><td>3</td><td>Tres availability zones distintas de la región primaria</td><td>Caída de una zona entera</td><td><span class="no">N/A</span></td></tr>
+          <tr><td><strong>GRS</strong></td><td>6</td><td>3 LRS en primaria + 3 LRS en la región secundaria</td><td>Caída de la región entera</td><td><span class="no">No</span> — el secundario no es accesible hasta el failover</td></tr>
+          <tr><td><strong>RA-GRS</strong></td><td>6</td><td>Igual que GRS</td><td>Caída de la región entera</td><td><span class="yes">Sí</span>, solo lectura, endpoint <code>-secondary</code></td></tr>
+          <tr><td><strong>GZRS</strong></td><td>6</td><td>3 en AZ de la primaria + 3 LRS en la secundaria</td><td>Caída de una zona <em>y</em> caída de región</td><td><span class="no">No</span></td></tr>
+          <tr><td><strong>RA-GZRS</strong></td><td>6</td><td>Igual que GZRS</td><td>Zona + región</td><td><span class="yes">Sí</span>, solo lectura, endpoint <code>-secondary</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cómo se decide en tres preguntas</div>
+      <ol>
+        <li>¿Tiene que sobrevivir a la caída de una <strong>zona</strong>? → algo con <strong>Z</strong>: ZRS o GZRS.</li>
+        <li>¿Tiene que sobrevivir a la caída de una <strong>región</strong>? → algo con <strong>G</strong>: GRS o GZRS.</li>
+        <li>¿Alguien necesita <strong>leer</strong> la copia remota (reportes, lecturas locales de otra región) mientras la primaria está sana? → algo con <strong>RA-</strong>.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Región secundaria y replicación</div>
+      <ul>
+        <li>La región secundaria es la <strong>region pair</strong> fija de la primaria (definida por Microsoft). <strong>No la elegís vos</strong> y no la podés cambiar.</li>
+        <li>La replicación a la primaria es <strong>síncrona</strong> (las 3 copias locales se escriben antes de confirmar).</li>
+        <li>La replicación <strong>a la región secundaria es asíncrona</strong>. Eso implica un <strong>RPO mayor que cero</strong>: si la primaria se cae, lo que todavía no había replicado se pierde.</li>
+        <li>La propiedad <strong>Last Sync Time</strong> de la cuenta te dice hasta qué momento el secundario está garantizadamente al día. Es el dato que hay que mirar antes de un failover.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> GRS y RA-GRS tienen exactamente la <strong>misma durabilidad y la misma protección</strong>; la única diferencia es el <strong>permiso de lectura</strong> sobre el endpoint secundario. Si la pregunta dice "una aplicación de solo lectura tiene que seguir leyendo aunque la región primaria esté caída" o "queremos leer desde otra región para reducir latencia", la respuesta es <strong>RA-GRS / RA-GZRS</strong>, nunca GRS pelado.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Con RA-GRS, la app tiene que apuntar explícitamente a <code>&lt;cuenta&gt;-secondary.blob.core.windows.net</code>. No hay redirección automática: el endpoint primario no "cae" al secundario solo.</span>
+    </div>
+  </div>
+
+  <div class="section" id="sec5">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">🚨</div>
+      <span class="section-title">Failover de cuenta</span>
+      <span class="section-tag">Y qué queda después</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Customer-managed failover: la secuencia</div>
+      <ol>
+        <li>Requiere que la cuenta sea <strong>geo-redundante</strong> (GRS, RA-GRS, GZRS o RA-GZRS). Con LRS o ZRS no existe el botón.</li>
+        <li>Antes de disparar, mirás <strong>Last Sync Time</strong> para estimar cuánto vas a perder.</li>
+        <li>Al hacer failover, la <strong>región secundaria pasa a ser la primaria</strong> y los registros DNS de los endpoints se reapuntan solos: <strong>el nombre de la cuenta y las URLs no cambian</strong>.</li>
+        <li>Hay dos modos: <strong>planned</strong> (ambas regiones sanas, sin pérdida esperada, conserva GRS/GZRS) y <strong>unplanned</strong> (la primaria está caída; lo no replicado se pierde y la cuenta queda LRS).</li>
+      </ol>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> «queda como LRS» aplica solo al failover <strong>unplanned</strong>: la nueva primaria queda LRS y hay que <strong>reconfigurar GRS/GZRS a mano</strong>. El failover <strong>planned</strong> <em>conserva</em> la geo-redundancia (GRS sigue GRS, GZRS sigue GZRS) y no exige ese paso. En ambos casos el nombre de la cuenta y las URLs no cambian.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Dónde NO está soportado</div>
+      <ul>
+        <li>Cuentas <strong>LRS o ZRS</strong> (no hay copia remota que promover).</li>
+        <li>Cuentas <strong>Premium</strong>, porque directamente no tienen geo-redundancia.</li>
+        <li><strong>Azure File Sync</strong> no soporta el account failover: hacerlo deja los server endpoints inutilizables.</li>
+        <li><strong>Unmanaged disks</strong> (VHDs de VM sobre page blobs) no son un escenario soportado de failover de cuenta.</li>
+        <li>Los blobs que estén en <strong>Archive</strong> no se rehidratan mágicamente: siguen offline después del failover.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Distinguí <strong>customer-managed failover</strong> (lo disparás vos, para tu cuenta, cuando querés) de <strong>Microsoft-managed failover</strong> (lo dispara Microsoft, solo ante un desastre regional grave y a escala de región completa). En el examen, "queremos poder decidir nosotros cuándo conmutar" = customer-managed.</span>
+    </div>
+  </div>
+
+  <div class="section" id="sec6">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🔄</div>
+      <span class="section-title">Cambiar la redundancia de una cuenta existente</span>
+      <span class="section-tag">Qué se puede en vivo</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla práctica:</strong> moverse <strong>dentro de la misma familia</strong> (agregar o sacar geo-redundancia sin tocar la parte zonal) es un cambio directo desde el portal, sin downtime. <strong>Cruzar a una opción con Z</strong> (ZRS/GZRS/RA-GZRS) es una <em>conversión</em>, un proceso asincrónico de fondo que puede tardar, o directamente una migración manual.
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>De → A</th><th>Cómo se hace</th><th>Impacto</th></tr></thead>
+        <tbody>
+          <tr><td>LRS ↔ GRS ↔ RA-GRS</td><td><span class="chip chip-green">Portal / CLI</span> cambio directo de la propiedad de replicación</td><td>Sin downtime. Pasar a GRS arranca la replicación inicial al secundario</td></tr>
+          <tr><td>ZRS ↔ GZRS ↔ RA-GZRS</td><td><span class="chip chip-green">Portal / CLI</span> cambio directo</td><td>Sin downtime, misma lógica que arriba</td></tr>
+          <tr><td>GRS ↔ RA-GRS (y GZRS ↔ RA-GZRS)</td><td><span class="chip chip-green">Portal</span> es solo prender/apagar el acceso de lectura</td><td>Inmediato</td></tr>
+          <tr><td>LRS → ZRS (o GRS → GZRS)</td><td><span class="chip chip-yellow">Conversión</span> iniciada por vos desde el portal, o por ticket de soporte</td><td>Asincrónica, puede demorar; no hay downtime pero tampoco control fino del tiempo</td></tr>
+          <tr><td>GRS → ZRS</td><td><span class="chip chip-yellow">Dos pasos</span>: primero bajar a LRS, después convertir a ZRS (o viceversa)</td><td>Planificarlo; no es un solo clic</td></tr>
+          <tr><td>Cambiar de región, o casos no soportados</td><td><span class="chip chip-red">Migración manual</span>: crear cuenta nueva y copiar con AzCopy / Azure Storage Mover / Data Factory</td><td>Único camino cuando la conversión no aplica. Downtime según cómo lo orquestes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> la redundancia se cambia, pero <strong>el tipo de cuenta, la región y el performance tier no</strong>. No existe "convertir Standard a Premium" ni "mover la cuenta a otra región" desde el portal: eso siempre es <strong>crear una cuenta nueva y copiar los datos</strong>. Si una opción de respuesta dice "cambiar el performance tier de la storage account existente a Premium", está mal por definición.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Premium file shares: ¿convertir GPv1/GPv2?</div>
+      <p>Storage1 y Storage3 = GPv2 Standard. Storage2 = GPv1. Ninguna admite Premium Files. Camino más barato:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Convertir Storage1 y Storage3 a Premium</td><td><span class="no">No</span></td><td>Standard → Premium no existe. GPv2 no se “toglea” a FileStorage</td></tr>
+            <tr><td>Crear una cuenta Premium nueva (<code>FileStorage</code>)</td><td><span class="yes">Yes</span></td><td>Único camino. Kind se elige al crear</td></tr>
+            <tr><td>Convertir Storage2 a Premium</td><td><span class="no">No</span></td><td>GPv1 → GPv2 sí; GPv1 → Premium Files no</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Premium file shares = cuenta <strong>FileStorage</strong> nueva. Yes/No típico: <strong>No / Yes / No</strong>. Upgrade GPv1→GPv2 no te da SSD de Files.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Las cuentas Premium no participan de nada de esto más allá de LRS ↔ ZRS, y ese salto también es conversión, no un toggle.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Azure Files NFSv4.1: LRS → ZRS</div>
+      <p>Shares NFS 4.1 en LRS. Hay que pasar a ZRS. Live migration y el toggle del portal <strong>no aplican</strong> a NFS (tampoco si la cuenta tiene NFSv3 de Blob).</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Método</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Migración manual</strong></td><td><span class="yes">Sí</span></td><td>Cuenta/share nuevo ZRS y copiar (AzCopy / Storage Mover / rsync). Único soportado para NFSv4.1</td></tr>
+            <tr><td>Portal (cambiar redundancia)</td><td><span class="no">No</span></td><td>Deshabilitado con shares NFS 4.1</td></tr>
+            <tr><td>PowerShell / CLI del SKU</td><td><span class="no">No</span></td><td>LRS↔GRS sí; LRS→ZRS de NFS no</td></tr>
+            <tr><td>Live migration (ticket)</td><td><span class="no">No</span></td><td>No soportado para Azure Files NFSv4.1 LRS→ZRS</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> LRS→ZRS “en vivo” / portal vale para muchos blobs, <strong>no para Azure Files NFSv4.1</strong>. Ahí es <strong>migración manual</strong>. Live migration es el distractor que suena a soporte Microsoft.</span>
+    </div>
+  </div>
+
+  <div class="section" id="sec7">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">🌐</div>
+      <span class="section-title">Naming y endpoints</span>
+      <span class="section-tag">Preguntas de "cuál nombre es válido"</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Reglas del nombre de la cuenta</div>
+      <ul>
+        <li><strong>3 a 24 caracteres.</strong></li>
+        <li><strong>Solo minúsculas y números.</strong> Nada de mayúsculas, guiones, guiones bajos, puntos ni espacios.</li>
+        <li><strong>Globalmente único</strong> en todo Azure — forma parte de un FQDN público, así que compite con las cuentas de todos los demás tenants.</li>
+        <li>El nombre <strong>no se puede cambiar</strong> después de creada la cuenta.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Servicio</th><th>Endpoint público</th><th>Endpoint secundario (RA-GRS / RA-GZRS)</th></tr></thead>
+        <tbody>
+          <tr><td>Blob</td><td><code>&lt;cuenta&gt;.blob.core.windows.net</code></td><td><code>&lt;cuenta&gt;-secondary.blob.core.windows.net</code></td></tr>
+          <tr><td>Files</td><td><code>&lt;cuenta&gt;.file.core.windows.net</code></td><td><code>&lt;cuenta&gt;-secondary.file.core.windows.net</code></td></tr>
+          <tr><td>Queue</td><td><code>&lt;cuenta&gt;.queue.core.windows.net</code></td><td><code>&lt;cuenta&gt;-secondary.queue.core.windows.net</code></td></tr>
+          <tr><td>Table</td><td><code>&lt;cuenta&gt;.table.core.windows.net</code></td><td><code>&lt;cuenta&gt;-secondary.table.core.windows.net</code></td></tr>
+          <tr><td>Data Lake Gen2</td><td><code>&lt;cuenta&gt;.dfs.core.windows.net</code></td><td><code>&lt;cuenta&gt;-secondary.dfs.core.windows.net</code></td></tr>
+          <tr><td>Static website</td><td><code>&lt;cuenta&gt;.z##.web.core.windows.net</code></td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Estructura de una URL de blob</div>
+      <pre><code>https://misdatos2026.blob.core.windows.net/facturas/2026/enero.pdf
+        └─ cuenta ─┘ └ servicio ┘              └container┘└─ nombre del blob ─┘</code></pre>
+      <ul>
+        <li>El nombre del <strong>container</strong> va aparte: 3–63 caracteres, minúsculas, números y guiones (no dobles, no al inicio ni al final).</li>
+        <li>Los "directorios" dentro de un container Blob plano son <strong>parte del nombre del blob</strong>, no carpetas reales — salvo que tengas hierarchical namespace.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Se pueden asociar <strong>custom domains</strong> al endpoint de blob, y con <strong>private endpoints</strong> el mismo FQDN resuelve a una IP privada de la VNet vía Private DNS. El nombre público sigue existiendo igual: por eso la unicidad global es obligatoria aunque nunca lo expongas a Internet.</span>
+    </div>
+  </div>
+
+  <div class="section" id="sec8">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">📦</div>
+      <span class="section-title">Los servicios dentro de la cuenta</span>
+      <span class="section-tag">Qué guarda qué</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Servicio</th><th>Unidad</th><th>Para qué sirve</th><th>Dato que se pregunta</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Blob</strong></td><td>Container → blob</td><td>Objetos no estructurados: imágenes, backups, logs, VHDs</td><td>Es el único con access tiers. Nivel de acceso público del container: <em>Private</em> / <em>Blob</em> / <em>Container</em></td></tr>
+          <tr><td><strong>Files</strong></td><td>File share</td><td>Share montable por <strong>SMB</strong> o <strong>NFS</strong>; se monta desde Windows, Linux y VMs on-prem</td><td>NFS <strong>solo en Premium file shares</strong>. Es lo que usa Azure File Sync</td></tr>
+          <tr><td><strong>Queue</strong></td><td>Queue → message</td><td>Mensajería asíncrona simple entre componentes</td><td>Mensaje de <strong>hasta 64 KB</strong></td></tr>
+          <tr><td><strong>Table</strong></td><td>Table → entity</td><td>Almacén NoSQL clave/atributo, schemaless</td><td>Entidad de <strong>hasta 1 MB</strong>; se accede por PartitionKey + RowKey</td></tr>
+          <tr><td><strong>Data Lake Gen2</strong></td><td>Filesystem → directorios reales</td><td>Analytics a gran escala sobre Blob, con jerarquía real</td><td>Requiere <strong>hierarchical namespace (HNS)</strong> y usa el endpoint <code>.dfs</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el <strong>hierarchical namespace se habilita al crear la cuenta y no se puede deshabilitar después</strong>. Si el escenario dice "la cuenta tiene HNS activado y ahora necesitamos volver a blob plano", la única respuesta correcta es <strong>crear una cuenta nueva y migrar los datos</strong>. En sentido inverso, una cuenta GPv2 sin HNS sí se puede <em>upgrade</em> a Data Lake Gen2, y ese upgrade tampoco tiene vuelta atrás.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Ventajas de HNS que el examen cita</div>
+      <ul>
+        <li>Directorios <strong>reales</strong>: renombrar o borrar una carpeta es una operación atómica y única, no N operaciones sobre N blobs.</li>
+        <li><strong>ACLs POSIX</strong> a nivel directorio y archivo, además del RBAC de Azure.</li>
+        <li>Mejor performance y menor costo en workloads analíticos (Databricks, Synapse, HDInsight).</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Límites de escala útiles: hasta <strong>250 storage accounts por región por suscripción</strong> (ampliable por soporte) y una capacidad máxima por cuenta del orden de los <strong>5 PiB</strong>. Si el escenario habla de "superamos el límite de la cuenta", la respuesta suele ser repartir en varias cuentas, no pedir más capacidad.</span>
+    </div>
+  </div>
+
+  <div class="section" id="sec9">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🧱</div>
+      <span class="section-title">Tipos de blob: Block, Append, Page</span>
+      <span class="section-tag">Matching directo</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Tipo</th><th>Cómo se escribe</th><th>Escenario del examen</th><th>Access tiers</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Block blob</strong></td>
+            <td>Se sube en bloques (hasta 50.000 bloques) que se commitean juntos</td>
+            <td><strong>El default para todo</strong>: documentos, imágenes, videos, backups, archivos generales</td>
+            <td><span class="yes">Sí</span> — Hot / Cool / Cold / Archive</td>
+          </tr>
+          <tr>
+            <td><strong>Append blob</strong></td>
+            <td>Solo se puede <strong>agregar al final</strong>; los bloques existentes no se modifican ni se borran</td>
+            <td><strong>Logs</strong>, auditoría, telemetría, cualquier cosa que se escribe append-only desde muchos writers</td>
+            <td><span class="no">No</span> — el tier se setea solo en block blobs</td>
+          </tr>
+          <tr>
+            <td><strong>Page blob</strong></td>
+            <td>Colección de páginas de 512 bytes con <strong>lectura y escritura aleatoria</strong>; hasta 8 TiB</td>
+            <td><strong>VHDs</strong>, unmanaged disks, discos de VM, bases de datos que hacen I/O aleatorio</td>
+            <td><span class="no">No</span> — no soportan Cool/Cold/Archive</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cómo se elige en un renglón</div>
+      <ul>
+        <li>¿Es un <strong>archivo</strong> que se sube entero y se lee entero? → <strong>Block</strong>.</li>
+        <li>¿Se le <strong>agregan líneas</strong> permanentemente y nunca se reescribe el medio? → <strong>Append</strong>.</li>
+        <li>¿Necesita <strong>escritura aleatoria</strong> en el medio del archivo (un disco, un VHD)? → <strong>Page</strong>.</li>
+        <li>El tipo se define <strong>al crear el blob</strong> y no se puede convertir después: para cambiarlo hay que crear uno nuevo y copiar.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Encadená la lógica completa como la arma el examen: <em>"logs continuos de una app, retención de 7 años, lectura casi nula, tolerancia a caída de región"</em> → cuenta <strong>Standard GPv2</strong>, blob <strong>Block</strong> (el Append no admite tiering: lifecycle solo puede borrarlo), tier <strong>Archive</strong> vía lifecycle policy, redundancia <strong>GRS</strong> (o RA-GRS si además hay que leerlos desde la secundaria).</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Cuál es la permanencia mínima de cada access tier?", a: "<strong>Hot:</strong> ninguna · <strong>Cool:</strong> 30 días · <strong>Cold:</strong> 90 días · <strong>Archive:</strong> 180 días. Borrar o mover antes dispara el <strong>cargo por eliminación temprana</strong> por los días restantes.", cat: "Access tiers" },
+  { q: "¿Qué tipo de cuenta hace falta para un file share con NFS?", a: "<strong>Premium file shares</strong> (<code>FileStorage</code>). SMB funciona en Standard GPv2 y en Premium; <strong>NFS solo en Premium</strong>.", cat: "Tipos de cuenta" },
+  { q: "¿Qué opciones de redundancia soporta una cuenta Premium?", a: "Solo <strong>LRS y ZRS</strong> (y Premium page blobs, solo LRS). <strong>Ninguna geo-redundancia</strong>: no hay GRS, RA-GRS, GZRS ni RA-GZRS en Premium.", cat: "Premium" },
+  { q: "GRS vs RA-GRS: ¿cuál es la única diferencia?", a: "La misma durabilidad y las mismas 6 copias. RA-GRS agrega <strong>acceso de solo lectura al endpoint secundario</strong> <code>&lt;cuenta&gt;-secondary...</code> mientras la primaria sigue viva. Con GRS el secundario es inaccesible hasta el failover.", cat: "Redundancia" },
+  { q: "¿Cuántas copias y dónde: LRS, ZRS, GZRS?", a: "<strong>LRS:</strong> 3 copias en un solo datacenter. <strong>ZRS:</strong> 3 copias en 3 availability zones de la región. <strong>GZRS:</strong> 3 en AZ de la primaria + 3 LRS en la región secundaria = 6.", cat: "Redundancia" },
+  { q: "¿En qué queda la cuenta después de un customer-managed failover?", a: "La secundaria pasa a primaria (nombre y URLs no cambian). <strong>Unplanned:</strong> queda <strong>LRS</strong> y hay que rearmar GRS/GZRS a mano. <strong>Planned:</strong> conserva la geo-redundancia (GRS→GRS, GZRS→GZRS).", cat: "Failover" },
+  { q: "Reglas del nombre de una storage account", a: "<strong>3 a 24 caracteres</strong>, <strong>solo minúsculas y números</strong>, <strong>globalmente único</strong> en Azure. No se puede cambiar después de creada.", cat: "Naming" },
+  { q: "¿Cuánto tarda rehidratar un blob desde Archive? ¿Se cancela? ¿Cambia Last-Modified?", a: "Prioridad <strong>Standard (default): hasta 15 horas</strong>. <strong>High:</strong> &lt; 1 hora si el objeto es <strong>&lt; 10 GB</strong>, más cara. <strong>No se cancela</strong> una vez disparada (sí se puede subir Standard → High). <strong>No cambia</strong> Last-Modified. Cmdlets: <code>az storage blob set-tier --tier Hot --rehydrate-priority Standard</code> / <code>Set-AzStorageBlobTier -RehydratePriority High</code>. En Archive el contenido <strong>no se lee</strong> hasta terminar.", cat: "Archive" },
+  { q: "¿Qué tiers se pueden poner como default de la cuenta?", a: "<strong>Hot, Cool o Cold.</strong> <strong>Archive nunca es default de cuenta</strong>: se setea blob por blob, a mano o con una lifecycle policy. El tier del blob pisa al de la cuenta.", cat: "Access tiers" },
+  { q: "4 TB estáticos ~100 días. Optimizar costo y evitar early deletion. ¿Default access tier de la cuenta?", a: "<strong>Cold.</strong> Archive no puede ser default y su mínimo es 180 días (100 &lt; 180 → cargo). Cool no cobra penalidad pero es más caro. Cold es default válido, mínimo 90 &lt; 100, el más barato de los online.", cat: "Access tiers" },
+  { q: "Endpoints por servicio de una storage account", a: "<code>.blob.</code> · <code>.file.</code> · <code>.queue.</code> · <code>.table.</code> · <code>.dfs.</code> (Data Lake Gen2), todos sobre <code>core.windows.net</code>. El secundario lleva <strong><code>-secondary</code></strong> pegado al nombre de la cuenta.", cat: "Endpoints" },
+  { q: "Block vs Append vs Page blob: ¿cuál para qué?", a: "<strong>Block:</strong> archivos generales (el default). <strong>Append:</strong> logs y escritura append-only. <strong>Page:</strong> VHDs y discos, porque permite <strong>escritura aleatoria</strong> (páginas de 512 bytes, hasta 8 TiB).", cat: "Tipos de blob" },
+  { q: "¿Se puede desactivar el hierarchical namespace?", a: "<strong>No.</strong> HNS se habilita <strong>al crear la cuenta</strong> (o por upgrade one-way) y no se puede deshabilitar. Para volver a blob plano hay que <strong>crear una cuenta nueva y migrar</strong>.", cat: "Data Lake" },
+  { q: "¿Qué cambios de redundancia son directos desde el portal y cuáles no?", a: "Directos: <strong>LRS ↔ GRS ↔ RA-GRS</strong> y <strong>ZRS ↔ GZRS ↔ RA-GZRS</strong> (misma familia). Pasar a una opción con <strong>Z</strong> es una <strong>conversión</strong> asincrónica (o ticket de soporte); cambiar de región o de performance tier exige <strong>cuenta nueva + copia manual</strong>.", cat: "Migración" },
+  { q: "¿Por qué el failover de GRS puede perder datos?", a: "Porque la replicación a la región secundaria es <strong>asíncrona</strong> → el <strong>RPO es mayor que cero</strong>. Lo escrito y no replicado se pierde. La propiedad <strong>Last Sync Time</strong> indica hasta dónde está al día el secundario.", cat: "Failover" },
+  { q: "2 TB, años, raro, inmediato, min costo. Drop-down solo Hot / Cool / Archive (sin Cold). ¿Cuál?", a: "<strong>Cool</strong>. Archive es offline (rehydrate hasta 15 h) y rompe “immediate access”. Hot es inmediato pero el más caro de guardar. Si aparece Cold, para “años y casi nunca” suele ganar; sin Cold, Cool.", cat: "Access tiers" },
+  { q: "Azure Files NFSv4.1 en LRS → ZRS. ¿Portal, PowerShell, live migration o manual?", a: "<strong>Migración manual</strong> (cuenta/share ZRS + copiar). Portal y live migration <strong>no</strong> soportan NFSv4.1 LRS→ZRS. PowerShell cambia LRS↔GRS, no ese salto de NFS.", cat: "Migración" },
+  { q: "FileStorage, solo UK South, optimizar availability. ¿LRS, ZRS, GRS o GZRS?", a: "<strong>ZRS</strong>. GRS/GZRS copian a otra región (violan “solo UK South”) y Premium no tiene geo. LRS cabe en la región pero no protege zonas.", cat: "Premium" },
+  { q: "Premium file shares. Storage1/3 = GPv2, Storage2 = GPv1. ¿Convertir 1 y 3? ¿Cuenta nueva? ¿Convertir 2?", a: "<strong>No / Yes / No</strong>. Standard→Premium no existe. Hay que <strong>crear FileStorage</strong>. GPv1→GPv2 no da SSD de Files.", cat: "Premium" },
+  { q: "az storage account create: Hot/Cool/Archive + lifecycle + falla de región, mín. costo. ¿kind y sku?", a: "<code>--kind StorageV2 --sku Standard_GRS</code>. Storage (GPv1) no tiene tiers/lifecycle. LRS/ZRS no son geo. RA-GRS y GZRS cubren la región pero salen más caros.", cat: "Tipos de cuenta" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

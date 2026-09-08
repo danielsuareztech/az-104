@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Alta Disponibilidad y Escalado</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Alta Disponibilidad y Escalado</div>
+    <div class="nav-sub">Availability Sets, Zones y Scale Sets</div>
+    <div class="nav-weight">Dominio 3 · 20–25%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#sec-geografia"><span class="dot"></span>Geografía de Azure</a>
+  <a href="#sec-avset"><span class="dot"></span>Availability Sets</a>
+  <a href="#sec-zones"><span class="dot"></span>Availability Zones</a>
+  <a href="#sec-sla"><span class="dot"></span>SLA: la tabla decisiva</a>
+  <a href="#sec-vmss"><span class="dot"></span>Scale Sets (VMSS)</a>
+  <a href="#sec-autoscale"><span class="dot"></span>Autoscale</a>
+  <a href="#sec-scalein"><span class="dot"></span>Scale-in policy</a>
+  <a href="#sec-upgrade"><span class="dot"></span>Upgrade policy</a>
+  <a href="#sec-lb"><span class="dot"></span>VMSS + Load Balancer</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen te tira un escenario y te pide <strong>el SLA más alto</strong>, o <strong>protección contra la caída de un datacenter entero</strong>, o <strong>actualizar 50 instancias sin downtime</strong>. Casi siempre la respuesta se decide en tres bifurcaciones: <strong>Availability Set vs Availability Zone</strong> (rack vs datacenter), <strong>Uniform vs Flexible</strong> (idénticas vs mezcladas), y <strong>Manual / Automatic / Rolling</strong> (control vs velocidad vs cero downtime). Cambio de OS/Data disk Profile a instancias existentes: <code>Set-AzVmssVM</code> (Rolling no lo aplica; <code>Update-AzVmssInstance</code> tampoco). Drop-down de AS: planned maintenance = UD (8 VMs en grupos de 2 → <strong>4 UD</strong>), separación física = FD al máximo (<strong>3</strong>), Aligned. Escalera de SLA: <strong>99,99 / 99,95 / 99,9 / 99,5 / 95</strong>.
+  </div>
+
+  <!-- ══ 1 ══ -->
+  <div class="section" id="sec-geografia">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🌍</div>
+      <span class="section-title">El mapa mental: Geography → Region → Zone → Datacenter</span>
+      <span class="section-tag">Fundamentos</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">La jerarquía física</div>
+      <div class="flow">
+        <div class="flow-step">Geography<br><small>ej. Europe</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Region<br><small>ej. West Europe</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Availability Zone<br><small>1 / 2 / 3</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Datacenter<br><small>1 o más por zona</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Rack<br><small>= fault domain</small></div>
+      </div>
+      <ul>
+        <li><strong>Geography</strong>: agrupación discreta que define el <strong>límite de residencia de datos</strong> y de cumplimiento. Es el concepto que aparece cuando la pregunta habla de "los datos no pueden salir del país / de la UE".</li>
+        <li><strong>Region</strong>: conjunto de datacenters desplegados dentro de un perímetro con red de baja latencia. Es la unidad que elegís al crear cualquier recurso.</li>
+        <li><strong>Availability Zone</strong>: una o más instalaciones físicamente separadas dentro de la región, con energía, refrigeración y red <strong>independientes</strong>. Las regiones habilitadas tienen <strong>un mínimo de 3 zonas</strong>.</li>
+        <li><strong>Datacenter / rack</strong>: el nivel más bajo. Los fault domains de un Availability Set viven acá.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Region pairs</div>
+      <ul>
+        <li>Cada región está emparejada con otra <strong>dentro de la misma geography</strong>. La excepción clásica es <strong>Brazil South ↔ South Central US</strong> (el par sale de Brasil).</li>
+        <li>Separación física de <strong>al menos 300 millas (≈480 km)</strong> donde sea posible, para que un desastre regional no toque a las dos. No es 300 km.</li>
+        <li>Las <strong>actualizaciones de plataforma son escalonadas</strong>: Azure nunca actualiza las dos regiones de un par al mismo tiempo.</li>
+        <li>En una interrupción amplia, Azure <strong>prioriza la recuperación de al menos una región de cada par</strong>.</li>
+        <li>Es el fundamento de <strong>GRS / RA-GRS</strong> en Storage: la copia secundaria va a la región emparejada y no la elegís vos.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Nivel de falla</th><th>Qué se cae</th><th>Qué te protege</th></tr></thead>
+        <tbody>
+          <tr><td>Host / servidor individual</td><td>Una VM</td><td>Cualquier redundancia: AS, AZ o VMSS</td></tr>
+          <tr><td>Rack (energía o switch de red)</td><td>Varias VMs del mismo rack</td><td><span class="chip chip-blue">Availability Set</span> (fault domains)</td></tr>
+          <tr><td>Mantenimiento planificado de Azure</td><td>Reinicio escalonado de hosts</td><td><span class="chip chip-blue">Availability Set</span> (update domains)</td></tr>
+          <tr><td>Datacenter / zona completa</td><td>Todo un edificio</td><td><span class="chip chip-purple">Availability Zones</span></td></tr>
+          <tr><td>Región completa</td><td>Todas las zonas de la región</td><td>Replicación a otra región: <strong>Azure Site Recovery</strong>, GRS, multi-region</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "region pair" <strong>no es un mecanismo de failover automático para tus VMs</strong>. El emparejamiento solo condiciona replicación de plataforma (GRS), orden de actualizaciones y prioridad de recuperación. Si el escenario pide continuidad de negocio ante caída regional para IaaS, la respuesta es <strong>Azure Site Recovery</strong>, no "usar el region pair". Mapa visual opcional: <a href="24-geografia-visual.html" style="color:var(--accent)">24 · Geografía</a>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 2 ══ -->
+  <div class="section" id="sec-avset">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">🏗️</div>
+      <span class="section-title">Availability Sets: fault domains y update domains</span>
+      <span class="section-tag">Dentro de un datacenter</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Los dos ejes</div>
+      <ul>
+        <li><strong>Fault Domain (FD)</strong> = grupo de racks que comparten <strong>fuente de energía y switch de red</strong>. Protege contra <strong>fallas no planificadas</strong> de hardware. Las VMs del AS se reparten entre FDs para que un rack caído no se lleve todas.</li>
+        <li><strong>Update Domain (UD)</strong> = grupo lógico que Azure reinicia junto durante <strong>mantenimiento planificado</strong>. Azure actualiza <strong>un UD a la vez</strong> y espera antes de pasar al siguiente, así nunca se reinician todas tus VMs simultáneamente.</li>
+        <li>Las VMs se asignan a FD y UD de forma <strong>round-robin</strong> a medida que las vas creando dentro del set. Si configurás más FDs que VMs, los FDs de más <strong>quedan vacíos</strong> (no se “rellenan” solos).</li>
+        <li>El Availability Set vive en <strong>un solo datacenter</strong> (una zona). No cruza AZs: por eso no te salva si se cae el edificio.</li>
+        <li>Los <strong>discos administrados</strong> también se alinean con el fault domain de la VM cuando el AS es "aligned" (lo estándar hoy).</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Concepto</th><th>Qué agrupa</th><th>Contra qué protege</th><th>Default al crear</th><th>Máximo</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Fault Domain</strong></td><td>Racks: energía + red compartida</td><td>Falla <strong>no planificada</strong> de hardware</td><td>2</td><td>Hasta <strong>3</strong> en la mayoría de las regiones</td></tr>
+          <tr><td><strong>Update Domain</strong></td><td>Ventana de mantenimiento</td><td>Reinicio por mantenimiento <strong>planificado</strong></td><td>5</td><td>Hasta <strong>20</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: 8 VMs, 6 arriba en mantenimiento, máxima separación física</div>
+      <p>Traducción del enunciado: “planned maintenance / restart in groups of two / at least six available” = <strong>Update domains</strong>. “Physically separated as much as possible” = <strong>Fault domains al máximo</strong>. Azure reinicia <strong>un UD por vez</strong>.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Campo</th><th>Valor</th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Fault domains</strong></td><td><strong>3</strong></td><td>El máximo. Más racks distintos = más separación física. Default es 2: no alcanza el “as much as possible”.</td></tr>
+          <tr><td><strong>Update domains</strong></td><td><strong>4</strong></td><td>8 VMs ÷ grupos de 2 = 4 UD. Un UD caído → 6 quedan. Con 3 UD algún grupo tendría 3 VMs (solo 5 arriba).</td></tr>
+          <tr><td><strong>Use managed disks</strong></td><td><strong>Yes (Aligned)</strong></td><td>Los discos viven en el mismo FD que la VM. Es el SKU moderno; 3 FD lo esperan.</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p style="margin-top:8px">Fórmula: <code>update domains = VMs ÷ tamaño del grupo de reinicio</code>. Disponibles durante el parche = <code>VMs − (VMs / UD)</code>.</p>
+<pre><code>az vm availability-set create -g RG -n AS1 --location centralus \
+  --platform-fault-domain-count 3 --platform-update-domain-count 4
+
+New-AzAvailabilitySet -ResourceGroupName RG -Name AS1 -Location centralus `
+  -PlatformFaultDomainCount 3 -PlatformUpdateDomainCount 4 -Sku Aligned</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “planned maintenance” es <strong>Update Domain</strong>, no Fault Domain. “Physical separation” es <strong>Fault Domain</strong> (máx. 3). No dejes los defaults (2 FD / 5 UD): 5 UD no da grupos de 2 exactos. Aligned / managed disks = Yes. Esto no sube el SLA: sigue 99,95 %.</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla de oro:</strong> un Availability Set reparte VMs entre <strong>fault domains (racks)</strong> y <strong>update domains</strong>. Te cubre falla de rack y mantenimiento planificado, pero <strong>no te protege si se cae el datacenter o la zona entera</strong>. Para eso necesitás Availability Zones. Maxear a <strong>3 FD y 3 UD</strong> no cambia el SLA: sigue siendo <strong>99,95 %</strong>.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Restricciones que el examen ama</div>
+      <ul>
+        <li>La VM <strong>tiene que crearse dentro del Availability Set</strong>. <strong>No podés agregar una VM ya existente a un AS</strong>: hay que borrarla (conservando los discos) y recrearla dentro del set, o recrearla desde una imagen/snapshot.</li>
+        <li>Tampoco podés <strong>sacar</strong> una VM de un AS ni <strong>moverla</strong> a otro AS sin recrearla.</li>
+        <li>El Availability Set es un recurso <strong>por región</strong> y <strong>no se puede mover a otra región</strong>.</li>
+        <li>Todas las VMs de un AS deberían estar en el <strong>mismo resource group</strong> y misma región que el AS.</li>
+        <li>Una VM <strong>no puede estar en un Availability Set y en una Availability Zone al mismo tiempo</strong>: son mutuamente excluyentes.</li>
+        <li>Buena práctica: cada <strong>capa de la aplicación</strong> (web, app, datos) en su <strong>propio Availability Set</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el escenario dice "ya tenés dos VMs corriendo en producción y querés SLA del 99,95%: ¿qué hacés?". La respuesta <strong>no</strong> es "agregarlas a un Availability Set" — eso es imposible sobre VMs existentes. La opción correcta implica <strong>recrear las VMs</strong> dentro del set (o directamente redesplegarlas en Availability Zones). La gemela Yes/No: Availability Set (aunque sea 3 FD + 3 UD) + <strong>Basic LB = No</strong> si piden datacenters separados o el SLA más alto.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cambiar el Availability Set de VM1</div>
+      <p>VM1 Windows 2016 en Sub1. Hay que cambiarle el AS assignment.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Redeploy desde un <strong>recovery point</strong> (Create a new VM al AS nuevo)</td><td><span class="yes">Sí</span></td><td>El AS se elige al crear. Restore “new VM” permite indicarlo</td></tr>
+            <tr><td>Mover VM1 a otra Availability Zone</td><td><span class="no">No</span></td><td>AS y AZ son mutuamente excluyentes; no cambia el set</td></tr>
+            <tr><td>Assign VM1 to the new availability set</td><td><span class="no">No</span></td><td>Esa operación <strong>no existe</strong> en portal/CLI</td></tr>
+            <tr><td>Migrar VM1 a otra región</td><td><span class="no">No</span></td><td>No asigna un AS en la región actual</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “Assign to the new availability set” parece el botón obvio y <strong>no existe</strong>. Con Backup: restore <em>Create a new VM</em> al set destino. Alternativa: borrar la VM conservando discos y recrearla en el AS.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Si el escenario pide <strong>latencia mínima entre VMs</strong> (cluster HPC, SAP, trading), el concepto es <strong>Proximity Placement Group (PPG)</strong>: agrupa recursos lo más cerca posible físicamente. Un PPG se puede combinar con un Availability Set, pero optimiza <strong>latencia</strong>, no disponibilidad.</span>
+    </div>
+  </div>
+
+  <!-- ══ 3 ══ -->
+  <div class="section" id="sec-zones">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">🏢</div>
+      <span class="section-title">Availability Zones: zonal vs zone-redundant</span>
+      <span class="section-tag">Dentro de la región</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué son</div>
+      <ul>
+        <li>Ubicaciones <strong>físicamente separadas</strong> dentro de una misma región. Cada zona son <strong>uno o más datacenters</strong> con <strong>energía, refrigeración y red independientes</strong>. En el examen, “datacenters separados en la misma región” = <strong>Availability Zones</strong>.</li>
+        <li>Las regiones habilitadas tienen <strong>al menos 3 zonas</strong>, conectadas por fibra dedicada de alto ancho de banda con <strong>latencia inferior a 2 ms</strong> entre zonas.</li>
+        <li>Los números de zona (1, 2, 3) están <strong>mapeados lógicamente por suscripción</strong>: la "zona 1" tuya no es necesariamente la misma instalación física que la "zona 1" de otra suscripción.</li>
+        <li>Al desplegar VMs en zonas distintas de una misma región, tenés protección contra la <strong>caída de un datacenter completo</strong> — algo que un Availability Set no puede darte.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Modelo</th><th>Cómo funciona</th><th>Ejemplos típicos</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="chip chip-purple">Zonal</span><br>(fijado a una zona)</td>
+            <td>Vos elegís la zona. El recurso vive en <strong>esa</strong> zona; si la zona cae, el recurso cae. La redundancia la construís vos desplegando instancias en varias zonas.</td>
+            <td>VM, managed disk, Public IP <strong>Standard</strong> zonal, NIC de una VM zonal</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-green">Zone-redundant</span><br>(replicado solo)</td>
+            <td>Azure replica y distribuye el recurso <strong>automáticamente entre zonas</strong>. Sobrevive a la pérdida de una zona sin que vos hagas nada.</td>
+            <td>Standard Load Balancer, <strong>ZRS</strong> en Storage, Application Gateway v2, Public IP Standard zone-redundant, VPN/ExpressRoute Gateway zone-redundant</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-yellow">Non-zonal / regional</span></td>
+            <td>Sin garantía de ubicación zonal: Azure lo coloca donde quiere dentro de la región.</td>
+            <td>VM sin zona seleccionada, Public IP <strong>Basic</strong>, LRS</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <strong>no podés cambiar la zona de una VM ya creada</strong>. No hay botón de "mover a zona 2". El procedimiento correcto es: <strong>snapshot de los discos → crear discos administrados en la zona destino → crear la VM nueva ahí</strong> (o usar Azure Site Recovery para migrar entre zonas). Cualquier opción que diga "cambiar la zona en Configuration" es distractor.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> ojo con el <strong>SKU de la Public IP y del Load Balancer</strong>. Las zonas requieren <strong>SKU Standard</strong>. Una Public IP Basic no puede ser zonal ni zone-redundant, y no se puede asociar a un Standard Load Balancer. Si el escenario menciona zonas y una opción usa recursos Basic, esa opción está mal.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>Regla mental de lectura rápida: si la pregunta dice <strong>"rack" o "mantenimiento planificado"</strong> → Availability Set. Si dice <strong>"datacenter", "edificio", "inundación", "corte de energía en una instalación"</strong> → Availability Zones. Si dice <strong>"región completa" o "desastre regional"</strong> → otra región + Azure Site Recovery.</span>
+    </div>
+  </div>
+
+  <!-- ══ 4 ══ -->
+  <div class="section" id="sec-sla">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">📊</div>
+      <span class="section-title">SLA de VMs: la tabla que hay que saber de memoria</span>
+      <span class="section-tag">Memorizar</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Despliegue</th><th>SLA de conectividad</th><th>Qué cubre / qué no</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>2+ VMs en 2+ Availability Zones</strong> de la misma región</td>
+            <td><span class="chip chip-green">99,99 %</span></td>
+            <td>El máximo publicado. Sobrevive a un <strong>datacenter/zona entero</strong>. Hace falta <strong>al menos una VM en cada una de dos zonas</strong> (zona 1, 2 y 3). Un Standard LB zone-redundant reparte mientras quede una VM sana en <em>alguna</em> zona.</td>
+          </tr>
+          <tr>
+            <td><strong>2+ VMs en el mismo Availability Set</strong> (cualquier n.º de FD/UD)</td>
+            <td><span class="chip chip-blue">99,95 %</span></td>
+            <td>Racks y mantenimiento planificado, <strong>todo en un datacenter</strong>. No es “datacenters separados”.</td>
+          </tr>
+          <tr>
+            <td><strong>Varias VMs en la misma AZ</strong> (las tres en zona 1) o sin AS ni zonas</td>
+            <td><span class="chip chip-yellow">no 99,99 %</span></td>
+            <td>Un LB <strong>zone-redundant no mueve el backend</strong>. Cada VM califica como instancia única (fila de abajo). Si se cae esa zona, caen todas.</td>
+          </tr>
+          <tr>
+            <td><strong>1 VM</strong> con <strong>Premium SSD, Premium SSD v2 o Ultra</strong> en <em>todos</em> los discos (OS y datos)</td>
+            <td><span class="chip chip-yellow">99,9 %</span></td>
+            <td>Sin redundancia de instancia: el porcentaje lo pone el <strong>tipo de disco</strong>.</td>
+          </tr>
+          <tr>
+            <td><strong>1 VM</strong> con <strong>Standard SSD</strong> en todos los discos</td>
+            <td><span class="chip chip-yellow">99,5 %</span></td>
+            <td>Mismo caso, disco más barato / menos garantizado.</td>
+          </tr>
+          <tr>
+            <td><strong>1 VM</strong> con <strong>Standard HDD</strong> en todos los discos</td>
+            <td><span class="chip chip-red">95 %</span></td>
+            <td>El piso. Nunca es la respuesta a alta disponibilidad.</td>
+          </tr>
+          <tr>
+            <td><strong>Spot VM</strong></td>
+            <td><span class="chip chip-red">sin SLA</span></td>
+            <td>Azure puede desalojarla en cualquier momento. Cargas críticas = No.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>Cómo se lee el escenario:</strong> si la pregunta pide <strong>"el mayor SLA posible"</strong> o <strong>"99,99 %"</strong>, la respuesta es siempre <strong>VMs distribuidas en dos o más Availability Zones</strong>. Si pide "mejorar la disponibilidad sin cambiar de datacenter" o la región no soporta zonas, es Availability Set (99,95 %). Si la opción es "una VM más grande" o "agregar más discos", es distractor: <strong>escalar verticalmente nunca sube el SLA</strong>.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Yes/No: web app internet-facing + datacenters + SLA máximo</div>
+      <p>Traducción del enunciado: “separate datacenters in the same region” = <strong>Availability Zones</strong>. “Spread connections” = <strong>Load Balancer</strong>. “Highest possible SLA” = <strong>99,99 %</strong> → 2+ VMs en zonas distintas. El LB tiene que ser <strong>SKU Standard</strong> (el Basic no soporta zonas ni da ese SLA). El frontend es una <strong>Public IP Standard zone-redundant</strong> (replicada en las 3 zonas); el LB es zone-redundant porque esa IP lo es.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Solución propuesta</th><th>¿Cumple?</th></tr></thead>
+        <tbody>
+          <tr><td>3 VMs, cada una en una AZ distinta + <strong>Standard</strong> LB</td><td><span class="yes">Yes</span></td></tr>
+          <tr><td>Availability Set (3 VMs, <strong>3 FD + 3 UD</strong>) + <strong>Basic</strong> LB</td><td><span class="no">No</span> — racks, no datacenters; SLA 99,95 %; Basic <strong>sin SLA</strong></td></tr>
+          <tr><td>3 VMs en AZs de <strong>una VNet</strong> + <strong>Azure Front Door</strong></td><td><span class="no">No</span> — Front Door es <strong>global</strong>; acá hace falta LB o App Gateway <strong>regional</strong></td></tr>
+          <tr><td>3 VMs <strong>todas en zona 1</strong> + LB <strong>zone-redundant</strong></td><td><span class="no">No</span> — un solo datacenter; el LB no reparte las VMs entre zonas</td></tr>
+          <tr><td>3 VMs en AZs + LB <strong>Basic</strong></td><td><span class="no">No</span> — Basic no es zone-redundant</td></tr>
+          <tr><td>1 VM con Premium SSD</td><td><span class="no">No</span> — 99,9 % y no reparte tráfico</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>az network public-ip create -g RG -n pip-web --sku Standard --allocation-method Static --zone 1 2 3
+az network lb create -g RG -n lb-web --sku Standard --public-ip-address pip-web
+az vm create -g RG -n vm1 --image Win2019Datacenter --zone 1 --nics nic1
+# repetir vm2 --zone 2, vm3 --zone 3; después: az network nic ip-config address-pool add …
+
+New-AzPublicIpAddress -ResourceGroupName RG -Name pip-web -Sku Standard `
+  -AllocationMethod Static -Zone 1,2,3 -Location eastus
+New-AzLoadBalancer -ResourceGroupName RG -Name lb-web -Sku Standard -Location eastus `
+  -FrontendIpConfiguration $fe
+
+# Esto NO cumple el escenario (AS = racks, Basic sin SLA):
+az vm availability-set create -g RG -n as-web --platform-fault-domain-count 3 --platform-update-domain-count 3
+New-AzAvailabilitySet -ResourceGroupName RG -Name as-web -Location eastus `
+  -PlatformFaultDomainCount 3 -PlatformUpdateDomainCount 3 -Sku Aligned
+
+# Tampoco: Front Door es global, no el balanceador de una VNet/región
+az afd profile create -g RG --profile-name fd-web --sku Standard_AzureFrontDoor
+New-AzFrontDoorCdnProfile -ResourceGroupName RG -Name fd-web -SkuName Standard_AzureFrontDoor
+
+# Tampoco: las tres VMs en la misma zona (el LB zone-redundant no las mueve)
+az vm create -g RG -n vm1 --image Win2019Datacenter --zone 1
+az vm create -g RG -n vm2 --image Win2019Datacenter --zone 1
+az vm create -g RG -n vm3 --image Win2019Datacenter --zone 1</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> gemelas del mismo enunciado. <strong>AZs 1+2+3 + Standard LB = Yes</strong>. <strong>AS + Basic LB = No</strong>. <strong>AZs + Front Door = No</strong> (Front Door es global). <strong>Las tres VMs en zona 1 + LB zone-redundant = No</strong>: el frontend es redundante, el backend no; si cae la zona 1 caen las tres. 99,99 % exige VMs en <strong>zonas distintas</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Detalles finos que cambian la respuesta</div>
+      <ul>
+        <li>Para el SLA de <strong>una sola VM</strong>, la condición del tipo de disco aplica a <strong>todos</strong> los discos: si el disco de OS es Premium pero un disco de datos es Standard HDD, no calificás para 99,9 %.</li>
+        <li>El SLA cubre <strong>conectividad</strong> a la VM, no que tu aplicación adentro funcione.</li>
+        <li>Las VMs <strong>Spot</strong> no tienen SLA de disponibilidad: se pueden desalojar en cualquier momento. Si el escenario habla de cargas críticas, Spot está mal.</li>
+        <li>Un Availability Set con <strong>una sola VM</strong> no da 99,95 %: hacen falta <strong>dos o más</strong>.</li>
+        <li><strong>Zone-redundant</strong> describe al Load Balancer / Public IP, no a las VMs. Tres VMs con <code>--zone 1</code> siguen siendo un solo datacenter.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "tengo dos VMs en <strong>dos regiones distintas</strong>, ¿qué SLA me da?". El SLA de VMs de 99,99 % es para <strong>zonas dentro de una misma región</strong>. Un despliegue multi-región es una estrategia de <strong>disaster recovery</strong>, no una configuración con SLA de VM publicado — y en el examen se resuelve con Traffic Manager / Front Door + Site Recovery, no con la tabla de arriba.</span>
+    </div>
+  </div>
+
+  <!-- ══ 5 ══ -->
+  <div class="section" id="sec-vmss">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">⚙️</div>
+      <span class="section-title">Virtual Machine Scale Sets: Uniform vs Flexible</span>
+      <span class="section-tag">Escalado horizontal</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué es un VMSS</div>
+      <ul>
+        <li>Un grupo de VMs <strong>gestionado como una unidad lógica</strong>, con capacidad de crecer y decrecer automáticamente según demanda o calendario.</li>
+        <li>Escala <strong>horizontalmente</strong> (scale-out / scale-in = más o menos instancias), no verticalmente (scale-up = VM más grande).</li>
+        <li>Se despliega detrás de un <strong>Load Balancer</strong> o Application Gateway, que reparte el tráfico entre las instancias.</li>
+        <li>Puede distribuirse <strong>entre Availability Zones</strong> y, dentro de cada zona, entre <strong>fault domains</strong>.</li>
+        <li>El VMSS en sí no tiene costo: pagás las VMs, discos y networking que genera.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Aspecto</th><th><span class="chip chip-blue">Uniform</span></th><th><span class="chip chip-green">Flexible</span></th></tr></thead>
+        <tbody>
+          <tr><td>Modelo</td><td>Un <strong>modelo de VM compartido</strong>: todas las instancias son idénticas</td><td><strong>VMs individuales</strong> agrupadas en el scale set</td></tr>
+          <tr><td>Mezclar tamaños de VM</td><td><span class="no">No</span> — un solo SKU</td><td><span class="yes">Sí</span> — distintos tamaños y hasta Spot + on-demand juntos</td></tr>
+          <tr><td>Administración de instancias</td><td>Como <strong>instancias del scale set</strong> (API propia de VMSS)</td><td>Como <strong>VMs normales</strong>: aparecen en la lista de Virtual Machines y usan la API estándar de Compute</td></tr>
+          <tr><td>Orientado a</td><td>Cargas <strong>stateless</strong> homogéneas de gran escala</td><td>Cargas mixtas, incluidas <strong>stateful</strong> y quorum-based</td></tr>
+          <tr><td>Fault domains</td><td>Gestionados por la plataforma</td><td>Definís explícitamente el <strong>fault domain count</strong> y las instancias se reparten</td></tr>
+          <tr><td>Estado</td><td>Modo legado, todavía soportado</td><td><span class="chip chip-green">Default recomendado</span> por Microsoft para despliegues nuevos</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Distribución: zonas y fault domains</div>
+      <ul>
+        <li>Podés seleccionar <strong>una o varias zonas</strong> al crear el scale set. Con varias zonas, el VMSS distribuye las instancias entre ellas — esto es lo que te lleva al SLA de 99,99 %.</li>
+        <li>El <strong>zone balancing</strong> mantiene la diferencia de instancias entre zonas en el mínimo posible. En modo <strong>strict</strong>, el scale set falla la operación si no puede mantener el balance; en <strong>best effort</strong>, sigue adelante desbalanceado.</li>
+        <li>Dentro de cada zona, las instancias se reparten entre <strong>fault domains</strong> para sobrevivir a la caída de un rack.</li>
+        <li>En Flexible elegís el <strong>fault domain count</strong> (típicamente 1 cuando desplegás entre zonas, porque la separación ya la da la zona).</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el escenario pide <strong>"instancias de distintos tamaños en el mismo grupo"</strong>, <strong>"mezclar VMs Spot y regulares"</strong> o <strong>"administrar cada VM individualmente"</strong> → la respuesta es <strong>Flexible orchestration</strong>. Si en cambio pide "todas las instancias exactamente iguales gestionadas como un conjunto" → Uniform. Y ojo: <strong>el orchestration mode se define al crear el scale set y no se puede cambiar después</strong>.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Scale-up vs scale-out en el vocabulario del examen: <strong>vertical (scale-up)</strong> = cambiar el tamaño de la VM, requiere <strong>reinicio</strong> y tiene techo en el SKU más grande. <strong>Horizontal (scale-out)</strong> = agregar instancias, es lo que hace el VMSS y es la respuesta cuando piden "sin interrumpir el servicio" o "manejar picos de tráfico".</span>
+    </div>
+  </div>
+
+  <!-- ══ 6 ══ -->
+  <div class="section" id="sec-autoscale">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(34,211,238,.15)">📈</div>
+      <span class="section-title">Autoscale: anatomía de una regla</span>
+      <span class="section-tag">Alta frecuencia</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Los tres tipos de escalado</div>
+      <ul>
+        <li><strong>Manual</strong>: vos fijás el número de instancias y ahí se queda. Útil para entornos de prueba o cuando la carga es predecible y constante.</li>
+        <li><strong>Custom autoscale basado en métricas</strong>: reglas que reaccionan a CPU, memoria, cola de mensajes, métrica personalizada. Es la respuesta cuando el escenario dice "según la carga" o "cuando el CPU supere X".</li>
+        <li><strong>Basado en schedule</strong>: perfiles con fecha/hora (recurrentes o de fecha específica). Es la respuesta cuando el escenario dice <strong>"todos los lunes a las 8"</strong>, <strong>"durante el Black Friday"</strong> o <strong>"en horario laboral"</strong>.</li>
+      </ul>
+      <p>Un mismo setting de autoscale puede tener <strong>varios profiles</strong>: uno default siempre activo, más profiles de schedule que lo pisan en su ventana horaria.</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Componente</th><th>Qué define</th><th>Ejemplo</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Métrica</strong></td><td>Qué se mide y de qué recurso (el propio VMSS u otro recurso, como la longitud de una Storage Queue)</td><td><code>Percentage CPU</code></td></tr>
+          <tr><td><strong>Time grain</strong></td><td>Granularidad de muestreo de la métrica y cómo se agrega dentro de ese intervalo (Average, Min, Max, Sum)</td><td>1 minuto, Average</td></tr>
+          <tr><td><strong>Duration</strong> (ventana de evaluación)</td><td>Cuánto tiempo hacia atrás se mira para decidir. Ventana corta = reacciona rápido pero es ruidosa; ventana larga = estable pero lenta</td><td>10 minutos</td></tr>
+          <tr><td><strong>Operador y umbral</strong></td><td>La condición que dispara la acción</td><td><code>Greater than 70</code></td></tr>
+          <tr><td><strong>Acción</strong></td><td>Increase / decrease <strong>by count</strong>, <strong>by percent</strong>, o <strong>to a specific count</strong></td><td>Increase count by 2</td></tr>
+          <tr><td><strong>Cool down</strong></td><td>Tiempo de espera después de una acción antes de volver a escalar. Evita cascadas de escalados mientras las instancias nuevas arrancan</td><td>5 minutos</td></tr>
+          <tr><td><strong>Instance limits</strong></td><td><strong>Minimum</strong>, <strong>Maximum</strong> y <strong>Default</strong>. El default se usa si las métricas no están disponibles</td><td>min 2 / max 10 / default 2</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>Cómo leerlo en una frase:</strong> "si el <em>Percentage CPU</em> promedio de los últimos <em>10 minutos</em> es mayor a <em>70</em>, aumentá el conteo en <em>2</em>, y después esperá <em>5 minutos</em> antes de volver a evaluar".
+    </div>
+
+    <div class="card">
+      <div class="card-title">Reglas críticas</div>
+      <ul>
+        <li><strong>Hay que definir scale-out Y scale-in.</strong> Si solo creás la regla de "aumentar cuando CPU &gt; 70", el scale set <strong>crece y nunca vuelve a bajar</strong>. Es la falla de diseño que más se pregunta.</li>
+        <li>Los umbrales tienen que dejar <strong>margen suficiente</strong> entre scale-out y scale-in. Si escalás para arriba en CPU &gt; 50 y para abajo en CPU &lt; 50, entrás en <strong>flapping</strong>: agregás una instancia, baja el promedio, sacás la instancia, sube el promedio, y así infinitamente. Usá algo como &gt; 70 / &lt; 30.</li>
+        <li>Autoscale <strong>estima el impacto</strong> de un scale-in antes de ejecutarlo: si al remover instancias la métrica volvería a cruzar el umbral de scale-out, no lo hace.</li>
+        <li>Con varias reglas de scale-out, alcanza con que <strong>una</strong> se cumpla para escalar hacia arriba; para hacer scale-in, en general se exige que <strong>todas</strong> las condiciones de scale-in se cumplan.</li>
+        <li>El <strong>maximum</strong> también está limitado por tu <strong>quota de vCPU</strong> en la región y por el <strong>backend pool</strong> del Load Balancer. Un escenario clásico: "el scale set no supera N instancias" → revisá quotas.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "configuraste una regla de scale-out por CPU y el costo se disparó porque las instancias nunca se reducen". La respuesta correcta es <strong>agregar una regla de scale-in</strong>, no "bajar el maximum" ni "cambiar a manual". Y si el problema es que el scale set <strong>agrega y quita instancias constantemente</strong>, la respuesta es <strong>separar más los umbrales</strong> y/o <strong>aumentar el cool down</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">VMSS: tres conditions, capacidad observada</div>
+      <p>Fechas mes/día/año. Default: métrica CPU (out &gt;75% × 10 min +1; in &lt;25% × 5 min −1; min 2 / max 10 / default 3). Condition 1: count fijo <strong>6</strong> del 04/05/2020 10:00 al 04/12/2020 23:59 UTC. Condition 2: count fijo <strong>4</strong> los viernes 08:00–18:00 UTC. El schedule pisa al default.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Escenario</th><th>Capacidad</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Mié 06/10/2020: 3 inst. estables, CPU 50–60% 2 h; después 80% × 11 min</td><td><strong>4</strong></td><td>Fuera de abril y no es viernes → default. 80% &gt;75% y 11 &gt;10 min → +1</td></tr>
+            <tr><td>Lun 04/06/2020: CPU 50–60% 2 h; después 80% × 11 min</td><td><strong>6</strong></td><td>Cae en Condition 1 (5–12 abr). Count fijo; las métricas del default no aplican</td></tr>
+            <tr><td>Mar 09/05/2020: 3 inst., CPU 40–50% 4 h; después 12% × 6 min</td><td><strong>2</strong></td><td>Default. 12% &lt;25% y 6 &gt;5 min → −1. El mínimo es 2</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> un profile de <strong>fecha fija o recurrente pisa al default</strong>. “Scale to a specific instance count” ignora CPU. El viernes 4 no entra si el día no es viernes. Duration tiene que cumplirse (11 ≥ 10; 6 ≥ 5). El mínimo corta el scale-in en 2.</span>
+    </div>
+  </div>
+
+  <!-- ══ 7 ══ -->
+  <div class="section" id="sec-scalein">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(236,72,153,.15)">📉</div>
+      <span class="section-title">Scale-in policy: a quién se lleva puesto</span>
+      <span class="section-tag">Pregunta de detalle</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">El problema que resuelve</div>
+      <p>Cuando el autoscale decide reducir, alguien tiene que elegir <strong>qué instancia se borra</strong>. La scale-in policy es esa decisión, y se configura a nivel del scale set.</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Política</th><th>Cómo elige</th><th>Cuándo la pregunta apunta acá</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="chip chip-blue">Default</span></td>
+            <td>Primero <strong>balancea entre Availability Zones</strong>, después <strong>entre fault domains</strong> dentro de la zona más cargada, y recién ahí elimina la instancia. Prioriza mantener la distribución pareja.</td>
+            <td>Cuando el escenario pide <strong>mantener la alta disponibilidad</strong> y el balance entre zonas mientras se reduce.</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-yellow">NewestVM</span></td>
+            <td>Elimina la instancia <strong>creada más recientemente</strong> (respetando primero el balance entre zonas y FDs).</td>
+            <td>Cuando querés <strong>conservar las instancias viejas</strong>: nodos que ya tienen caché caliente, o instancias que arrancaste primero y están estables.</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-purple">OldestVM</span></td>
+            <td>Elimina la instancia <strong>creada hace más tiempo</strong> (también respetando el balance entre zonas y FDs).</td>
+            <td>Cuando querés <strong>rotar y retirar instancias antiguas</strong> con imágenes o configuración desactualizada. Típico de cargas stateless con ciclo de vida corto.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Las tres políticas <strong>respetan el balance entre zonas y fault domains primero</strong>. NewestVM y OldestVM solo definen el criterio de desempate <strong>dentro</strong> del grupo ya elegido: nunca rompen la distribución para borrar una VM por antigüedad.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>Si además necesitás que una instancia <strong>específica</strong> no se toque durante un scale-in — porque estás depurando algo en ella — el mecanismo es <strong>instance protection</strong>: podés proteger una instancia <em>from scale-in</em> o proteger su configuración <em>from the scale set model</em>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 8 ══ -->
+  <div class="section" id="sec-upgrade">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(45,212,191,.15)">🔄</div>
+      <span class="section-title">Upgrade policy y salud de instancias</span>
+      <span class="section-tag">Escenario clásico</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué es el "modelo" del scale set</div>
+      <p>El scale set tiene un <strong>modelo</strong> (imagen, tamaño, extensiones, configuración). Cuando cambiás el modelo, la <strong>upgrade policy</strong> define cómo se propaga ese cambio a las instancias que ya están corriendo. <strong>Excepción:</strong> cambios del <strong>OS disk / Data disk Profile</strong> <em>no</em> siguen la policy (ni Rolling). Hay que aplicarlos instancia por instancia con <code>Set-AzVmssVM</code>.</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Upgrade policy</th><th>Comportamiento</th><th>Downtime</th><th>Cuándo elegirla</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="chip chip-blue">Manual</span></td>
+            <td>Las instancias existentes <strong>no se actualizan solas</strong>. Quedan marcadas como "latest model: No" y vos disparás el upgrade instancia por instancia.</td>
+            <td>El que vos decidas</td>
+            <td>Cuando necesitás <strong>control total</strong> del momento y del orden. Es el default histórico.</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-red">Automatic</span></td>
+            <td>Azure aplica el cambio a las instancias <strong>sin orden garantizado y potencialmente a todas a la vez</strong>. No hay pausas ni comprobación de salud.</td>
+            <td><span class="chip chip-red">Sí, posible caída total</span></td>
+            <td>Solo para cargas donde la interrupción no importa (dev/test).</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-green">Rolling</span></td>
+            <td>Actualiza <strong>por lotes</strong>: define un <strong>batch size</strong> (porcentaje de instancias por lote), una <strong>pausa entre lotes</strong>, y umbrales máximos de instancias no saludables. Si la salud se degrada, <strong>detiene el rollout</strong>.</td>
+            <td><span class="chip chip-green">Sin downtime</span></td>
+            <td>La respuesta cuando el escenario dice <strong>"actualizar sin interrumpir el servicio"</strong>.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "necesitás desplegar una imagen nueva a 40 instancias <strong>sin downtime</strong>". La opción <strong>Automatic</strong> suena bien por el nombre pero es la peor: reinicia sin control ni verificación de salud. La correcta es <strong>Rolling upgrade</strong>. Y para que Rolling funcione, el scale set <strong>necesita un health probe del Load Balancer o la Application Health extension</strong> — sin señal de salud, Azure no tiene forma de saber si el lote quedó sano y el rolling upgrade no se puede habilitar.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí un cmdlet: aplicar OS/Data disk Profile a las instancias ya creadas</div>
+      <p>Upgrade policy = Rolling. Cambiaste el perfil de disco del modelo. Rolling <strong>no</strong> empuja ese cambio. Hay que tocarlo en cada instancia existente.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Cmdlet</th><th></th><th>Para qué sirve de verdad</th></tr></thead>
+        <tbody>
+          <tr><td><code>Set-AzVmssVM</code></td><td><span class="yes">Sí</span></td><td>Aplica el cambio de OS/Data disk Profile a una instancia existente</td></tr>
+          <tr><td><code>Update-AzVmss</code></td><td><span class="no">No</span></td><td>Actualiza el <strong>modelo</strong> del scale set, no las VMs que ya corren</td></tr>
+          <tr><td><code>Update-AzVmssInstance</code></td><td><span class="no">No</span></td><td>Upgrade a latest model cuando la policy es <strong>Manual</strong>. <strong>No incluye</strong> OS/Data disk Profile</td></tr>
+          <tr><td><code>Start-AzVmssRollingOSUpgrade</code></td><td><span class="no">No</span></td><td>Pasa las instancias a la <strong>última imagen de plataforma</strong> del publisher</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>Set-AzVmssVM -ResourceGroupName RG -VMScaleSetName vmss1 -InstanceId 0
+
+Update-AzVmss -ResourceGroupName RG -VMScaleSetName vmss1   # modelo, no instancias
+Update-AzVmssInstance -ResourceGroupName RG -VMScaleSetName vmss1 -InstanceId 0
+Start-AzVmssRollingOSUpgrade -ResourceGroupName RG -VMScaleSetName vmss1
+
+az vmss update -g RG -n vmss1
+az vmss update-instances -g RG -n vmss1 --instance-ids 0
+az vmss rolling-upgrade start -g RG -n vmss1</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Rolling en el enunciado es carnada. OS/Data disk Profile <strong>no sigue</strong> la upgrade policy → <code>Set-AzVmssVM</code>. <code>Update-AzVmssInstance</code> parece “la instancia” y es el distractor de Manual. <code>Start-AzVmssRollingOSUpgrade</code> es parche de imagen de plataforma, no el perfil de disco.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Health probes, Application Health extension y auto-repair</div>
+      <ul>
+        <li>Un scale set puede monitorear la salud de sus instancias de dos formas: con un <strong>health probe del Load Balancer</strong> o con la <strong>Application Health extension</strong> instalada dentro de cada instancia.</li>
+        <li>La <strong>Application Health extension</strong> reporta el estado desde adentro de la VM (por ejemplo, consultando un endpoint HTTP local). Es la opción cuando <strong>no hay Load Balancer</strong> delante o querés una señal a nivel aplicación.</li>
+        <li><strong>Automatic instance repair</strong>: si una instancia se reporta unhealthy de forma sostenida, el scale set la <strong>elimina y crea una nueva</strong> automáticamente. Requiere salud monitoreada (probe o extension) y tiene un <strong>grace period</strong> para dar tiempo a que la aplicación arranque después del boot.</li>
+        <li>Los <strong>automatic OS image upgrades</strong> (mantener el OS parcheado con la última imagen del publisher) también exigen monitoreo de salud y se aplican por lotes.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si las instancias del scale set "se quedan colgadas pero nunca se reemplazan", el problema es que <strong>no hay señal de salud configurada</strong> o que <strong>automatic repairs está deshabilitado</strong>. Agregar más instancias, subir el maximum o cambiar la scale-in policy no arregla nada: hace falta <strong>Application Health extension o un health probe + automatic instance repair</strong>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 9 ══ -->
+  <div class="section" id="sec-lb">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(163,230,53,.15)">⚖️</div>
+      <span class="section-title">VMSS detrás de un Load Balancer</span>
+      <span class="section-tag">Integración</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cómo encaja</div>
+      <div class="flow">
+        <div class="flow-step">Cliente</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Public IP Standard<br><small>zone-redundant</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Standard LB<br><small>rule + health probe</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Backend pool<br><small>= instancias del VMSS</small></div>
+      </div>
+      <ul>
+        <li>El <strong>backend pool se puebla automáticamente</strong>: cuando el autoscale agrega una instancia, esa instancia entra sola al pool; cuando la quita, sale sola. No hay que registrar nada a mano.</li>
+        <li>El <strong>health probe</strong> del LB saca de rotación las instancias que no responden, y es además la señal de salud que habilita rolling upgrades y auto-repair.</li>
+        <li>La <strong>load balancing rule</strong> define el puerto frontend, el puerto backend y la distribución del tráfico entre las instancias.</li>
+        <li>Para acceso <strong>individual</strong> a una instancia concreta (SSH/RDP para diagnóstico) se usan <strong>inbound NAT rules</strong>: mapean un puerto distinto del frontend a la misma instancia — por ejemplo <code>:50001 → instancia 0:3389</code>, <code>:50002 → instancia 1:3389</code>.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Necesidad</th><th>Componente correcto</th></tr></thead>
+        <tbody>
+          <tr><td>Repartir tráfico HTTP/HTTPS con routing por URL, WAF, SSL offload</td><td><strong>Application Gateway v2</strong> (capa 7, zone-redundant)</td></tr>
+          <tr><td>Repartir tráfico TCP/UDP genérico dentro de la región, con zonas</td><td><strong>Standard Load Balancer</strong> (capa 4)</td></tr>
+          <tr><td>Conectarse por RDP/SSH a <strong>una instancia puntual</strong> del scale set</td><td><strong>Inbound NAT rule</strong> del Load Balancer (o Azure Bastion)</td></tr>
+          <tr><td>Sacar de rotación instancias caídas y alimentar auto-repair</td><td><strong>Health probe</strong> / Application Health extension</td></tr>
+          <tr><td>Salida a internet desde instancias sin IP pública</td><td><strong>Outbound rule</strong> del Standard LB o <strong>NAT Gateway</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> para un scale set distribuido en <strong>Availability Zones</strong>, tanto el <strong>Load Balancer</strong> como la <strong>Public IP</strong> tienen que ser <strong>SKU Standard</strong>. El SKU Basic no soporta zonas y ya no es una opción válida para diseños nuevos. Además, el SKU del LB y el de la Public IP <strong>tienen que coincidir</strong>: no podés asociar una Public IP Basic a un Standard Load Balancer.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>El Standard Load Balancer es <strong>zone-redundant por default</strong> en su frontend: no se cae si desaparece una zona. Pero eso no vuelve zone-redundant a tus VMs — la disponibilidad del backend depende de que <strong>vos</strong> hayas distribuido las instancias entre zonas.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Cuál es la diferencia entre Fault Domain y Update Domain?", a: "<strong>Fault Domain</strong> = racks que comparten energía y red → protege contra fallas <strong>no planificadas</strong> de hardware. <strong>Update Domain</strong> = grupo que Azure reinicia junto durante mantenimiento <strong>planificado</strong>, de a un UD por vez.", cat: "Availability Set" },
+  { q: "¿Cuántos fault domains y update domains admite un Availability Set?", a: "Hasta <strong>3 fault domains</strong> en la mayoría de las regiones y hasta <strong>20 update domains</strong>. Los valores por default al crearlo son <strong>2 FD</strong> y <strong>5 UD</strong>.", cat: "Availability Set" },
+  { q: "8 VMs en un AS. Mantenimiento planificado: grupos de 2 y al menos 6 arriba. Máxima separación física. ¿FD, UD, disks?", a: "<strong>3 fault domains</strong> (el máximo). <strong>4 update domains</strong> (8÷2; un UD caído deja 6). <strong>Managed disks Aligned = Yes</strong>. Planned = UD, físico = FD. Cmdlets: <code>az vm availability-set create --platform-fault-domain-count 3 --platform-update-domain-count 4</code> / <code>New-AzAvailabilitySet -Sku Aligned</code>.", cat: "Availability Set" },
+  { q: "¿Podés agregar una VM ya existente a un Availability Set?", a: "<strong>No.</strong> La VM tiene que crearse dentro del AS. Para meter una VM existente hay que <strong>borrarla conservando los discos y recrearla</strong> dentro del set. Tampoco se puede sacar de un AS ni moverla a otro.", cat: "Availability Set" },
+  { q: "¿Un Availability Set te protege contra la caída de un datacenter?", a: "<strong>No.</strong> El AS vive en <strong>un solo datacenter</strong>: solo reparte entre racks (FD) y ventanas de mantenimiento (UD). Para sobrevivir a la caída del edificio necesitás <strong>Availability Zones</strong>.", cat: "Availability Set" },
+  { q: "Region pair: ¿dentro de la geography? ¿Excepción? ¿Distancia?", a: "Sí, el par es <strong>dentro de la misma geography</strong>. Excepción clásica: <strong>Brazil South ↔ South Central US</strong>. Separación <strong>≥ 300 millas ≈ 480 km</strong> (no 300 km). No es failover automático de VMs: eso es ASR.", cat: "Geografía" },
+  { q: "AS con 3 FD y 2 VMs. ¿Qué pasa con el tercer FD?", a: "Queda <strong>vacío</strong>. El round-robin no rellena FDs de más. Más FDs que VMs = leftover vacío.", cat: "Availability Set" },
+  { q: "SLA: ¿qué te da una sola VM con discos Premium SSD o Ultra?", a: "<strong>99,9 %</strong> con <strong>Premium SSD, Premium SSD v2 o Ultra</strong> en todos los discos. Con Standard SSD baja a <strong>99,5 %</strong> y con Standard HDD a <strong>95 %</strong>. La condición aplica a <strong>todos</strong> los discos, OS y datos.", cat: "SLA" },
+  { q: "SLA: ¿Availability Set vs Availability Zones?", a: "Dos o más VMs en un <strong>Availability Set</strong> → <strong>99,95 %</strong>. Dos o más VMs en <strong>dos o más Availability Zones</strong> de la misma región → <strong>99,99 %</strong>. Si piden el SLA más alto, la respuesta son <strong>Zones</strong>.", cat: "SLA" },
+  { q: "Recitá la escalera de SLA de conectividad de VMs.", a: "<strong>99,99 %</strong> = 2+ VMs en 2+ AZs. <strong>99,95 %</strong> = 2+ VMs en Availability Set. <strong>99,9 %</strong> = 1 VM Premium SSD / Premium SSD v2 / Ultra en <em>todos</em> los discos. <strong>99,5 %</strong> = 1 VM Standard SSD. <strong>95 %</strong> = 1 VM Standard HDD. <strong>Spot = sin SLA</strong>. Varias VMs en la <strong>misma zona</strong> no dan 99,99 %.", cat: "SLA" },
+  { q: "Web app internet-facing, VMs en datacenters separados de la misma región, SLA más alto, repartir conexiones. ¿3 VMs en AZs distintas + Standard LB?", a: "<strong>Yes.</strong> Datacenter = AZ. SLA máximo = <strong>99,99 %</strong>. LB y Public IP <strong>Standard</strong> (IP zone-redundant en zonas 1 2 3). Availability Set o LB Basic = <strong>No</strong>. Cmdlets: <code>az network lb create --sku Standard</code> / <code>New-AzLoadBalancer -Sku Standard</code> + <code>az vm create --zone</code>.", cat: "SLA" },
+  { q: "Mismo escenario (datacenters + SLA máximo). ¿Availability Set con 3 VMs, 3 FD, 3 UD + Basic LB?", a: "<strong>No.</strong> El AS reparte <strong>racks</strong> en un datacenter (SLA <strong>99,95 %</strong>), no zonas. Maxear FD/UD no cambia nada. El LB <strong>Basic no tiene SLA</strong> ni soporta zonas. Correcto: AZs + Standard LB. Cmdlets del distractor: <code>az vm availability-set create --platform-fault-domain-count 3</code> / <code>New-AzAvailabilitySet -PlatformFaultDomainCount 3</code>.", cat: "SLA" },
+  { q: "Mismo escenario. ¿3 VMs en AZs de una VNet + Azure Front Door?", a: "<strong>No.</strong> Las zonas dan el 99,99 %, pero Front Door es <strong>global</strong>. Para una región/VNet: <strong>Standard Load Balancer</strong> o <strong>Application Gateway</strong>. Cmdlets del distractor: <code>az afd profile create --sku Standard_AzureFrontDoor</code> / <code>New-AzFrontDoorCdnProfile</code>.", cat: "SLA" },
+  { q: "Mismo escenario. ¿3 VMs todas en availability zone 1 + load balancer zone-redundant?", a: "<strong>No.</strong> Las tres están en el <strong>mismo datacenter</strong>. El LB zone-redundant no mueve el backend. 99,99 % exige VMs en zonas <strong>1, 2 y 3</strong>. Cmdlet del distractor: <code>az vm create --zone 1</code> repetido en las tres.", cat: "SLA" },
+  { q: "¿Cuál es la latencia entre Availability Zones de una misma región?", a: "<strong>Menos de 2 ms</strong> de round trip, sobre fibra dedicada. Las regiones habilitadas tienen un <strong>mínimo de 3 zonas</strong> con energía, refrigeración y red independientes.", cat: "Zones" },
+  { q: "¿Cómo movés una VM existente de la zona 1 a la zona 2?", a: "No se puede cambiar la zona de una VM creada. Hay que <strong>tomar snapshot de los discos, crear discos administrados en la zona destino y crear una VM nueva ahí</strong> (o migrar con Azure Site Recovery).", cat: "Zones" },
+  { q: "Zonal vs zone-redundant: ¿en qué se diferencian?", a: "<strong>Zonal</strong> = el recurso está fijado a una zona que vos elegís (VM, disco, Public IP Standard zonal). <strong>Zone-redundant</strong> = Azure lo replica automáticamente entre zonas (Standard Load Balancer, ZRS, Application Gateway v2).", cat: "Zones" },
+  { q: "Uniform vs Flexible orchestration en VMSS", a: "<strong>Uniform</strong>: modelo de VM compartido, instancias idénticas gestionadas como conjunto. <strong>Flexible</strong>: VMs individuales, podés <strong>mezclar tamaños</strong> y Spot con on-demand, y las administrás como VMs normales. Flexible es el <strong>default recomendado</strong>. El modo <strong>no se cambia después de crear el scale set</strong>.", cat: "VMSS" },
+  { q: "¿Qué pasa si configurás solo una regla de scale-out en autoscale?", a: "El scale set <strong>crece y nunca reduce</strong>. Hay que definir <strong>scale-in y scale-out</strong>, con umbrales bien separados (ej. &gt;70 / &lt;30) para evitar <strong>flapping</strong>.", cat: "Autoscale" },
+  { q: "¿Qué es el cooldown en una regla de autoscale?", a: "El tiempo que espera después de ejecutar una acción de escalado antes de volver a evaluar y actuar. Evita cascadas de escalados mientras las instancias nuevas todavía están arrancando.", cat: "Autoscale" },
+  { q: "¿Qué hacen las scale-in policies Default, NewestVM y OldestVM?", a: "<strong>Default</strong>: balancea primero entre zonas y después entre fault domains. <strong>NewestVM</strong>: borra la instancia más reciente (conservás las viejas). <strong>OldestVM</strong>: borra la más antigua (rotás imágenes desactualizadas). Las tres respetan primero el balance entre zonas y FDs.", cat: "VMSS" },
+  { q: "Necesitás actualizar la imagen de 40 instancias sin downtime: ¿qué upgrade policy?", a: "<strong>Rolling</strong>, con batch size y pausa entre lotes; detiene el rollout si la salud se degrada. Requiere <strong>health probe del Load Balancer o Application Health extension</strong>. <strong>Automatic</strong> reinicia sin control ni verificación de salud y <strong>Manual</strong> no actualiza nada solo.", cat: "VMSS" },
+  { q: "VMSS Rolling. Cambiaste OS/Data disk Profile. ¿Qué cmdlet aplica el cambio a las instancias existentes?", a: "<code>Set-AzVmssVM</code>. Ese perfil <strong>no sigue</strong> la upgrade policy. <code>Update-AzVmss</code> = modelo. <code>Update-AzVmssInstance</code> = Manual y <em>no</em> incluye disk profile. <code>Start-AzVmssRollingOSUpgrade</code> = última imagen de plataforma. CLI: no uses <code>az vmss update-instances</code> para este caso.", cat: "VMSS" },
+  { q: "Cambiar el Availability Set de VM1. ¿Assign al set, otra zona, otra región, o redeploy desde recovery point?", a: "<strong>Redeploy from a recovery point</strong> (Create a new VM al AS nuevo). Assign no existe. Zona y AS son excluyentes. Otra región no cambia el set acá.", cat: "Availability Set" },
+  { q: "VMSS: default métrica (out &gt;75%×10 min +1, in &lt;25%×5 min −1, min 2). Fijo 6 del 5–12 abr. Fijo 4 los viernes. ¿Capacidad mié 10/jun (80%×11), lun 6/abr, mar 5/sep (12%×6)?", a: "<strong>4 / 6 / 2</strong>. Junio y septiembre usan default (no viernes). Abril cae en el count fijo 6 (métricas ignoradas). 11 min cumple el out; 6 min cumple el in hasta el mínimo 2.", cat: "Autoscale" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

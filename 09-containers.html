@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Contenedores</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Contenedores</div>
+    <div class="nav-sub">ACR, ACI, Container Apps y AKS</div>
+    <div class="nav-weight">Dominio 3 · 20–25%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#decision"><span class="dot"></span>Qué servicio elegir</a>
+  <a href="#acr"><span class="dot"></span>ACR y sus SKUs</a>
+  <a href="#acr-auth"><span class="dot"></span>Autenticación en ACR</a>
+  <a href="#acr-pull"><span class="dot"></span>Pull desde cada runtime</a>
+  <a href="#acr-tasks"><span class="dot"></span>ACR Tasks y webhooks</a>
+  <a href="#aci"><span class="dot"></span>Container Instances</a>
+  <a href="#containerapps"><span class="dot"></span>Container Apps</a>
+  <a href="#escalado-contenedores"><span class="dot"></span>Sizing y escalado</a>
+  <a href="#aks-arq"><span class="dot"></span>AKS · arquitectura</a>
+  <a href="#aks-scale"><span class="dot"></span>AKS · escalado</a>
+  <a href="#aks-net"><span class="dot"></span>AKS · red, identidad, upgrades</a>
+  <a href="#cli"><span class="dot"></span>Comandos de examen</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+  <a href="23-aks-fundamentos.html"><span class="dot"></span>Extra · AKS operativo</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá (skills measured, abril 2026):</strong> el examen no te va a pedir escribir un Dockerfile. El outline vigente es <strong>crear y administrar ACR</strong>, <strong>aprovisionar ACI</strong>, <strong>aprovisionar Container Apps</strong> y <strong>sizing/escalado de ACI y Container Apps</strong>, en portal. Te tira un <strong>escenario</strong> y quiere que elijas entre ACI, Container Apps, App Service o AKS (este último como distractor), o que detectes por qué un pull de imagen falla (spoiler: falta <code>AcrPull</code>). Bootstrap de ACA en CLI: extension <code>containerapp</code> + <code>Microsoft.App</code> + <code>Microsoft.OperationalInsights</code> para el Log Analytics del environment. El resto son features exclusivas de <strong>ACR Premium</strong> y <strong>restart policies</strong> de ACI.
+    <br><br>
+    <strong>AKS no está en el outline vigente.</strong> Las secciones de AKS de este archivo quedan para reconocer distractores y para el mapa conceptual (node pools, escalado, kubenet vs CNI, <code>az aks upgrade</code>). La operación real con <code>kubectl</code> está en el módulo complementario <a href="23-aks-fundamentos.html" style="color:var(--accent)">23 · AKS operativo</a> — no entra en el examen.
+  </div>
+
+  <!-- ══════════ 1 ══════════ -->
+  <div class="section" id="decision">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🌳</div>
+      <span class="section-title">El árbol de decisión</span>
+      <span class="section-tag">Pregunta de escenario</span>
+    </div>
+
+    <p>Azure tiene cuatro formas de correr un contenedor y el examen vive de confundirlas. Leé el enunciado buscando las <strong>palabras gatillo</strong>: "tarea que corre una vez", "sin gestionar infraestructura", "escala a cero", "control total del scheduler", "una sola app web".</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Servicio</th><th>Elegilo cuando…</th><th>Señales en el enunciado</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="chip chip-blue">ACI</span></td>
+            <td>Tarea corta, batch, job que corre y termina, build agent, arranque rápido, <strong>sin orquestación</strong>. Sizing fijo y <strong>sin autoescalado</strong>.</td>
+            <td>"ejecutar una única vez", "arranque en segundos", "facturación por segundo", "esfuerzo administrativo mínimo"</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-purple">Container Apps</span></td>
+            <td>Microservicios serverless, HTTP o event-driven, con <strong>escalado a cero</strong> y revisions con división de tráfico, sin querer saber nada de Kubernetes.</td>
+            <td>"escalar a cero cuando no hay tráfico", "microservicios", "sin administrar el cluster"</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-green">AKS</span></td>
+            <td>Orquestación completa: control fino del scheduling, node pools, network policies, service mesh, apps con estado complejo.</td>
+            <td>"orquestación", "control total", "múltiples node pools", "Kubernetes"</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-yellow">App Service for Containers</span></td>
+            <td>Una app web/API en <strong>un solo contenedor</strong>, aprovechando slots, custom domains, TLS gestionado y autoscale de App Service.</td>
+            <td>"aplicación web", "un único contenedor", "deployment slots", "certificado gestionado"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">¿Corre y<br><small>termina?</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">ACI</div>
+      <span class="flow-arrow">|</span>
+      <div class="flow-step">¿Web app<br><small>1 contenedor?</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">App Service</div>
+      <span class="flow-arrow">|</span>
+      <div class="flow-step">¿Micro-<br><small>servicios?</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">Container Apps</div>
+      <span class="flow-arrow">|</span>
+      <div class="flow-step">¿Control<br><small>fino?</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">AKS</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Escalera de complejidad / orquestación</div>
+      <p>De menos orquestación a más. El examen no pregunta “cuál es más moderno”: pregunta <strong>cuánta plataforma querés operar</strong>.</p>
+      <div class="flow">
+        <div class="flow-step">1 · App Service<br><small>host web, 1 contenedor</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">2 · ACI<br><small>runtime crudo, 0 orquestador</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">3 · Container Apps<br><small>KEDA gestionado, sin kubectl</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">4 · AKS<br><small>Kubernetes completo</small></div>
+      </div>
+      <ul>
+        <li><strong>App Service:</strong> no es un orquestador. Es el host de una app web que <em>puede</em> ser un contenedor. Gana cuando el enunciado pide slots, custom domain, TLS gestionado o backup de App Service. Detalle operativo (puerto, CI del webhook) está en <a href="10-app-service.html" style="color:var(--accent)">10 · App Service</a>.</li>
+        <li><strong>ACI:</strong> el runtime más chico. Un container group (análogo a un pod), sizing fijo, <strong>sin autoescalado ni ingress gestionado</strong>. Gana en jobs, batch y “mínimo esfuerzo administrativo”.</li>
+        <li><strong>Container Apps:</strong> orquestación opinada: réplicas, KEDA, scale-to-zero, revisions, ingress con TLS. <strong>No te dan la API de Kubernetes.</strong></li>
+        <li><strong>AKS:</strong> vos operás el scheduler, los node pools y los objetos de Kubernetes. Máximo control, máximo trabajo. Fuera del outline vigente; aparece como distractor cuando el escenario pide “mínimo esfuerzo”.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si el escenario dice "mínimo esfuerzo administrativo" <em>y</em> "una única ejecución" o "trabajo por lotes", la respuesta es <strong>ACI</strong>, no AKS — aunque la pregunta mencione varios contenedores. Un container group de ACI ya te da varios contenedores juntos sin cluster.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Los cuatro servicios pueden tirar de la <strong>misma imagen en ACR</strong>. El registry es transversal: la pregunta de "dónde corre" es independiente de la de "dónde está la imagen".</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Segundo filtro, cuando el escenario ya descartó App Service: <strong>¿la carga tiene que escalar sola?</strong> ACI <strong>no autoescala</strong> — el sizing del container group es fijo. Container Apps escala réplicas con KEDA y llega a cero. AKS escala réplicas y nodos. El detalle está en <em>Container Apps</em> y en <em>Sizing y escalado de contenedores</em>.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 2 ══════════ -->
+  <div class="section" id="acr">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">📦</div>
+      <span class="section-title">Azure Container Registry — SKUs</span>
+      <span class="section-tag">Premium = features</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Lo básico del recurso</div>
+      <ul>
+        <li>Nombre del registry: <strong>solo alfanumérico</strong> (sin guiones ni puntos), 5 a 50 caracteres, <strong>único a nivel global</strong>.</li>
+        <li>Login server: <code>&lt;nombre&gt;.azurecr.io</code>. Ese es el prefijo que va sí o sí en el tag de la imagen.</li>
+        <li>El SKU se puede <strong>cambiar en caliente</strong> (subir o bajar) sin recrear el registry.</li>
+      </ul>
+      <pre><code>docker tag miapp:v1 miregistro.azurecr.io/miapp:v1
+docker push miregistro.azurecr.io/miapp:v1</code></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Feature</th><th>Basic</th><th>Standard</th><th>Premium</th></tr></thead>
+        <tbody>
+          <tr><td>Storage incluido</td><td>10 GiB</td><td>100 GiB</td><td>500 GiB</td></tr>
+          <tr><td>Throughput / operaciones concurrentes</td><td>Bajo</td><td>Medio</td><td>Alto</td></tr>
+          <tr><td>Webhooks</td><td>2</td><td>10</td><td>500</td></tr>
+          <tr><td><strong>Geo-replication</strong></td><td class="no">✗</td><td class="no">✗</td><td class="yes">✓</td></tr>
+          <tr><td><strong>Private Link / private endpoints</strong></td><td class="no">✗</td><td class="no">✗</td><td class="yes">✓</td></tr>
+          <tr><td><strong>Content trust</strong> (firma de imágenes)</td><td class="no">✗</td><td class="no">✗</td><td class="yes">✓</td></tr>
+          <tr><td><strong>Customer-managed keys</strong> (CMK)</td><td class="no">✗</td><td class="no">✗</td><td class="yes">✓</td></tr>
+          <tr><td><strong>Zone redundancy</strong></td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td><strong>Repository-scoped tokens</strong></td><td class="yes">✓ 100</td><td class="yes">✓ 500</td><td class="yes">✓ 50.000</td></tr>
+          <tr><td>ACR Tasks, integración con Entra ID, roles RBAC</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla mental:</strong> Basic y Standard se diferencian <em>solo</em> por tamaño y throughput. <strong>Todo lo que suena a seguridad, red privada o multi-región es Premium.</strong> Si la pregunta nombra geo-replication, private endpoint, content trust o CMK → Premium, y punto (los tokens por repositorio y la zone redundancy, en cambio, están en todos los SKUs).
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "Necesitamos que los nodos de AKS en tres regiones bajen la imagen desde la réplica local con baja latencia" — la respuesta es <strong>upgrade a Premium + geo-replication</strong>, no crear tres registries separados. Con geo-replication el <code>login server</code> sigue siendo uno solo y Traffic Manager rutea al más cercano.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Para mover imágenes entre registries no hace falta pull + push local: <code>az acr import</code> copia directo servidor a servidor, incluso desde Docker Hub u otro registry externo.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Administrar el registry (portal y CLI)</div>
+      <p>El skill medido es <em>create and manage</em>, no solo crear. En el portal: <strong>Create a resource → Container Registry</strong> — nombre alfanumérico, SKU, región, networking. Después del primer push aparece <strong>Repositories</strong> con tags.</p>
+      <ul>
+        <li><strong>Lock</strong> de un tag/manifiesto: impide borrar o untaguear esa versión. Si el enunciado dice “que nadie borre la imagen de producción” → lock, no un SKU más caro.</li>
+        <li><strong>Retention policy</strong> (Premium): limpia manifiestos <em>sin tag</em> después de N días. No borra los tags que siguen apuntando a una versión.</li>
+        <li><strong>Anonymous pull</strong>: se puede habilitar para que un registry público no pida auth. En un ACR privado de empresa, déjalo apagado.</li>
+        <li>Borrar un tag <strong>no borra el manifiesto</strong> si otro tag lo referencia; <code>az acr repository delete</code> / purge sí libera storage.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════ 3 ══════════ -->
+  <div class="section" id="acr-auth">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">🔐</div>
+      <span class="section-title">Autenticación y roles en ACR</span>
+      <span class="section-tag">Pregunta segura</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Método</th><th>Cómo funciona</th><th>Cuándo usarlo</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Admin user</strong></td>
+            <td>Cuenta única por registry, con usuario y dos passwords. <strong>Deshabilitada por defecto</strong>; se prende con <code>az acr update --admin-enabled true</code>.</td>
+            <td>Solo pruebas y escenarios donde el servicio no soporta otra cosa. <span class="chip chip-red">No para producción</span> — es una credencial compartida, no se puede atribuir a una persona ni acotar por repositorio.</td>
+          </tr>
+          <tr>
+            <td><strong>Identidad de usuario (Entra ID)</strong></td>
+            <td><code>az acr login -n miregistro</code> usa tu token de Entra y se lo pasa a Docker.</td>
+            <td>Trabajo interactivo del administrador o developer.</td>
+          </tr>
+          <tr>
+            <td><strong>Service Principal</strong></td>
+            <td>appId + secret (o certificado) con un rol asignado sobre el registry.</td>
+            <td>Pipelines de CI/CD y sistemas fuera de Azure. Se le da <code>AcrPush</code> al pipeline de build y <code>AcrPull</code> al de deploy.</td>
+          </tr>
+          <tr>
+            <td><strong>Managed Identity</strong></td>
+            <td>Identidad system-assigned o user-assigned de una VM, AKS, App Service, ACI o Container Apps, con rol sobre el registry.</td>
+            <td><span class="chip chip-green">La recomendada</span> dentro de Azure: sin secretos que rotar ni guardar.</td>
+          </tr>
+          <tr>
+            <td><strong>Repository-scoped token</strong></td>
+            <td>Token con scope map que limita permisos a repositorios puntuales. Disponible en <strong>todos los SKUs</strong> (100 tokens en Basic, 500 en Standard, 50.000 en Premium).</td>
+            <td>Dar acceso a un tercero a un único repositorio del registry.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Roles RBAC de ACR</div>
+      <ul>
+        <li><code>AcrPull</code> — bajar imágenes. Es <strong>el rol de las identidades que corren cargas</strong> (AKS, ACI, App Service).</li>
+        <li><code>AcrPush</code> — subir <em>y</em> bajar. Para pipelines de build y developers.</li>
+        <li><code>AcrDelete</code> — borrar imágenes y repositorios.</li>
+        <li><code>Reader</code> / <code>Contributor</code> / <code>Owner</code> — roles del plano de control del recurso; <strong>Reader no alcanza para hacer pull de datos por sí solo en un flujo con tokens ACR</strong>, el rol de datos correcto es <code>AcrPull</code>.</li>
+      </ul>
+      <p>Pull de una imagen <strong>no cuarentenada</strong> (elegí tres):</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Rol</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>AcrPull</code></td><td><span class="yes">Sí</span></td><td>El rol de datos de pull</td></tr>
+            <tr><td><code>AcrPush</code></td><td><span class="yes">Sí</span></td><td>Incluye pull (push ⊃ pull)</td></tr>
+            <tr><td><code>Owner</code></td><td><span class="yes">Sí</span></td><td>Control plane completo, incluye pull</td></tr>
+            <tr><td><code>AcrImageSigner</code></td><td><span class="no">No</span></td><td>Content trust / firmar. No es pull general</td></tr>
+            <tr><td><code>AcrDelete</code></td><td><span class="no">No</span></td><td>Borrar repos/tags. No baja la imagen</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <code>AcrPush</code> <strong>también hace pull</strong>. Owner entra. AcrDelete y AcrImageSigner no. Contributor suele valer igual que Owner; Reader de control plane no alcanza solo.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> un pod en AKS queda en <code>ImagePullBackOff</code> contra un ACR. La causa casi siempre es que la <strong>identidad del cluster no tiene <code>AcrPull</code></strong>. La solución de un solo comando es <code>az aks update -n miAKS -g miRG --attach-acr miRegistro</code>, que crea la asignación de rol por vos. Las respuestas "habilitá el admin user" o "creá un imagePullSecret" son el distractor.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 3b ══════════ -->
+  <div class="section" id="acr-pull">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.18)">🔗</div>
+      <span class="section-title">Cómo tira cada runtime de ACR</span>
+      <span class="section-tag">Misma imagen, distinta auth</span>
+    </div>
+
+    <p>El registry es transversal. Lo que cambia es <strong>quién se autentica</strong> al hacer pull. La respuesta correcta casi siempre es <strong>managed identity + <code>AcrPull</code></strong>; admin user e imagePullSecret son el atajo de lab y el distractor de examen.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Runtime</th><th>Cómo se engancha al ACR</th><th>Qué rol / credencial</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="chip chip-yellow">App Service</span></td>
+            <td>Deployment Center → Container, o app settings <code>DOCKER_REGISTRY_SERVER_*</code>. Con identidad: asignás la managed identity de la web app al registry.</td>
+            <td>Identidad de la app con <code>AcrPull</code>. Admin user + password en settings es el camino viejo. CI: webhook del ACR + <code>DOCKER_ENABLE_CI=true</code> (detalle en el módulo 10).</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-blue">ACI</span></td>
+            <td><code>--assign-identity</code> al crear el container group, o usuario/password del registry. En portal: <em>Image source = Azure Container Registry</em>.</td>
+            <td>La identidad del group con <code>AcrPull</code>. Usuario/password = admin user o token. No hay <code>--attach-acr</code> para ACI.</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-purple">Container Apps</span></td>
+            <td><code>--registry-server</code> + <code>--registry-identity system</code> (o user-assigned) en el create/update de la app.</td>
+            <td>La identidad de la app con <code>AcrPull</code>. Las credenciales del registry son application-scope: cambiarlas <strong>no</strong> crea revision.</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-green">AKS</span></td>
+            <td><code>az aks create --attach-acr</code> o <code>az aks update --attach-acr</code>. Engancha la <strong>kubelet identity</strong> (no la del control plane) al registry.</td>
+            <td><code>AcrPull</code> sobre esa identidad. imagePullSecret solo si el nodo no puede usar Entra ID (cluster externo, air-gap).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “la web app / el container group / el pod no baja la imagen” y las opciones mezclan servicios. <strong>AcrPull va en la identidad que corre la carga</strong>, no en la tuya de administrador. <code>az acr login</code> autentica tu Docker local, no al runtime. Y <code>--attach-acr</code> es verbo de <strong>AKS</strong>, no de ACI ni de App Service.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 4 ══════════ -->
+  <div class="section" id="acr-tasks">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">🔨</div>
+      <span class="section-title">ACR Tasks y webhooks</span>
+      <span class="section-tag">Build sin Docker local</span>
+    </div>
+
+    <p><strong>ACR Tasks construye la imagen en la nube.</strong> No necesitás Docker instalado ni un agente de build: mandás el contexto y el registry compila, taguea y pushea.</p>
+
+    <pre><code># quick task: build + push desde el directorio actual
+az acr build --registry miRegistro --image miapp:v1 .</code></pre>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Tipo de task</th><th>Qué la dispara</th><th>Caso típico</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Quick task</strong></td><td>Manual, con <code>az acr build</code>.</td><td>Probar el build sin Docker local ni pipeline.</td></tr>
+          <tr><td><strong>Automatic build task</strong></td><td><strong>Commit / PR en un repo de Git</strong> (GitHub, Azure Repos).</td><td>CI sin servidor de build.</td></tr>
+          <tr><td><strong>Base image update trigger</strong></td><td>Cambia la <strong>imagen base</strong> referenciada en el <code>FROM</code>.</td><td>Rebuild automático cuando parchean la base por un CVE del SO.</td></tr>
+          <tr><td><strong>Scheduled task</strong></td><td>Timer con expresión cron.</td><td>Rebuild nocturno, tareas de mantenimiento.</td></tr>
+          <tr><td><strong>Multi-step task</strong></td><td>Archivo YAML con pasos <code>build</code>, <code>push</code> y <code>cmd</code> encadenados.</td><td>Build → test en contenedor → push solo si pasa.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Webhooks del registry</div>
+      <ul>
+        <li>Se disparan ante eventos de <strong>push de imagen</strong>, <strong>delete</strong>, push de chart de Helm o cambio de quarantine.</li>
+        <li>Hacen POST a una URL (Logic App, Function, App Service, pipeline) → así se arma el <strong>CD</strong>: se pushea la imagen y el destino se redepliega.</li>
+        <li>Se pueden filtrar por repositorio/tag con el scope. Cantidad máxima según SKU (2 / 10 / 500).</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Distinción fina que el examen aprovecha: <strong>ACR Task = automatiza el build (CI)</strong>. <strong>Webhook = notifica que algo pasó en el registry (CD)</strong>. Si la pregunta dice "reconstruir la imagen cuando se actualice la imagen base" → base image update trigger. Si dice "avisar a un sistema externo cuando se pushee una imagen" → webhook.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 5 ══════════ -->
+  <div class="section" id="aci">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">⚡</div>
+      <span class="section-title">Azure Container Instances (ACI)</span>
+      <span class="section-tag">Container groups</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Container group — la unidad de despliegue</div>
+      <ul>
+        <li>Uno o más contenedores que comparten <strong>ciclo de vida, red (misma IP y espacio de puertos), volúmenes</strong> y el nodo subyacente. Es el análogo del <strong>pod</strong> de Kubernetes.</li>
+        <li>Los <strong>multi-container groups solo soportan Linux</strong>. Con Windows, un contenedor por group.</li>
+        <li>Como comparten la IP, <strong>dos contenedores del mismo group no pueden exponer el mismo puerto</strong>.</li>
+        <li>Sizing: se piden <strong>CPU y memoria por contenedor</strong>; el group consume la suma. La facturación es <strong>por segundo</strong> sobre vCPU y memoria solicitadas.</li>
+        <li>Se despliega por CLI/portal o con una <strong>plantilla ARM / archivo YAML</strong> de container group.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Restart policy</th><th>Comportamiento</th><th>Usalo para</th></tr></thead>
+        <tbody>
+          <tr><td><code>Always</code> <span class="chip chip-blue">default</span></td><td>Reinicia siempre que el contenedor se detenga, sin importar el exit code.</td><td>Servicios de larga duración.</td></tr>
+          <tr><td><code>OnFailure</code></td><td>Reinicia solo si termina con código distinto de cero.</td><td>Jobs que deben completarse aunque fallen intentos.</td></tr>
+          <tr><td><code>Never</code></td><td>Nunca reinicia; el group queda en estado <strong>Terminated</strong> al terminar.</td><td><strong>Batch que corre una sola vez.</strong> Es la respuesta clásica.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Configuración y datos</div>
+      <ul>
+        <li><strong>Environment variables</strong> normales, visibles en las propiedades del container group.</li>
+        <li><strong>Secure environment variables</strong>: el valor no se muestra en el portal, en <code>az container show</code> ni en los logs. Para connection strings y passwords.</li>
+        <li>Volúmenes montables: <span class="chip chip-blue">Azure Files share</span> (persistente, el único que sobrevive al contenedor), <span class="chip chip-blue">emptyDir</span> (efímero, compartido dentro del group), <span class="chip chip-blue">secret</span> (archivos en memoria), <span class="chip chip-blue">gitRepo</span> (clona un repo al arrancar).</li>
+        <li>ACI no tiene disco persistente propio: <strong>si necesitás persistencia, es Azure Files</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Networking</div>
+      <ul>
+        <li><strong>Público</strong>: IP pública con <strong>DNS name label</strong> opcional → FQDN <code>&lt;label&gt;.&lt;region&gt;.azurecontainer.io</code>. El label debe ser único dentro de la región.</li>
+        <li><strong>Privado</strong>: despliegue en una <strong>subred delegada</strong> a <code>Microsoft.ContainerInstance/containerGroups</code>. Ahí el group recibe IP privada de la VNet y <strong>no tiene IP pública ni FQDN</strong>; se lo alcanza desde la VNet o vía VPN/ExpressRoute.</li>
+        <li>Una subred delegada a ACI <strong>no puede alojar otro tipo de recurso</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "el container group debe ser accesible solo desde la VNet" → subred delegada, <strong>y perdés el DNS name label y la IP pública</strong>. No podés tener las dos cosas: o IP pública con FQDN, o despliegue en VNet. Si la respuesta ofrece "asignar un NSG a la IP pública para restringir", es distractor.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Pull desde ACR y creación en portal</div>
+      <ul>
+        <li>Portal: <strong>Create a resource → Container Instances</strong>. <em>Image source</em> puede ser Quickstart (imagen de Microsoft), ACR, Docker Hub u Other. El skill dice “in the Azure portal”: esperá una pregunta de dónde elegir la imagen y la restart policy.</li>
+        <li>Con ACR privado, el camino correcto es <strong>managed identity del container group + <code>AcrPull</code></strong> (<code>--assign-identity</code> en CLI). Usuario y password del admin user funcionan, pero son el distractor de producción.</li>
+        <li>Windows y Linux no se mezclan en el mismo container group. GPU se pide al crear (SKU de compute); no se “activa después”.</li>
+      </ul>
+      <pre><code>az container create -g miRG -n miGrupo \
+  --image miRegistro.azurecr.io/miapp:v1 \
+  --assign-identity \
+  --acr-identity [system] \
+  --cpu 1 --memory 1 --restart-policy Never</code></pre>
+      <p>Después: asignar <code>AcrPull</code> a la principalId que devuelve el create. Sin eso, el group queda en <code>Waiting</code> / no baja la imagen.</p>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span><code>az container logs</code> te da el stdout del contenedor y <code>az container exec --exec-command "/bin/bash"</code> te abre una shell adentro. Son los dos comandos de troubleshooting que aparecen.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 6 ══════════ -->
+  <div class="section" id="containerapps">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.18)">🚀</div>
+      <span class="section-title">Azure Container Apps</span>
+      <span class="section-tag">Serverless + revisions</span>
+    </div>
+
+    <p>Container Apps es el <strong>punto medio entre ACI y AKS</strong>: por abajo corre Kubernetes con KEDA, Envoy y Dapr, pero <strong>no te expone la API de Kubernetes</strong>. No hay nodos, ni node pools, ni <code>kubectl</code>, ni un cluster que parchear. Vos desplegás una app y elegís cuántas réplicas puede tener.</p>
+
+    <div class="card">
+      <div class="card-title">Environment — el límite de seguridad</div>
+      <ul>
+        <li>El <strong>environment</strong> es el borde seguro que envuelve a una o más container apps (y jobs). Es el análogo gestionado del "cluster": el runtime se ocupa de upgrades del SO, failover y balanceo de recursos.</li>
+        <li>Portal: <strong>Create a resource → Container App</strong>. El wizard crea el environment (o reusa uno) y pide imagen, ingress y réplicas. El skill medido enfatiza el portal: esperá elegir environment, imagen (ACR/Docker Hub) e ingress external/internal.</li>
+        <li>Las apps del <strong>mismo environment comparten</strong>: la misma <strong>virtual network</strong>, el mismo <strong>Log Analytics workspace</strong> y la <strong>configuración de Dapr</strong>. Además se descubren entre sí <strong>por nombre de app</strong>.</li>
+        <li>Corolario de examen: <strong>si dos cargas tienen que estar aisladas de verdad, van en environments distintos.</strong> Poner dos apps en el mismo environment es una decisión de red y de logging, no solo de organización.</li>
+        <li>Dos tipos: <strong>workload profiles</strong> (el default; admite planes Consumption y Dedicated) y <strong>consumption-only</strong> (legacy, solo Consumption).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Bootstrap por CLI: extension ≠ provider</div>
+      <p>El environment de Container Apps exige un <strong>Log Analytics workspace</strong>. En Bash hay dos fallos distintos: el comando no existe, o el provider no está registrado.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Paso</th><th>Qué arregla</th></tr></thead>
+        <tbody>
+          <tr><td><code>az extension add -n containerapp</code></td><td>El subcomando <code>az containerapp</code> (si no, “command not found”)</td></tr>
+          <tr><td><code>az provider register --namespace Microsoft.App</code></td><td>Tipos del environment y de la app</td></tr>
+          <tr><td><code>az provider register --namespace Microsoft.OperationalInsights</code></td><td>El <strong>Log Analytics workspace</strong></td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>az extension add -n containerapp --upgrade
+az provider register --namespace Microsoft.App
+az provider register --namespace Microsoft.OperationalInsights
+az provider show --namespace Microsoft.OperationalInsights --query registrationState
+
+az monitor log-analytics workspace create -g RG -n law-aca -l eastus
+az containerapp env create -g RG -n env-aca -l eastus \
+  --logs-workspace-id &lt;workspaceResourceId&gt;</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> ya registraste <code>Microsoft.App</code> y el extension <code>containerapp</code>, pero crear el workspace “no se reconoce”. Si el enunciado manda <code>az provider register</code>, el namespace es <strong><code>Microsoft.OperationalInsights</code></strong> — no PolicyInsights (Azure Policy), no NotificationHubs (push móvil), no Automation (runbooks). <code>Microsoft.Insights</code> es métricas/alertas, no el workspace.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Plan</th><th>Cómo factura</th><th>¿Escala a cero?</th><th>Para qué</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="chip chip-purple">Consumption</span></td>
+            <td>Por réplica y por los recursos que usa</td>
+            <td class="yes">✓</td>
+            <td>Carga variable o impredecible, picos, apps que quedan ociosas. Es el profile que trae todo environment por default.</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-blue">Dedicated</span> (workload profile)</td>
+            <td>Por <strong>instancia del profile</strong>, corran o no réplicas</td>
+            <td class="no">✗</td>
+            <td>Carga estable y previsible, cómputo single-tenant, tamaños de VM grandes, memoria alta o GPU.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Revisions — versionado inmutable</div>
+      <ul>
+        <li>Una <strong>revision</strong> es un <strong>snapshot inmutable</strong> de una versión de la app. No se edita: se crea otra.</li>
+        <li><strong>Cambios revision-scope</strong> (van en <code>properties.template</code>) → <strong>crean revision nueva</strong>: imagen del contenedor, CPU/memoria, variables de entorno, <strong>scale rules</strong>, revision suffix.</li>
+        <li><strong>Cambios application-scope</strong> (van en <code>properties.configuration</code>) → <strong>NO crean revision</strong>: ingress y <strong>división de tráfico</strong>, valores de <strong>secrets</strong>, credenciales del registry, config de Dapr, el propio revision mode.</li>
+        <li>Nombre: <code>&lt;app&gt;-&lt;revision-suffix&gt;</code>. Por default se retienen <strong>100 revisions inactivas</strong>, que no se facturan.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Revision mode</th><th>Comportamiento</th><th>Escenario del examen</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Single</strong> <span class="chip chip-blue">default</span></td>
+            <td>Una sola revision activa. La nueva se aprovisiona, escala y recién cuando está lista se lleva el <strong>100% del tráfico</strong>; la vieja se desaprovisiona.</td>
+            <td>"Desplegar sin downtime, sin manejar versiones."</td>
+          </tr>
+          <tr>
+            <td><strong>Multiple</strong></td>
+            <td>Varias revisions activas a la vez y <strong>traffic splitting por porcentaje</strong> entre ellas. Vos activás y desactivás a mano.</td>
+            <td><strong>"Mandar el 20% del tráfico a la versión nueva"</strong>, A/B testing, blue-green, rollback instantáneo moviendo el tráfico.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla mental:</strong> si el enunciado dice <em>porcentaje de tráfico</em>, <em>canary</em>, <em>A/B</em> o <em>blue-green</em> → hay que pasar la app a <strong>multiple revision mode</strong>. En single revision mode no existe la división de tráfico, por más revisions que tengas.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Ingress</div>
+      <ul>
+        <li><strong>External</strong>: FQDN público, alcanzable desde internet. <strong>Internal</strong>: solo desde apps del mismo environment (el FQDN no resuelve para afuera). <strong>Deshabilitado</strong>: sin FQDN; igual la alcanzan otras apps del environment por nombre.</li>
+        <li>No hace falta crear load balancer ni IP pública: <strong>el ingress viene con el environment</strong>.</li>
+        <li><strong>HTTP</strong>: <strong>TLS termination en el ingress</strong> (TLS 1.2 o 1.3), puertos 80 y 443, y el <strong>80 redirige automáticamente a 443</strong>. Soporta HTTP/1.1, HTTP/2, WebSockets y gRPC.</li>
+        <li><strong>TCP</strong>: para protocolos que no son HTTP (Redis, por ejemplo). <strong>El TCP externo requiere que el environment esté en una virtual network.</strong></li>
+        <li><code>--target-port</code> es el puerto <em>dentro</em> del contenedor al que se rutea. Extras: IP restrictions, session affinity, CORS, client certificates (mTLS) y auth integrada.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Identidad, secrets y ACR</div>
+      <ul>
+        <li><strong>Managed identity</strong> system-assigned o user-assigned, igual que en el resto de Azure. Se usa para <strong>hacer pull desde ACR</strong> asociando la identidad al registry en la config de la app — la identidad necesita <code>AcrPull</code>. Sin admin user, sin secretos de registry.</li>
+        <li><strong>Secrets</strong>: se definen a <strong>nivel de aplicación</strong>, no de revision, y varias revisions pueden referenciar el mismo. Se consumen desde <strong>variables de entorno</strong>, <strong>volume mounts</strong> y también desde las <strong>scale rules</strong>.</li>
+        <li>Cambiar o borrar un secret <strong>no impacta solo por cambiarlo</strong>: hay que <strong>desplegar una revision nueva o reiniciar la activa</strong> para que tome el valor.</li>
+        <li><strong>Key Vault references</strong>: se apunta a la URI del secreto y la managed identity necesita el rol <strong>Key Vault Secrets User</strong>. Si la URI no fija versión, la app toma la última sola y reinicia las revisions activas.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Jobs — corre y termina, sin ingress</div>
+      <ul>
+        <li>Una <strong>container app</strong> es un servicio de larga duración (HTTP/TCP, réplicas, ingress). Un <strong>job</strong> es un contenedor que <strong>arranca, hace el trabajo y termina</strong>: no tiene ingress ni traffic splitting.</li>
+        <li>Tres disparadores: <strong>manual</strong>, <strong>scheduled</strong> (cron) y <strong>event-driven</strong> (KEDA, igual que las apps: cola, Event Hubs, etc.).</li>
+        <li>¿ACI con <code>Never</code> o Container Apps Job? Si el enunciado pide <strong>una sola ejecución, mínimo esfuerzo, sin environment</strong> → ACI. Si pide <strong>cron recurrente, scale-out por mensajes de cola, o convivir con otras apps del mismo environment</strong> → Job de Container Apps.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Dapr — opcional, por encima</div>
+      <ul>
+        <li>Se habilita <strong>por app</strong> y corre como <strong>sidecar</strong>; los <strong>componentes de Dapr se definen a nivel de environment</strong> y se comparten entre las apps de ese environment.</li>
+        <li>Da service invocation (llamarse por nombre de app), pub/sub, state store y bindings sin acoplarse al SDK del backend.</li>
+        <li>Letra chica: con <strong>Dapr actors</strong> no se soporta escalar a cero.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Criterio</th><th><span class="chip chip-blue">ACI</span></th><th><span class="chip chip-purple">Container Apps</span></th><th><span class="chip chip-green">AKS</span></th></tr></thead>
+        <tbody>
+          <tr><td>Nivel de abstracción</td><td>Building block crudo, "poco opinado"</td><td>PaaS serverless opinado, best practices ya aplicadas</td><td>Kubernetes completo</td></tr>
+          <tr><td>Unidad de despliegue</td><td>Container group</td><td>Container app + revisions dentro de un environment</td><td>Pods, deployments, services</td></tr>
+          <tr><td>¿Acceso a la API de Kubernetes?</td><td class="no">✗</td><td class="no">✗ (corre sobre K8s, pero no lo expone)</td><td class="yes">✓ <code>kubectl</code>, CRDs, scheduler</td></tr>
+          <tr><td>Autoescalado</td><td class="no">✗ ninguno</td><td class="yes">✓ KEDA, con scale to zero</td><td class="yes">✓ HPA + Cluster Autoscaler</td></tr>
+          <tr><td>Balanceo de carga y certificados incluidos</td><td class="no">✗</td><td class="yes">✓ ingress gestionado con TLS</td><td>Los configurás vos (Ingress controller)</td></tr>
+          <tr><td>Traffic splitting / blue-green nativo</td><td class="no">✗</td><td class="yes">✓ revisions</td><td>Con service mesh o herramientas extra</td></tr>
+          <tr><td>Microsoft lo recomienda para…</td><td>Un pod de contenedores aislados <strong>bajo demanda</strong>, cuando <strong>no</strong> necesitás escala, balanceo ni certificados</td><td><strong>Microservicios serverless</strong> y contenedores de propósito general, event-driven, sin querer administrar Kubernetes</td><td>Cuando necesitás <strong>acceso directo a la API y al control plane</strong> de Kubernetes o correr cualquier workload de K8s</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Container Apps <em>corre sobre</em> Kubernetes, pero eso <strong>no</strong> te da Kubernetes. Si el escenario menciona <code>kubectl</code>, manifiestos, CRDs, DaemonSets, node pools, taints o control del scheduler → la respuesta es <strong>AKS</strong>. Si dice "microservicios", "sin administrar el cluster" y "escalar a cero" → <strong>Container Apps</strong>. Y ojo con el par ACI/Container Apps: <strong>ACI no escala solo ni trae ingress</strong>, así que un escenario con tráfico HTTP variable nunca es ACI.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Distinción que se pregunta seguido: cambiar la <strong>imagen</strong> o una <strong>scale rule</strong> <em>crea una revision nueva</em>. Cambiar el <strong>porcentaje de tráfico</strong>, el <strong>ingress</strong> o el valor de un <strong>secret</strong> <em>no crea revision</em> — es configuración a nivel de aplicación.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">CLI</div>
+      <pre><code>az containerapp env create -g miRG -n miEnv -l eastus
+
+az containerapp create -g miRG -n miApp --environment miEnv \
+  --image miRegistro.azurecr.io/miapp:v1 \
+  --registry-server miRegistro.azurecr.io \
+  --registry-identity system \
+  --ingress external --target-port 80 \
+  --min-replicas 0 --max-replicas 10
+
+# pasar a multiple revision mode y dividir el tráfico 80/20
+az containerapp revision set-mode -g miRG -n miApp --mode multiple
+az containerapp ingress traffic set -g miRG -n miApp \
+  --revision-weight miApp--v1=80 miApp--v2=20
+
+az containerapp revision list -g miRG -n miApp -o table
+az containerapp logs show -g miRG -n miApp</code></pre>
+    </div>
+  </div>
+
+  <!-- ══════════ 7 ══════════ -->
+  <div class="section" id="escalado-contenedores">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.16)">📊</div>
+      <span class="section-title">Sizing y escalado de contenedores</span>
+      <span class="section-tag">ACI vs Container Apps</span>
+    </div>
+
+    <p>Objetivo explícito del examen. La clave es una sola frase: <strong>ACI no escala; Container Apps sí.</strong> Todo lo demás es detalle de esa asimetría.</p>
+
+    <div class="card">
+      <div class="card-title">ACI — sizing fijo, cero autoescalado</div>
+      <ul>
+        <li>Se piden <strong>CPU y memoria por contenedor</strong> y el container group consume <strong>la suma</strong> de los requests. El mínimo del group es <strong>1 vCPU y 1 GB</strong>.</li>
+        <li>Además del <code>resourceRequest</code> (obligatorio) se puede fijar un <code>resourceLimit</code> opcional, que puede superar el request hasta el total asignado al group. Sin límite, el máximo de uso es el request.</li>
+        <li>Máximos por container group: <strong>31 vCPU y 240 GB de memoria</strong>, también cuando se despliega en VNet. Son <strong>límites duros</strong>, no se suben por ticket de cuota.</li>
+        <li><strong>ACI no tiene autoescalado ni métricas que agreguen réplicas.</strong> No hay "scale out" del group ni nada parecido al HPA.</li>
+        <li>El sizing se define <strong>al desplegar</strong>: cambiar CPU o memoria de un group existente implica <strong>volver a desplegarlo</strong>.</li>
+        <li>Para absorber más carga con ACI: <strong>desplegar más container groups</strong> y balancear por delante, o mover la carga a algo que orqueste (AKS con virtual nodes, o Container Apps).</li>
+      </ul>
+    </div>
+
+    <div class="rule-box">
+      <strong>Restart policy ≠ escalado.</strong> <code>Always</code>, <code>OnFailure</code> y <code>Never</code> definen el <em>ciclo de vida</em> del container group — si se reinicia al terminar y si queda en <strong>Terminated</strong> —, no cuántas instancias hay. Un job con <code>Never</code> sigue siendo <strong>una</strong> instancia. Si una opción de respuesta propone "cambiar la restart policy para manejar más carga", es distractor.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Container Apps — escalado horizontal con KEDA</div>
+      <ul>
+        <li>El escalado es <strong>horizontal, en réplicas</strong>, y lo maneja <strong>KEDA</strong> a partir de <strong>scale rules</strong> declarativas. Cada revision tiene sus propios límites y reglas.</li>
+        <li>Límites por revision: <strong>min replicas default 0</strong>, <strong>max replicas default 10</strong>; el rango soportado va de <strong>0 a 1000</strong>.</li>
+        <li>Si <strong>no definís ninguna scale rule</strong>, se aplica la regla por default: <strong>HTTP, min 0 / max 10</strong>.</li>
+        <li><strong>No hay escalado vertical.</strong> Cambiar CPU o memoria del contenedor es un cambio revision-scope: <strong>genera una revision nueva</strong>.</li>
+        <li>Agregar o editar una scale rule <strong>también crea una revision nueva</strong>, así que distintas revisions pueden convivir con reglas distintas.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Scale rule</th><th>En qué se basa</th><th>Parámetro clave</th><th>Escenario</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>HTTP</strong></td>
+            <td>Requests HTTP <strong>concurrentes</strong> por réplica</td>
+            <td><code>concurrentRequests</code> <span class="chip chip-blue">default 10</span></td>
+            <td>API o front web. Es la regla por default de toda app con ingress.</td>
+          </tr>
+          <tr>
+            <td><strong>TCP</strong></td>
+            <td>Conexiones TCP <strong>concurrentes</strong></td>
+            <td><code>concurrentConnections</code> <span class="chip chip-blue">default 10</span></td>
+            <td>Servicios que no hablan HTTP.</td>
+          </tr>
+          <tr>
+            <td><strong>Custom · CPU</strong></td>
+            <td>Uso de CPU</td>
+            <td><code>type: cpu</code> + utilización objetivo</td>
+            <td>Carga CPU-bound (procesamiento, transcoding).</td>
+          </tr>
+          <tr>
+            <td><strong>Custom · memoria</strong></td>
+            <td>Uso de memoria</td>
+            <td><code>type: memory</code> + utilización objetivo</td>
+            <td>Carga memory-bound.</td>
+          </tr>
+          <tr>
+            <td><strong>Custom · event-driven</strong></td>
+            <td>Cualquier <strong>scaler de KEDA</strong>: Azure Service Bus, Event Hubs, Kafka, Redis, colas…</td>
+            <td>Ej. <code>azure-servicebus</code> + <code>queueName</code> + <code>messageCount</code></td>
+            <td><strong>Worker que consume una cola:</strong> "escalar según la cantidad de mensajes pendientes". Es la respuesta clásica.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cómo se comporta el escalado</div>
+      <ul>
+        <li>HTTP y TCP se calculan cada <strong>15 segundos</strong> sobre lo ocurrido en esos 15 segundos.</li>
+        <li>Las reglas custom se consultan con un <strong>polling interval default de 30 segundos</strong> y un <strong>cool-down default de 300 segundos</strong> antes de escalar hacia abajo.</li>
+        <li>Fórmula de KEDA: <code>réplicas = ceil(valor actual / valor objetivo)</code>. Con <code>messageCount: 5</code> y 50 mensajes en cola → 10 réplicas.</li>
+        <li>Las réplicas son un <strong>objetivo</strong>, no una garantía.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Scale to zero y su precio oculto</div>
+      <ul>
+        <li>Con <code>minReplicas: 0</code> la app baja a <strong>cero réplicas</strong> cuando no hay actividad y <strong>no se factura consumo</strong>. Es <em>el</em> argumento de venta de Container Apps frente a AKS y App Service.</li>
+        <li>El costo es el <strong>cold start</strong>: la primera request después del reposo tiene que esperar a que se levante una réplica. Si el escenario pide <strong>latencia predecible</strong> o <strong>sin cold start</strong>, la respuesta es <strong>min replicas ≥ 1</strong>, no una scale rule distinta.</li>
+        <li>El plan <strong>Dedicated</strong> (workload profile) <strong>no escala a cero</strong>: se paga la instancia del profile aunque no haya réplicas.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si dejás <code>minReplicas: 0</code> en una app <strong>sin ingress y sin ninguna scale rule</strong>, la app escala a cero y <strong>no queda nada que la despierte</strong>. Para una carga sin HTTP (un worker de cola) tenés que definir la scale rule event-driven <em>o</em> poner <code>minReplicas</code> en 1 o más. Y no confundas escalas: en Container Apps se escalan <strong>réplicas</strong>, nunca nodos — nodos es vocabulario de AKS.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">KEDA Service Bus: Yes / Yes / No</div>
+      <p><code>minReplicas: 0</code>, <code>maxReplicas: 32</code>, custom <code>azure-servicebus</code>, <code>messageCount: 15</code>. Sin bloque <code>auth</code>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>KEDA consulta la cola cada <strong>30 s</strong></td><td><span class="yes">Yes</span></td><td><code>pollingInterval</code> default de KEDA = 30 s (no está override en el JSON)</td></tr>
+            <tr><td>Si la cola &gt; 15, escala <strong>+1 réplica</strong></td><td><span class="yes">Yes</span></td><td><code>messageCount</code> es el umbral por réplica. El examen trata &gt;15 como el disparo de scale-out</td></tr>
+            <tr><td>El snippet usa <code>TriggerAuthentication</code></td><td><span class="no">No</span></td><td>No hay <code>auth</code> ni referencia a TriggerAuthentication. Solo metadata del scaler</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Yes / Yes / No. Polling 30 s es default, no hace falta declararlo. TriggerAuthentication es un objeto aparte: si no está en el JSON, la respuesta es No.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Mapa rápido de "quién escala qué": <strong>ACI → nada</strong> (redesplegás container groups) · <strong>Container Apps → réplicas, con KEDA</strong> · <strong>AKS → réplicas con HPA y nodos con Cluster Autoscaler</strong> · <strong>virtual nodes → pods de AKS que aterrizan en ACI</strong> para burst en segundos.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">CLI de escalado</div>
+      <pre><code># Container Apps: límites de réplicas
+az containerapp update -g miRG -n miApp \
+  --min-replicas 1 --max-replicas 30
+
+# scale rule event-driven sobre una cola de Service Bus
+az containerapp update -g miRG -n miApp \
+  --scale-rule-name cola-pedidos \
+  --scale-rule-type azure-servicebus \
+  --scale-rule-metadata queueName=pedidos messageCount=5 \
+  --scale-rule-auth "connection=sb-connection"
+
+# ACI: el sizing va en la creación, no se "escala" después
+az container create -g miRG -n miGrupo --image miapp:v1 \
+  --cpu 2 --memory 4</code></pre>
+    </div>
+  </div>
+
+  <!-- ══════════ 8 ══════════ -->
+  <div class="section" id="aks-arq">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.12)">☸️</div>
+      <span class="section-title">AKS — arquitectura</span>
+      <span class="section-tag">Fuera del outline</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Desde el skills measured de <strong>abril 2026</strong>, AKS <strong>no se evalúa</strong>. Estas tres secciones quedan para reconocer distractores (“mínimo esfuerzo” nunca es AKS) y para el mapa mental. Operar el cluster con <code>kubectl</code> está en <a href="23-aks-fundamentos.html" style="color:var(--accent)">23 · AKS operativo</a> (complementario).</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué es y cómo se crea</div>
+      <ul>
+        <li>AKS es Kubernetes <strong>con el control plane gestionado por Microsoft</strong>. Vos pagás y administrás los <strong>nodos</strong> (VMs). No instalás etcd, ni el API server, ni kubeadm.</li>
+        <li><strong>Portal:</strong> Create a resource → Kubernetes services. Basics (RG, nombre, región, tamaño y cantidad de nodos) → Node pools → Networking (<strong>kubenet vs Azure CNI</strong>, se elige acá y no se cambia después) → Integrations (enganchar ACR) → Review + create.</li>
+        <li><strong>CLI:</strong> <code>az aks create</code>. Lo mínimo de examen/lab: node count, network plugin, <code>--attach-acr</code>, <code>--enable-managed-identity</code>.</li>
+      </ul>
+      <pre><code>az aks create -g miRG -n miAKS --node-count 2 \
+  --network-plugin azure --attach-acr miRegistro \
+  --enable-managed-identity --generate-ssh-keys</code></pre>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step highlight">Control plane<br><small>gestionado por MS</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">System node pool<br><small>Linux · obligatorio</small></div>
+      <span class="flow-arrow">+</span>
+      <div class="flow-step">User node pools<br><small>Linux o Windows</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">VM Scale Sets</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Control plane</div>
+      <ul>
+        <li>API server, scheduler, etcd y controller manager los <strong>gestiona Microsoft</strong>: no los ves como recursos ni podés entrar por SSH.</li>
+        <li>En el tier <strong>Free no se paga</strong> por el control plane: <strong>pagás únicamente los nodos</strong> (VMs, discos, red, IPs). El tier <strong>Standard</strong> cobra el control plane a cambio de un SLA de uptime con respaldo financiero.</li>
+        <li>Los nodos viven en un <strong>resource group secundario</strong> que AKS crea solo, con nombre tipo <code>MC_&lt;rg&gt;_&lt;cluster&gt;_&lt;region&gt;</code>. No hay que tocarlo a mano.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>System node pool</th><th>User node pool</th></tr></thead>
+        <tbody>
+          <tr><td>¿Obligatorio?</td><td class="yes">Sí, al menos uno</td><td>Opcional</td></tr>
+          <tr><td>SO</td><td><strong>Solo Linux</strong></td><td>Linux o <strong>Windows</strong></td></tr>
+          <tr><td>Qué corre</td><td>Pods críticos del sistema (CoreDNS, metrics-server) + cargas si lo permitís</td><td>Cargas de la aplicación</td></tr>
+          <tr><td>Mínimo de nodos</td><td>1 (no puede quedar en 0)</td><td>Puede escalar a <strong>0</strong></td></tr>
+          <tr><td>¿Se puede borrar?</td><td>No, si es el único del cluster</td><td>Sí</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Node pools</div>
+      <ul>
+        <li>Cada node pool se respalda en un <strong>Virtual Machine Scale Set</strong>: de ahí sale el escalado y las actualizaciones por lotes.</li>
+        <li>Dentro de un pool <strong>todos los nodos son del mismo tamaño de VM y del mismo SO</strong>. ¿Necesitás VMs con GPU o memoria alta para una carga puntual? <strong>Agregá otro node pool</strong>, no cambies el existente.</li>
+        <li>Se etiquetan con labels y taints para dirigir pods a un pool específico.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "necesitamos correr contenedores <strong>Windows</strong> en AKS". Nunca es "crear un cluster con system pool de Windows" — el system pool <strong>siempre es Linux</strong>. La respuesta correcta es <strong>agregar un user node pool con Windows</strong> (<code>az aks nodepool add --os-type Windows</code>) a un cluster que ya tiene su system pool Linux.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 9 ══════════ -->
+  <div class="section" id="aks-scale">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,.15)">📈</div>
+      <span class="section-title">AKS — escalado</span>
+      <span class="section-tag">Fuera del outline</span>
+    </div>
+
+    <p>Esta es <strong>la</strong> pregunta de AKS en el AZ-104. Todo se reduce a distinguir <strong>qué escala cada mecanismo</strong>.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Mecanismo</th><th>Qué agrega/quita</th><th>Disparador</th><th>Escenario</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Escalado manual</strong><br><code>az aks scale</code> / <code>nodepool scale</code></td>
+            <td><span class="chip chip-blue">Nodos</span></td>
+            <td>Vos, a mano</td>
+            <td>Carga previsible; ajuste puntual de capacidad.</td>
+          </tr>
+          <tr>
+            <td><strong>Cluster Autoscaler</strong></td>
+            <td><span class="chip chip-blue">Nodos</span></td>
+            <td>Pods en estado <strong>Pending</strong> por falta de recursos; nodos infrautilizados.</td>
+            <td>"Los pods no arrancan porque no hay capacidad en el cluster" → agrega nodos entre <code>--min-count</code> y <code>--max-count</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>Horizontal Pod Autoscaler (HPA)</strong></td>
+            <td><span class="chip chip-purple">Pods</span> (réplicas)</td>
+            <td>Métricas: CPU, memoria o custom metrics.</td>
+            <td>"La app necesita más réplicas cuando sube el CPU" → objeto de Kubernetes, se define con <code>kubectl</code>/manifiesto.</td>
+          </tr>
+          <tr>
+            <td><strong>Virtual nodes</strong> (sobre ACI)</td>
+            <td><span class="chip chip-yellow">Pods en ACI</span>, sin nodos nuevos</td>
+            <td>Pods programados al nodo virtual.</td>
+            <td><strong>Burst rápido</strong>: no hay que esperar el arranque de una VM, los pods van directo a ACI en segundos.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>Cluster Autoscaler y HPA son complementarios:</strong> el HPA crea réplicas, esas réplicas quedan <em>Pending</em> si no hay lugar, y eso es lo que despierta al Cluster Autoscaler para sumar nodos. Si la pregunta dice "más réplicas" → HPA. Si dice "más nodos" o "capacidad del cluster" → Cluster Autoscaler.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Virtual nodes — letra chica</div>
+      <ul>
+        <li>Se basan en el proyecto <strong>Virtual Kubelet</strong> y ejecutan los pods en <strong>ACI</strong>, no en VMs del cluster.</li>
+        <li>Requieren <strong>Azure CNI</strong> y una <strong>subred delegada a ACI</strong>. No funcionan con kubenet.</li>
+        <li><strong>Solo pods Linux.</strong> No sirven para cargas que necesiten DaemonSets ni acceso a la red virtual del nodo.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "el tráfico se dispara de golpe y hay que absorberlo <strong>en segundos</strong>". El Cluster Autoscaler tiene que aprovisionar una VM (minutos), así que la respuesta es <strong>virtual nodes / ACI</strong>. Si en cambio el escenario habla de crecimiento sostenido y costos, es Cluster Autoscaler.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 10 ══════════ -->
+  <div class="section" id="aks-net">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.2)">🌐</div>
+      <span class="section-title">AKS — red, identidad y upgrades</span>
+      <span class="section-tag">Fuera del outline</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>kubenet</th><th>Azure CNI</th></tr></thead>
+        <tbody>
+          <tr><td>IP del <strong>nodo</strong></td><td>De la subred</td><td>De la subred</td></tr>
+          <tr><td>IP del <strong>pod</strong></td><td>De un rango <strong>lógico separado</strong>, fuera de la subred</td><td><strong>De la misma subred de la VNet</strong></td></tr>
+          <tr><td>Consumo de IPs de la subred</td><td><span class="chip chip-green">Bajo</span></td><td><span class="chip chip-red">Alto</span> — hay que planificar: nodos + (nodos × maxPods)</td></tr>
+          <tr><td>Conectividad pod ↔ recursos de la VNet</td><td>Con NAT / user-defined routes (salto extra)</td><td><strong>Directa</strong>, el pod es ruteable en la VNet</td></tr>
+          <tr><td>maxPods por nodo (default)</td><td>110</td><td>30</td></tr>
+          <tr><td>Node pools de Windows</td><td class="no">✗</td><td class="yes">✓</td></tr>
+          <tr><td>Virtual nodes</td><td class="no">✗</td><td class="yes">✓</td></tr>
+          <tr><td>Network policy</td><td>Calico</td><td>Azure Network Policy o Calico</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el modelo de red se elige <strong>al crear el cluster</strong> y la subred debe dimensionarse para el <strong>máximo</strong> de nodos, no para los actuales. Si el escenario dice "los pods tienen que ser accesibles directamente desde otras VMs de la VNet" o "hay que usar node pools de Windows" → <strong>Azure CNI</strong>. Si dice "la subred tiene pocas IPs disponibles" → kubenet.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Identidad y control de acceso</div>
+      <ul>
+        <li><strong>Managed Identity del cluster</strong>: es con la que AKS habla con Azure (crear load balancers, discos, hacer pull de ACR). Es la que necesita <code>AcrPull</code>.</li>
+        <li><strong>Integración con Entra ID</strong>: los usuarios se autentican con su cuenta corporativa y se mapean a roles de Kubernetes. Dos sabores: <em>Kubernetes RBAC</em> (RoleBinding a grupos de Entra) o <strong>Azure RBAC for Kubernetes Authorization</strong> (permisos asignados como roles de Azure).</li>
+        <li><strong>Workload Identity</strong>: le da identidad de Entra a los <em>pods</em> para que accedan a Key Vault, Storage, etc., sin secretos.</li>
+        <li><strong>Network Policies</strong>: firewall entre pods (este namespace no habla con aquel). Se habilitan <strong>al crear el cluster</strong>.</li>
+        <li><strong>Ingress</strong>: un solo punto de entrada HTTP/S con ruteo por host y path y terminación TLS, en vez de un Service tipo LoadBalancer (y una IP pública) por app.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Upgrades</div>
+      <ul>
+        <li><code>az aks upgrade</code> actualiza <strong>control plane y node pools</strong>; se puede actualizar solo el control plane con <code>--control-plane-only</code>.</li>
+        <li>El control plane se sube <strong>de a una versión minor por vez</strong> y <strong>los node pools no pueden estar en una versión superior a la del control plane</strong>.</li>
+        <li><code>az aks nodepool upgrade --node-image-only</code> actualiza la <strong>imagen del nodo</strong> (parches del SO y runtime) sin tocar la versión de Kubernetes.</li>
+        <li><strong>Max surge</strong>: nodos extra que se crean durante el upgrade para no perder capacidad. Se expresa en número o porcentaje; más surge = upgrade más rápido y más caro. El proceso es cordon + drain nodo por nodo (por lote).</li>
+        <li>Ver versiones disponibles: <code>az aks get-upgrades</code>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Si tenés que <em>operar</em> el cluster (contexts, Deployments, Services, Endpoints, rollouts), salí de este módulo y andá a <a href="23-aks-fundamentos.html" style="color:var(--accent)">23 · AKS operativo</a>. Acá alcanza con: crear, node pools, escalar nodos/pods, kubenet vs CNI, <code>az aks upgrade</code>.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 11 ══════════ -->
+  <div class="section" id="cli">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.2)">💻</div>
+      <span class="section-title">Comandos que aparecen en el examen</span>
+      <span class="section-tag">Memorizar</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">ACR</div>
+      <pre><code>az acr create -g miRG -n miRegistro --sku Premium
+az acr login -n miRegistro                      # auth con Entra ID
+az acr build -r miRegistro --image miapp:v1 .   # build en la nube
+az acr import -n miRegistro --source docker.io/library/nginx:latest \
+              --image nginx:latest              # copia sin Docker local
+az acr repository list -n miRegistro
+az acr update -n miRegistro --admin-enabled true
+az acr replication create -r miRegistro -l westeurope   # Premium</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">ACI</div>
+      <pre><code>az container create -g miRG -n miGrupo \
+  --image miRegistro.azurecr.io/miapp:v1 \
+  --cpu 1 --memory 1.5 \
+  --restart-policy Never \
+  --dns-name-label miapp-demo \
+  --ports 80 \
+  --secure-environment-variables DB_PASS=xxxx
+
+az container logs -g miRG -n miGrupo
+az container exec -g miRG -n miGrupo --exec-command "/bin/bash"
+az container show -g miRG -n miGrupo --query ipAddress.fqdn</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">AKS</div>
+      <pre><code>az aks create -g miRG -n miAKS --node-count 3 \
+  --network-plugin azure --attach-acr miRegistro \
+  --enable-managed-identity
+
+az aks get-credentials -g miRG -n miAKS      # escribe ~/.kube/config
+az aks scale -g miRG -n miAKS --node-count 5 # escalado manual de nodos
+az aks nodepool add -g miRG --cluster-name miAKS -n winpool \
+  --os-type Windows --node-count 2
+az aks nodepool update -g miRG --cluster-name miAKS -n nodepool1 \
+  --enable-cluster-autoscaler --min-count 1 --max-count 10
+az aks get-upgrades -g miRG -n miAKS
+az aks upgrade -g miRG -n miAKS --kubernetes-version 1.29.0
+az aks update -g miRG -n miAKS --attach-acr miRegistro   # arregla el AcrPull</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Container Apps</div>
+      <pre><code>az extension add -n containerapp --upgrade
+az provider register --namespace Microsoft.App
+az provider register --namespace Microsoft.OperationalInsights
+az containerapp env create -g miRG -n miEnv -l eastus
+az containerapp create -g miRG -n miApp --environment miEnv \
+  --image nginx --target-port 80 --ingress external
+az containerapp job create -g miRG -n miJob --environment miEnv \
+  --image miRegistro.azurecr.io/batch:v1 --trigger-type Schedule \
+  --cron-expression "0 2 * * *"</code></pre>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Atajo de lectura: <strong><code>az container</code> = ACI</strong> (no existe <code>az aci</code>), <strong><code>az acr</code> = registry</strong>, <strong><code>az aks</code> = Kubernetes</strong>. Si una opción de respuesta usa <code>az aci create</code>, es falsa de entrada.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "Tarea de procesamiento por lotes que corre una vez, arranca en segundos y no requiere orquestación. ¿Qué servicio?", a: "<strong>Azure Container Instances (ACI)</strong>, con <code>--restart-policy Never</code>. Facturación por segundo sobre vCPU y memoria solicitadas.", cat: "Decisión" },
+  { q: "¿Qué features son exclusivas del SKU Premium de ACR?", a: "<strong>Geo-replication</strong>, <strong>private link / private endpoints</strong>, <strong>content trust</strong>, <strong>customer-managed keys</strong>. Ojo: <strong>zone redundancy</strong> y los <strong>repository-scoped tokens</strong> ya están disponibles en los tres SKUs. Basic y Standard se diferencian sobre todo por storage y throughput.", cat: "ACR" },
+  { q: "Storage incluido por SKU de ACR: Basic, Standard, Premium.", a: "<strong>Basic 10 GiB · Standard 100 GiB · Premium 500 GiB.</strong> Webhooks: 2 / 10 / 500.", cat: "ACR" },
+  { q: "Reglas del nombre de un ACR y su login server.", a: "Solo caracteres <strong>alfanuméricos</strong> (sin guiones ni puntos), 5–50 caracteres, <strong>único global</strong>. Login server: <code>&lt;nombre&gt;.azurecr.io</code>.", cat: "ACR" },
+  { q: "Los pods de AKS fallan con ImagePullBackOff contra un ACR. ¿Causa y fix de un comando?", a: "La <strong>managed identity del cluster no tiene el rol <code>AcrPull</code></strong>. Fix: <code>az aks update -n miAKS -g miRG --attach-acr miRegistro</code>.", cat: "ACR + AKS" },
+  { q: "Roles RBAC de ACR y para qué sirve cada uno.", a: "<code>AcrPull</code> (bajar: identidades que corren cargas), <code>AcrPush</code> (subir <em>y</em> bajar: pipelines), <code>AcrDelete</code> (borrar). Pull de no-cuarentenada: <strong>AcrPull + AcrPush + Owner</strong>. AcrImageSigner = content trust. AcrDelete no baja.", cat: "ACR" },
+  { q: "¿Qué hace <code>az acr build</code> y qué requisito elimina?", a: "Construye la imagen <strong>en la nube, dentro del registry</strong>, y la pushea. <strong>No necesitás Docker instalado localmente</strong> ni un agente de build. Es una quick task de ACR Tasks.", cat: "ACR Tasks" },
+  { q: "Hay que reconstruir automáticamente la imagen cuando se parchea la imagen base del FROM. ¿Qué se configura?", a: "Un <strong>base image update trigger</strong> de ACR Tasks. (Commit de Git → automatic build task; avisar a un sistema externo tras un push → webhook.)", cat: "ACR Tasks" },
+  { q: "¿Qué es un container group en ACI y qué comparten sus contenedores?", a: "La unidad de despliegue de ACI, análoga a un <strong>pod</strong>: comparten <strong>ciclo de vida, IP y espacio de puertos, y volúmenes</strong>. Multi-container groups <strong>solo en Linux</strong>; dos contenedores del group no pueden exponer el mismo puerto.", cat: "ACI" },
+  { q: "Restart policies de ACI y cuál va para un job que corre una sola vez.", a: "<code>Always</code> (default), <code>OnFailure</code> y <code>Never</code>. Para batch de una sola ejecución: <strong><code>Never</code></strong> — el group queda en <strong>Terminated</strong>.", cat: "ACI" },
+  { q: "Las dos opciones de red de un container group y qué se pierde con la privada.", a: "<strong>IP pública con DNS name label</strong> → FQDN <code>&lt;label&gt;.&lt;region&gt;.azurecontainer.io</code>, o despliegue en una <strong>subred delegada</strong> a <code>Microsoft.ContainerInstance/containerGroups</code>, que da IP privada pero <strong>sin IP pública ni FQDN</strong>.", cat: "ACI" },
+  { q: "En AKS: ¿qué paga el cliente y qué requisitos tiene el system node pool?", a: "El control plane lo gestiona Microsoft y en el tier <strong>Free no se cobra</strong>: se pagan <strong>los nodos</strong> (VMs, discos, red). El <strong>system node pool es obligatorio y siempre Linux</strong>; <strong>Windows solo en user node pools</strong>. Todo se respalda en VM Scale Sets.", cat: "AKS" },
+  { q: "Cluster Autoscaler vs Horizontal Pod Autoscaler vs virtual nodes: ¿qué escala cada uno?", a: "<strong>Cluster Autoscaler → nodos</strong> (reacciona a pods Pending). <strong>HPA → réplicas de pods</strong> (reacciona a métricas de CPU/memoria). <strong>Virtual nodes → pods en ACI</strong>, sin crear VMs: es la opción para <strong>burst en segundos</strong>.", cat: "AKS escalado" },
+  { q: "kubenet vs Azure CNI: diferencia clave y cuándo es obligatorio CNI.", a: "Con <strong>kubenet</strong> los pods usan un rango lógico aparte y consumen pocas IPs de la subred (NAT de por medio). Con <strong>Azure CNI</strong> cada pod toma una <strong>IP de la subred</strong> (planificar nodos + nodos × maxPods) y es ruteable directo. CNI es obligatorio para <strong>node pools de Windows</strong> y <strong>virtual nodes</strong>.", cat: "AKS red" },
+  { q: "¿Qué es un environment de Container Apps y qué comparten las apps que están adentro?", a: "Es el <strong>límite seguro</strong> que envuelve a una o más container apps y jobs. Las apps del mismo environment comparten la misma <strong>virtual network</strong>, el mismo <strong>Log Analytics workspace</strong> y la <strong>configuración de Dapr</strong>, y se descubren por nombre de app. Si dos cargas deben quedar aisladas → <strong>environments distintos</strong>.", cat: "Container Apps" },
+  { q: "CLI: extension containerapp y Microsoft.App ya registrados. Crear el LAW del environment falla. ¿Qué registrás?", a: "<code>Microsoft.OperationalInsights</code> — es el provider del Log Analytics workspace. No PolicyInsights, no NotificationHubs, no Automation. Insights = métricas/alertas, no el workspace. <code>az provider register --namespace Microsoft.OperationalInsights</code>.", cat: "Container Apps" },
+  { q: "Hay que mandar el 20% del tráfico a la versión nueva de una container app. ¿Qué se configura?", a: "Pasar la app a <strong>multiple revision mode</strong> y definir <strong>traffic splitting</strong> por porcentaje entre revisions (<code>az containerapp ingress traffic set</code>). En <strong>single revision mode</strong> (el default) no existe división de tráfico: la revision nueva se lleva el 100% al estar lista.", cat: "Container Apps" },
+  { q: "¿Qué cambios crean una revision nueva en Container Apps y cuáles no?", a: "<strong>Crean revision</strong> (revision-scope, <code>properties.template</code>): imagen, CPU/memoria, variables de entorno, <strong>scale rules</strong>, revision suffix. <strong>No crean revision</strong> (application-scope, <code>properties.configuration</code>): <strong>ingress y división de tráfico</strong>, valores de <strong>secrets</strong>, credenciales del registry, config de Dapr y el revision mode.", cat: "Container Apps" },
+  { q: "Escalado en ACI vs Container Apps: ¿qué escala cada uno y con qué defaults?", a: "<strong>ACI no autoescala</strong>: el container group tiene CPU y memoria fijas al desplegar (mín. 1 vCPU / 1 GB, máx. <strong>31 vCPU y 240 GB</strong>); para más carga se despliegan <strong>más container groups</strong>. <strong>Container Apps</strong> escala <strong>réplicas con KEDA</strong>: min default <strong>0</strong>, max default <strong>10</strong>, rango 0–1000, con reglas <strong>HTTP</strong> (<code>concurrentRequests</code>, default 10), <strong>TCP</strong>, <strong>CPU/memoria</strong> y <strong>event-driven</strong> (colas). Sin regla definida: HTTP 0/10.", cat: "Escalado" },
+  { q: "Orden de complejidad/orquestación de los cuatro runtimes de contenedor.", a: "<strong>App Service</strong> (host web, un contenedor, sin orquestador) → <strong>ACI</strong> (runtime crudo, container group, sin autoescalado) → <strong>Container Apps</strong> (KEDA gestionado, sin kubectl) → <strong>AKS</strong> (Kubernetes completo). AKS es el distractor cuando piden mínimo esfuerzo.", cat: "Decisión" },
+  { q: "¿Cómo se engancha cada runtime a ACR? ¿Existe --attach-acr para ACI?", a: "<strong>App Service / ACI / Container Apps:</strong> managed identity de la carga + <code>AcrPull</code>. <strong>AKS:</strong> <code>az aks create/update --attach-acr</code> (kubelet identity). <code>--attach-acr</code> es <strong>solo AKS</strong>. <code>az acr login</code> autentica tu Docker local, no al runtime.", cat: "ACR" },
+  { q: "Job de Container Apps vs ACI con restart-policy Never. ¿Cuál va?", a: "<strong>ACI Never</strong> si es una ejecución suelta, mínimo esfuerzo, sin environment. <strong>Container Apps Job</strong> si hace falta cron, scale-out por cola (KEDA) o convivir con otras apps del mismo environment. El job no tiene ingress.", cat: "Container Apps" },
+  { q: "¿El modelo de red de AKS se puede cambiar después de crear el cluster?", a: "<strong>No.</strong> kubenet vs Azure CNI se elige <strong>al crear</strong> (portal: Networking; CLI: <code>--network-plugin</code>). La subred se dimensiona para el máximo de nodos, no para los actuales.", cat: "AKS red" },
+  { q: "Pull de una imagen no cuarentenada. Elegí 3: AcrPull, Owner, AcrPush, AcrImageSigner, AcrDelete.", a: "<strong>AcrPull, AcrPush y Owner</strong>. AcrPush incluye pull. Signer = content trust. Delete = borrar tags, no pull.", cat: "ACR" },
+  { q: "KEDA Service Bus, messageCount 15, sin auth. Yes/No: ¿poll cada 30 s? ¿cola &gt;15 suma 1 réplica? ¿usa TriggerAuthentication?", a: "<strong>Yes / Yes / No</strong>. Polling default = 30 s. messageCount es el umbral. El JSON no trae <code>auth</code> / TriggerAuthentication.", cat: "Escalado" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

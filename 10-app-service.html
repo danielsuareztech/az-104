@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · App Service</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">App Service</div>
+    <div class="nav-sub">Planes, escalado, slots, networking y TLS</div>
+    <div class="nav-weight">Dominio 3 · 20–25%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#plan"><span class="dot"></span>App Service Plan</a>
+  <a href="#escalado"><span class="dot"></span>Scale Up vs Scale Out</a>
+  <a href="#slots"><span class="dot"></span>Deployment Slots</a>
+  <a href="#out"><span class="dot"></span>Networking outbound</a>
+  <a href="#in"><span class="dot"></span>Networking inbound</a>
+  <a href="#tls"><span class="dot"></span>Dominios y TLS</a>
+  <a href="#identidad"><span class="dot"></span>Identidad y secretos</a>
+  <a href="#deploy"><span class="dot"></span>Deployment y contenedores</a>
+  <a href="#ops"><span class="dot"></span>Backup y diagnóstico</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen casi nunca te pide escribir código. Te pide elegir <strong>el tier mínimo</strong> que habilita una feature (auto-scale, slots, backup, TLS custom), distinguir <strong>scale up de scale out</strong>, entender qué se intercambia y qué queda pegado en un <strong>swap de slots</strong>, y separar los tres mecanismos de red: <strong>VNet Integration</strong> (salida), <strong>Access Restrictions / Private Endpoint</strong> (entrada) y <strong>Hybrid Connections</strong> (on-premises). mTLS en ARM: <code>clientCertEnabled</code> + <code>clientCertMode: Required</code> + <code>clientCertExclusionPaths</code> (no <code>clientAffinityEnabled</code>). Backup: <strong>automático no incluye DBs</strong> (30 días fijos); <strong>custom sí</strong> (retención 0–30 o indefinida, storage de la cuenta).
+  </div>
+
+  <!-- ══ 1 ══ -->
+  <div class="section" id="plan">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🏗️</div>
+      <span class="section-title">App Service Plan: el hardware detrás de la app</span>
+      <span class="section-tag">Base</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué es un plan realmente</div>
+      <ul>
+        <li>Un <strong>App Service Plan</strong> es el conjunto de VMs (instancias) donde corren tus apps. Vos no ves las VMs, pero pagás por ellas: <strong>pagás el plan, no la app</strong>.</li>
+        <li>Varias apps pueden compartir un mismo plan. Si lo hacen, <strong>comparten las mismas instancias, la misma CPU, la misma RAM y el mismo disco</strong>. Una app que se come el CPU degrada a todas las demás del plan.</li>
+        <li>El <strong>escalado es una propiedad del plan</strong>, no de la app individual. No podés escalar una sola app dentro de un plan compartido: si necesitás aislarla, la movés a otro plan.</li>
+        <li>El plan define <strong>region, sistema operativo (Windows/Linux) y tier</strong>. Una app solo se puede mover a otro plan si ambos planes comparten el mismo <strong>webspace</strong>: la combinación de región + sistema operativo + resource group <em>con el que se creó el plan</em>. Mover el plan a otro RG después <strong>no cambia el webspace</strong> — dos planes en el mismo RG hoy pueden no ser intercambiables.</li>
+        <li>El límite de <strong>deployment slots</strong>, el máximo de instancias y el storage disponible también son del plan.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">Drop-down: qué plan puede hostear cada web app</div>
+      <p>La app tiene que coincidir en <strong>región</strong> y el runtime tiene que vivir en ese OS.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>App</th><th>Runtime / región</th><th>Planes</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Web14</td><td>.NET Core 3.0 · East US</td><td><strong>ASP1 y ASP2 only</strong></td><td>.NET Core es cross-platform (Windows + Linux). Solo East US</td></tr>
+            <tr><td>Web15</td><td>ASP.NET 4.8 · West US</td><td><strong>ASP3 only</strong></td><td>Full Framework = <strong>Windows only</strong>. ASP4 es Linux West US → no</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> región + OS. <strong>ASP.NET 4.x = Windows</strong>. .NET Core / .NET 5+ corre en los dos. Un plan Linux de la región correcta no salva a 4.8.</span>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">App A<br><small>web</small></div>
+      <div class="flow-arrow">↘</div>
+      <div class="flow-step highlight">App Service Plan<br><small>N instancias · tier</small></div>
+      <div class="flow-arrow">↙</div>
+      <div class="flow-step">App B<br><small>api</small></div>
+    </div>
+    <p style="color:var(--muted)">Escalás el plan del medio, no las cajas de los costados. Escalar el plan escala <em>todas</em> las apps que viven en él.</p>
+
+    <div class="card">
+      <div class="card-title">Tiers · comparativa de examen</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tier</th><th>Infraestructura</th><th>Auto-scale</th><th>Slots</th><th>VNet Integration</th><th>Hybrid Conn.</th><th>Custom domain</th><th>TLS custom</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Free (F1)</strong></td><td>Compartida</td>
+              <td><span class="no">✗</span></td><td><span class="no">✗</span></td>
+              <td><span class="no">✗</span></td><td><span class="no">✗</span></td>
+              <td><span class="no">✗</span></td><td><span class="no">✗</span></td>
+            </tr>
+            <tr>
+              <td><strong>Shared (D1)</strong></td><td>Compartida</td>
+              <td><span class="no">✗</span></td><td><span class="no">✗</span></td>
+              <td><span class="no">✗</span></td><td><span class="no">✗</span></td>
+              <td><span class="yes">✓</span></td><td><span class="no">✗</span></td>
+            </tr>
+            <tr>
+              <td><strong>Basic (B1–B3)</strong></td><td><strong>Dedicada</strong></td>
+              <td><span class="no">✗</span> solo manual</td><td><span class="no">✗</span></td>
+              <td><span class="yes">✓</span></td><td><span class="yes">✓</span></td>
+              <td><span class="yes">✓</span></td><td><span class="yes">✓</span></td>
+            </tr>
+            <tr>
+              <td><strong>Standard (S1–S3)</strong></td><td>Dedicada</td>
+              <td><span class="yes">✓</span></td><td><span class="yes">✓</span> 5</td>
+              <td><span class="yes">✓</span></td><td><span class="yes">✓</span></td>
+              <td><span class="yes">✓</span></td><td><span class="yes">✓</span></td>
+            </tr>
+            <tr>
+              <td><strong>Premium (Pv3)</strong></td><td>Dedicada</td>
+              <td><span class="yes">✓</span></td><td><span class="yes">✓</span> 20</td>
+              <td><span class="yes">✓</span></td><td><span class="yes">✓</span></td>
+              <td><span class="yes">✓</span></td><td><span class="yes">✓</span></td>
+            </tr>
+            <tr>
+              <td><strong>Isolated (ASE)</strong></td><td>Single-tenant en tu VNet</td>
+              <td><span class="yes">✓</span></td><td><span class="yes">✓</span> 20</td>
+              <td><span class="yes">✓</span> nativo</td><td><span class="yes">✓</span></td>
+              <td><span class="yes">✓</span></td><td><span class="yes">✓</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Otros límites por tier</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Tier</th><th>Storage incluido</th><th>Máx. instancias (scale out)</th><th>Backup</th><th>Always On</th></tr></thead>
+          <tbody>
+            <tr><td>Free</td><td>1 GB</td><td>1 (compartida)</td><td><span class="no">✗</span></td><td><span class="no">✗</span></td></tr>
+            <tr><td>Shared</td><td>1 GB</td><td>1 (compartida)</td><td><span class="no">✗</span></td><td><span class="no">✗</span></td></tr>
+            <tr><td>Basic</td><td>10 GB</td><td>hasta 3</td><td><span class="yes">✓</span> solo producción</td><td><span class="yes">✓</span></td></tr>
+            <tr><td>Standard</td><td>50 GB</td><td>hasta 10</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+            <tr><td>Premium v3</td><td>250 GB</td><td>hasta 30</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+            <tr><td>Isolated v2</td><td>1 TB</td><td>hasta 100</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="color:var(--muted)">Free y Shared además tienen <strong>cuota de CPU diaria</strong> (60 minutos/día en Free, 240 minutos/día en Shared). Cuando la agotás, la app devuelve error hasta el día siguiente. Por eso Free/Shared solo sirven para dev/test. <strong>No tienen SLA</strong> y Microsoft no soporta usarlos en producción.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cómo se factura (Windows pricing, lo que pregunta el examen)</div>
+      <p>Fuente: <a href="https://azure.microsoft.com/en-us/pricing/details/app-service/windows/">App Service on Windows pricing</a>. No memorices dólares; sí el <em>qué se cobra</em>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Tier</th><th>Unidad de cobro</th><th>Detalle de examen</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Free (F1)</strong></td><td>Cuota, sin cargo de compute</td><td>60 min CPU/día. Sin SLA. No producción</td></tr>
+            <tr><td><strong>Shared (D1)</strong></td><td><strong>Por app / sitio</strong> (cuota de CPU)</td><td>240 min CPU/día. Sin SLA. No producción</td></tr>
+            <tr><td><strong>Basic / Standard / Premium</strong></td><td><strong>Por instancia del plan</strong></td><td>Da igual cuántas apps corran en esas VMs: pagás las instancias. Basic: sin reservations ni savings plan</td></tr>
+            <tr><td><strong>Isolated (ASE)</strong></td><td>Workers + <strong>stamp fee</strong></td><td>Cargo fijo del Environment, más cada worker I1/I2…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li>App en estado <strong>Stopped</strong> <strong>sigue facturando</strong> el plan. Para no pagar: <strong>borrarla</strong> o bajar el plan a <strong>Free</strong>.</li>
+        <li>HTTPS de <code>*.azurewebsites.net</code> es <strong>gratis</strong>. Custom domain SSL: SNI <strong>$0</strong>; Standard y Premium incluyen <strong>un IP SSL por plan</strong>; extras se cobran. El certificado se compra aparte (o Managed gratis).</li>
+        <li>Premium actual: <strong>v3 y v4</strong> (250 GB). SKUs <code>m</code> = memory-optimized (más RAM por vCPU). Isolated: v2 y v4 (1 TB). El examen sigue hablando de “Premium / Isolated” para features; Standard (S1–S3) sigue siendo el piso de slots y autoscale.</li>
+        <li>Windows vs Linux son páginas de precio distintas (el plan elige el OS al crear). Dev/Test (suscriptor Visual Studio) aplica a Windows Basic/Standard/Premium.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “paré la app, ¿deja de cobrar?” → <strong>No</strong>. Stopped cobra igual. Borrar o pasar a Free. En Dedicated pagás <strong>instancias del plan</strong>, no cada app. Isolated suma <strong>stamp fee</strong>. Free/Shared: <strong>sin SLA</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí plan: 10 instancias, 5 GB, compute dedicado, mínimo costo</div>
+      <p>Peak 10 hosts, storage ≤ 5 GB, cálculos pesados, VMs <strong>dedicadas a la compañía</strong>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Plan</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Standard</strong></td><td><span class="yes">Sí</span></td><td>Hasta 10 instancias, 50 GB, VMs dedicadas, el más barato que cumple</td></tr>
+            <tr><td>Shared</td><td><span class="no">No</span></td><td>Infra compartida, 1 instancia, sin SLA. No es “dedicated to your company”</td></tr>
+            <tr><td>Premium V3</td><td><span class="no">No</span></td><td>Cumple (30 instancias) pero más caro. El extra no lo pedís</td></tr>
+            <tr><td>Isolated</td><td><span class="no">No</span></td><td>ASE + stamp fee. “Dedicated VMs” ≠ isolated network</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “dedicated to your company” en App Service = plan <strong>Dedicated (Basic+)</strong>, no Isolated/ASE. 10 instancias es el techo de <strong>Standard</strong>. Premium e Isolated cumplen y sobran plata.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Autoscale + 20 instancias, mínimo costo</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Plan</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Premium</strong></td><td><span class="yes">Sí</span></td><td>Autoscale + techo <strong>20</strong> (Pv2). El más barato que llega a 20</td></tr>
+            <tr><td>Shared</td><td><span class="no">No</span></td><td>Sin autoscale, 1 instancia</td></tr>
+            <tr><td>Basic</td><td><span class="no">No</span></td><td>Scale out <strong>manual</strong> (hasta 3), no autoscale</td></tr>
+            <tr><td>Standard</td><td><span class="no">No</span></td><td>Autoscale sí, techo <strong>10</strong>. No llega a 20</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “autoscale” solo mata Shared/Basic. “20 instances” mata Standard (tope 10). Premium es el mínimo que cumple las dos. Isolated sobra plata.</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla mnemónica para elegir tier:</strong> <strong>Standard es el mínimo para auto-scale y deployment slots</strong>. Basic ya es instancia dedicada y trae <strong>VNet Integration regional</strong>, <strong>backup del slot de producción</strong> y TLS custom — pero <strong>0 slots</strong> y scale out solo manual. Free/Shared no son producción bajo ningún concepto.
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si la pregunta dice "necesito deployment slots" o "necesito auto-scale", la respuesta mínima es <strong>Standard</strong>, no Basic. Si dice solo "necesito backup", <strong>Basic alcanza</strong> (solo el slot de producción). Basic engaña porque ya es dedicado, ya tiene VNet Integration y backup — pero <strong>tiene 0 deployment slots</strong> y su scale out es exclusivamente manual.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Si el enunciado dice "las apps deben estar aisladas entre sí a nivel de recursos" o "una app no debe afectar la performance de la otra", la respuesta no es cambiar de tier: es <strong>moverlas a App Service Plans distintos</strong>. Apps en el mismo plan siempre comparten instancias.</span>
+    </div>
+  </div>
+
+  <!-- ══ 2 ══ -->
+  <div class="section" id="escalado">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">📈</div>
+      <span class="section-title">Scale Up vs Scale Out y autoscale</span>
+      <span class="section-tag">Escalado</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>Scale Up (vertical)</th><th>Scale Out (horizontal)</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Qué cambia</strong></td><td>El <strong>tier / tamaño</strong> del plan</td><td>La <strong>cantidad de instancias</strong> del plan</td></tr>
+          <tr><td><strong>Efecto</strong></td><td>Más CPU, más RAM, más disco por instancia</td><td>Más copias de la app atendiendo tráfico en paralelo</td></tr>
+          <tr><td><strong>Cuándo</strong></td><td>Necesitás una feature nueva (slots, autoscale) o la instancia se queda corta de RAM</td><td>Sube el volumen de requests concurrentes</td></tr>
+          <tr><td><strong>Automático</strong></td><td>Nunca automático: siempre manual</td><td>Puede ser manual o por <strong>autoscale</strong> (Standard+)</td></tr>
+          <tr><td><strong>Downtime</strong></td><td>Puede reiniciar la app</td><td>Sin downtime, se agregan instancias</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Anatomía de una regla de autoscale</div>
+      <ul>
+        <li><strong>Métrica</strong>: CPU Percentage, Memory Percentage, Http Queue Length, Data In/Out, o una métrica de otro recurso (por ejemplo la longitud de una Service Bus queue).</li>
+        <li><strong>Operador y umbral</strong>: por ejemplo <code>CPU Percentage &gt; 70</code>.</li>
+        <li><strong>Duración (time grain / duration)</strong>: cuánto tiempo tiene que sostenerse la condición antes de disparar. Evita reaccionar a un pico de 10 segundos.</li>
+        <li><strong>Agregación</strong>: Average, Minimum, Maximum, Total.</li>
+        <li><strong>Acción</strong>: increase/decrease count by N, o increase/decrease to N.</li>
+        <li><strong>Cool down</strong>: tiempo de espera después de una acción de escalado antes de volver a evaluar. Sirve para que las instancias nuevas alcancen a tomar carga antes de decidir otra vez.</li>
+        <li><strong>Instance limits</strong> del perfil: mínimo, máximo y default. El máximo lo topa el tier del plan.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Perfiles y prioridad</div>
+      <ul>
+        <li><strong>Scale based on a metric</strong>: reglas dinámicas como las de arriba.</li>
+        <li><strong>Scale to a specific instance count</strong>: valor fijo.</li>
+        <li>Podés tener perfiles <strong>recurrentes</strong> (días/horas fijos, por ejemplo días hábiles de 8 a 20) o de <strong>fecha específica</strong> (un evento puntual). Los perfiles de fecha/recurrencia tienen prioridad sobre el perfil default durante su ventana.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> una regla de <strong>scale-out sin su regla de scale-in</strong> nunca vuelve para atrás — la app se queda para siempre en el máximo de instancias y la factura explota. Siempre hay que definir <strong>las dos reglas en pares</strong>. Y ojo con el umbral: si escalás out con CPU &gt; 70 y escalás in con CPU &lt; 70, provocás <em>flapping</em> (agrega/quita sin parar); dejá un margen, por ejemplo out &gt; 70 e in &lt; 30.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Cuando varias reglas de scale-out se cumplen a la vez, autoscale ejecuta la que produce <strong>más instancias</strong>. Para scale-in, todas las reglas tienen que cumplirse y aplica la que <strong>menos</strong> reduce. Autoscale privilegia la disponibilidad por sobre el ahorro.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cuenta las instancias a los 35 minutos</div>
+      <p>Premium V2. Out: CPU ≥ 70% × 10 min → +2, cooldown 5. In: CPU ≤ 35% × 10 min → −1, cooldown 5. Start = 3, min 2, max 10. 15 min al 80%, después 20 min al 30%.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Tiempo</th><th>Qué pasa</th><th>Count</th></tr></thead>
+          <tbody>
+            <tr><td>T=0</td><td>Inicio</td><td>3</td></tr>
+            <tr><td>T=10</td><td>Out dispara (+2). Cooldown hasta T=15</td><td>5</td></tr>
+            <tr><td>T=15–25</td><td>CPU 30%. A T=25 el in dispara (−1). Cooldown hasta T=30</td><td>4</td></tr>
+            <tr><td>T=35</td><td>Tras el cooldown, otros 10 min ≤35% → segundo in (−1)</td><td><strong>3</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el resultado es <strong>3</strong>, no 5 (te olvidaste el scale-in) ni 4 (te olvidaste el <em>segundo</em> in: el cooldown no “borra” los 10 min de CPU baja; a T=35 hay ventana otra vez). 2 sería bajar de a 2 o seguir más tiempo.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">“What should you do first?”: Basic + CPU en picos</div>
+      <p>App en plan <strong>Basic</strong>, dos instancias. CPU corta en peak. Más CPU <strong>solo cuando hace falta</strong> (autoscale).</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Scale up the pricing tier</strong> (a Standard+)</td><td><span class="yes">Sí · primero</span></td><td>Basic <strong>no tiene autoscale</strong>. Sin el tier, Enable autoscale / Create scale rule no existen</td></tr>
+            <tr><td>Enable autoscale</td><td><span class="no">No primero</span></td><td>Es el paso 2, en Standard. En Basic el portal ni lo ofrece</td></tr>
+            <tr><td>Create a scale rule</td><td><span class="no">No primero</span></td><td>Igual: la regla vive en autoscale, que pide Standard+</td></tr>
+            <tr><td>Stop MyApp</td><td><span class="no">No</span></td><td>No libera CPU del plan (Stopped sigue cobrando) y no habilita autoscale</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el objetivo es autoscale, pero la pregunta es <strong>qué hacés primero</strong>. En Basic la única puerta es <strong>Scale up</strong> a Standard. Enable autoscale / Create a scale rule son el “sí, pero después”.</span>
+    </div>
+  </div>
+
+  <!-- ══ 3 ══ -->
+  <div class="section" id="slots">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">🔄</div>
+      <span class="section-title">Deployment Slots</span>
+      <span class="section-tag">Estrella del examen</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué es un slot</div>
+      <ul>
+        <li>Un slot es una <strong>app viva y separada, con su propio hostname</strong> (<code>miapp-staging.azurewebsites.net</code>), pero corre <strong>en el mismo App Service Plan</strong> y consume sus mismas instancias.</li>
+        <li>El <strong>swap no es un redeploy</strong>: es un <strong>cambio de routing</strong> entre los dos slots. Por eso es prácticamente instantáneo y no hay downtime en frío.</li>
+        <li>Antes de intercambiar, Azure hace <strong>warm-up del slot destino</strong>: aplica la configuración del slot de producción, reinicia los workers y espera a que respondan. Recién cuando el slot está caliente, invierte el routing.</li>
+        <li><strong>Rollback = otro swap</strong>. Volvés a intercambiar y la versión anterior, que quedó en staging, vuelve a producción. No hay que redeployar nada.</li>
+        <li>Requiere <strong>Standard (5 slots) o Premium/Isolated (20 slots)</strong>. Ese número <strong>incluye el slot de producción</strong>: en Standard son 4 staging + producción. Si tenés más de 5 slots, no podés bajar el plan a Standard.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cuatro cmdlets: ambiente para que testers revisen el web app</div>
+      <p>Código en Azure DevOps Git. “Prepare the target environment”, no publicar todavía.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Orden</th><th>Cmdlet</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><code>New-AzResourceGroup</code></td><td>El contenedor. Sin RG no hay plan ni app</td></tr>
+            <tr><td>2</td><td><code>New-AzAppServicePlan</code></td><td>Compute/SKU. El web app vive en un plan</td></tr>
+            <tr><td>3</td><td><code>New-AzWebApp</code></td><td>La app de producción, atada al plan</td></tr>
+            <tr><td>4</td><td><code>New-AzWebAppSlot</code></td><td>Slot de staging para los testers, sin tocar prod</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><code>Publish-AzWebApp</code> sube código: no es “preparar el ambiente”. <code>Start-AzWebAppSlot</code> arranca un slot ya creado (y al crear ya arranca).</p>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “prepare the target environment to republish” = infra, no el zip. Orden rígido: <strong>RG → plan → web app → slot</strong>. Publish y Start-Slot son carnada.</span>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">Deploy a <strong>staging</strong></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Probar / smoke test</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Azure hace <strong>warm-up</strong></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step highlight">SWAP<br><small>cambio de routing</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Rollback = swap otra vez</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Sticky (slot settings): qué se intercambia y qué no</div>
+      <p>Un app setting o connection string marcado como <strong>"deployment slot setting"</strong> queda <strong>pegado al slot</strong>: <strong>no viaja en el swap</strong>. Es el mecanismo para que staging siga apuntando a la base de datos de staging y producción a la de producción, aunque el código se intercambie.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Se intercambia (viaja con el contenido)</th><th>Queda pegado al slot (sticky)</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>App settings <strong>no</strong> marcados como slot setting</td>
+              <td>App settings <strong>marcados</strong> como slot setting</td>
+            </tr>
+            <tr>
+              <td>Connection strings <strong>no</strong> marcadas como slot setting</td>
+              <td>Connection strings <strong>marcadas</strong> como slot setting</td>
+            </tr>
+            <tr><td>General settings: versión de framework, 32/64-bit, Web Sockets</td><td>Publishing endpoints y credenciales de publicación</td></tr>
+            <tr><td>Handler mappings</td><td>Custom domain names</td></tr>
+            <tr><td>Public certificates</td><td>Certificados no públicos y configuración de TLS/SSL</td></tr>
+            <tr><td>Contenido de WebJobs</td><td>Scale settings y schedulers de WebJobs</td></tr>
+            <tr><td>Hybrid Connections y Service Endpoints</td><td>Access Restrictions (IP restrictions)</td></tr>
+            <tr><td>Configuración de Azure CDN</td><td>Always On y Diagnostic log settings</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Base de datos vinculada (wizard de creación)</div>
+      <ul>
+        <li>Al crear la Web App, la pestaña <strong>Database</strong> puede provisionar Azure SQL / MySQL / PostgreSQL / Cosmos y dejar el connection string en la app.</li>
+        <li>Ese connection string es un setting más: si <strong>no está sticky</strong>, el swap manda producción a la BD de staging. Marcalo como <strong>deployment slot setting</strong> en ambos slots.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el enunciado clásico dice "después del swap, producción quedó apuntando a la base de datos de test". La causa es que la connection string <strong>no estaba marcada como deployment slot setting</strong>, entonces viajó con el swap. La solución no es cambiar el código: es <strong>tildar el checkbox de slot setting en ambos slots</strong>. Y ojo: los custom domains y las Access Restrictions <strong>nunca</strong> se intercambian.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Swap with preview (multi-phase swap)</div>
+      <ol>
+        <li><strong>Fase 1</strong>: Azure aplica la <strong>configuración del slot de producción sobre el slot de staging</strong> (incluidos los slot settings de producción) y lo reinicia, <strong>pero todavía no cambia el routing</strong>. Podés probar staging con la config real de producción en su propio hostname.</li>
+        <li><strong>Fase 2</strong>: si la prueba sale bien hacés <strong>Complete swap</strong> y recién ahí se invierte el routing. Si sale mal, <strong>Cancel swap</strong> y staging vuelve a su configuración original.</li>
+      </ol>
+      <p style="color:var(--muted)">Es la respuesta cuando la pregunta pide "validar la app con la configuración de producción antes de exponerla a usuarios".</p>
+<pre><code>Switch-AzWebAppSlot -ResourceGroupName myRG -Name myApp `
+  -SourceSlotName source -DestinationSlotName production `
+  -SwapWithPreviewAction ApplySlotConfig
+
+Switch-AzWebAppSlot -ResourceGroupName myRG -Name myApp `
+  -SourceSlotName source -DestinationSlotName production `
+  -SwapWithPreviewAction CompleteSlotSwap
+
+# cancelar: -SwapWithPreviewAction ResetSlotSwap
+# CLI: az webapp deployment slot swap --action preview|swap|reset</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th>Cmdlet / valor</th><th>Qué hace</th></tr></thead>
+          <tbody>
+            <tr><td>Iniciar preview</td><td><code>Switch-AzWebAppSlot</code> + <code>ApplySlotConfig</code></td><td>Pone la config de producción sobre staging. El routing no cambia</td></tr>
+            <tr><td>Completar</td><td>el mismo cmdlet + <code>CompleteSlotSwap</code></td><td>Invierte el routing</td></tr>
+            <tr><td>Cancelar</td><td><code>ResetSlotSwap</code></td><td>Staging vuelve a su config</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> swap with preview = <strong>dos</strong> llamadas a <code>Switch-AzWebAppSlot</code> (no <code>Move-AzWebApp</code> ni dos cmdlets distintos). Primera: <code>ApplySlotConfig</code>. Segunda: <code>CompleteSlotSwap</code>. Cancelar = <code>ResetSlotSwap</code>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Traffic routing (A/B testing y canary)</div>
+      <ul>
+        <li>Podés enrutar un <strong>porcentaje del tráfico de producción</strong> a un slot sin hacer swap. Ideal para canary releases y pruebas A/B.</li>
+        <li>Azure le asigna al cliente la cookie <strong><code>x-ms-routing-name</code></strong> para que quede <strong>pegado al mismo slot</strong> durante toda su sesión (client affinity).</li>
+        <li>Se puede forzar el destino por query string: <code>?x-ms-routing-name=staging</code> manda al slot staging, y <code>?x-ms-routing-name=self</code> devuelve al slot de <strong>producción</strong>.</li>
+        <li>Un slot con porcentaje <strong>0%</strong> sigue siendo alcanzable a mano con <code>?x-ms-routing-name=&lt;slot&gt;</code>: sirve para beta opt-in.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>Para que el warm-up sea real y no un simple ping, se usan los app settings <code>WEBSITE_SWAP_WARMUP_PING_PATH</code> y <code>WEBSITE_SWAP_WARMUP_PING_STATUSES</code>, que le dicen a Azure qué ruta consultar y qué códigos HTTP considerar válidos antes de completar el swap.</span>
+    </div>
+  </div>
+
+  <!-- ══ 4 ══ -->
+  <div class="section" id="out">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🌐</div>
+      <span class="section-title">Networking outbound: salir de la app</span>
+      <span class="section-tag">Salida</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">VNet Integration (regional)</div>
+      <ul>
+        <li>Permite que la app <strong>alcance recursos privados dentro de una VNet</strong>: una VM, una SQL Managed Instance, un Private Endpoint de Storage, un balanceador interno.</li>
+        <li>Es <strong>solo tráfico de salida (outbound)</strong>. <strong>No</strong> hace que la app sea accesible desde la VNet ni le da IP privada de entrada. Para eso está Private Endpoint.</li>
+        <li>Requiere una <strong>subred vacía y delegada</strong> a <code>Microsoft.Web/serverFarms</code>. Clásicamente esa subred la usaba <strong>un solo App Service Plan</strong>; con <strong>multi plan subnet join</strong> hoy varios planes de la misma suscripción pueden compartirla, y en ese caso el mínimo pasa a ser <code>/26</code>.</li>
+        <li>Tamaño de subred: mínimo <code>/28</code>, recomendado <code>/26</code> — Azure consume IPs de esa subred por cada instancia, y durante un scale out o un cambio de tier necesita direcciones extra.</li>
+        <li>La VNet tiene que estar en la <strong>misma región</strong> que el App Service Plan.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Route All: forzar todo el tráfico por la VNet</div>
+      <ul>
+        <li>Por defecto, con VNet Integration solo va por la VNet el tráfico dirigido a <strong>rangos privados RFC 1918</strong>. El tráfico a internet sale directo por la infraestructura de App Service.</li>
+        <li>El app setting <code>WEBSITE_VNET_ROUTE_ALL = 1</code> (o la propiedad <code>vnetRouteAllEnabled</code> en Configuration → Networking) fuerza que <strong>todo el tráfico de salida</strong> pase por la VNet.</li>
+        <li>Recién con Route All activo tienen efecto sobre la app las <strong>NSG</strong> y las <strong>UDR</strong> de la subred — por ejemplo para forzar el tráfico a un Azure Firewall.</li>
+        <li>Combinado con un <strong>NAT Gateway</strong> en la subred de integración, la app sale a internet con una <strong>IP pública fija y predecible</strong>. Es la respuesta cuando un tercero pide que le declares las IPs de origen para su allow-list.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Hybrid Connections</div>
+      <ul>
+        <li>Da acceso a un <strong>recurso on-premises</strong> (o en otra nube) <strong>sin VNet, sin VPN y sin ExpressRoute</strong>.</li>
+        <li>Va por <strong>Azure Relay</strong>: se instala el <strong>Hybrid Connection Manager (HCM)</strong> en un servidor Windows de la red on-prem, y ese agente hace la conexión <strong>saliente</strong> al Relay. No hace falta abrir puertos entrantes en el firewall.</li>
+        <li>Cada Hybrid Connection apunta a <strong>un host y un puerto TCP específicos</strong> — es 1 a 1, no da acceso a toda la red.</li>
+        <li>Requiere <strong>Basic o superior</strong> (no está en Free/Shared). El número de Hybrid Connections por plan sube con el tier.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "la app tiene que llegar a un SQL Server on-premises y no hay VPN ni ExpressRoute" → la respuesta es <strong>Hybrid Connections</strong>, no VNet Integration. VNet Integration por sí sola solo te lleva hasta la VNet de Azure; para saltar a on-prem desde ahí necesitás además un Site-to-Site VPN Gateway o ExpressRoute.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>VNet Integration sin Route All + Service Endpoints en la subred es el patrón económico para llegar a un Storage Account o a Azure SQL con firewall cerrado. Si además necesitás inspeccionar o filtrar la salida a internet, ahí sí prendés Route All.</span>
+    </div>
+  </div>
+
+  <!-- ══ 5 ══ -->
+  <div class="section" id="in">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">🛡️</div>
+      <span class="section-title">Networking inbound: proteger la entrada</span>
+      <span class="section-tag">Entrada</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Access Restrictions</div>
+      <ul>
+        <li>Lista de reglas <strong>allow / deny</strong> evaluadas por <strong>prioridad numérica</strong>: el número <strong>más bajo se evalúa primero</strong>, y gana la primera regla que matchea.</li>
+        <li>Tipos de regla:
+          <ul>
+            <li><strong>IPv4 / IPv6</strong> en notación CIDR.</li>
+            <li><strong>Virtual Network</strong> (subred), que usa <strong>Service Endpoint <code>Microsoft.Web</code></strong> en esa subred.</li>
+            <li><strong>Service Tag</strong>, por ejemplo <code>AzureFrontDoor.Backend</code> para que solo Front Door pueda pegarle al origen.</li>
+            <li>Filtro por <strong>http header</strong> (X-Forwarded-For, X-Azure-FDID, etc.) como condición adicional de una regla.</li>
+          </ul>
+        </li>
+        <li><strong>Regla implícita</strong>: si existe <strong>al menos una regla allow</strong>, se agrega automáticamente un <strong>deny all</strong> al final. Si solo hay reglas deny, todo lo demás sigue permitido.</li>
+        <li>El <strong>sitio SCM/Kudu</strong> (<code>&lt;app&gt;.scm.azurewebsites.net</code>) tiene su <strong>propio conjunto de reglas</strong>, con la opción de heredar las del sitio principal ("same restrictions as main site"). Si lo dejás abierto, cerraste la puerta pero dejaste la ventana.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> agregar una sola regla de tipo <strong>allow</strong> para la red corporativa <strong>bloquea al resto del mundo automáticamente</strong> por la deny implícita — incluidos monitores, webhooks y pipelines. Y a la inversa: agregar solo reglas <strong>deny</strong> no restringe nada más allá de lo denegado. Además, restringir el sitio principal <strong>no</strong> restringe SCM/Kudu: eso se configura aparte.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Private Endpoint</div>
+      <ul>
+        <li>Le da a la app una <strong>IP privada dentro de tu VNet</strong>; el acceso público queda deshabilitado. Es entrada, no salida.</li>
+        <li>Necesita resolución DNS privada: la zona <code>privatelink.azurewebsites.net</code> vinculada a la VNet. Sin eso, el nombre sigue resolviendo a la IP pública y falla.</li>
+        <li>No está disponible en Free/Shared. Se combina habitualmente con VNet Integration: <strong>Private Endpoint para entrar, VNet Integration para salir</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">App Service Environment (ASE) · tier Isolated</div>
+      <ul>
+        <li>Deployment <strong>single-tenant</strong> de App Service <strong>dentro de tu propia VNet</strong>: la infraestructura no se comparte con ningún otro cliente.</li>
+        <li>Puede ser <strong>externo</strong> (VIP pública) o <strong>interno con Internal Load Balancer (ILB)</strong>, que deja la app accesible <strong>solo desde la VNet</strong> y requiere DNS propio para el dominio del ASE.</li>
+        <li>Es el tier <strong>Isolated</strong>: el más caro, con la escala más alta y el aislamiento de red más fuerte. Se elige por requisitos de compliance o aislamiento total, no por performance.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span><strong>VNet Integration ≠ ASE.</strong> VNet Integration inyecta el <em>tráfico de salida</em> de una app multi-tenant en tu VNet; la app sigue corriendo en infraestructura compartida y con endpoint público. Un <strong>ASE</strong> despliega toda la infraestructura de App Service <em>dentro</em> de tu VNet. Si la pregunta pide "aislamiento completo / single-tenant / dedicated hardware", es ASE + Isolated. Si pide "que la app llegue a una VM privada", es VNet Integration.</span>
+    </div>
+  </div>
+
+  <!-- ══ 6 ══ -->
+  <div class="section" id="tls">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(34,211,238,.15)">🔒</div>
+      <span class="section-title">Dominios personalizados y TLS</span>
+      <span class="section-tag">Certificados</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Mapear un dominio: qué record va</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Caso</th><th>Records DNS</th><th>Notas</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Subdominio</strong><br><code>www.contoso.com</code></td>
+              <td><strong>CNAME</strong> → <code>&lt;app&gt;.azurewebsites.net</code></td>
+              <td>Es lo más simple y sobrevive a cambios de IP de la plataforma.</td>
+            </tr>
+            <tr>
+              <td><strong>Apex / root domain</strong><br><code>contoso.com</code></td>
+              <td><strong>A record</strong> → IP entrante de la app<br>+ <strong>TXT</strong> <code>asuid.&lt;dominio&gt;</code> con el <em>Custom Domain Verification ID</em></td>
+              <td>El apex no admite CNAME por RFC. El TXT le prueba a Azure que sos dueño del dominio.</td>
+            </tr>
+            <tr>
+              <td><strong>Wildcard</strong><br><code>*.contoso.com</code></td>
+              <td><strong>CNAME</strong> → <code>&lt;app&gt;.azurewebsites.net</code></td>
+              <td>Necesita un certificado wildcard para servir HTTPS.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="color:var(--muted)">Los dominios personalizados requieren <strong>Shared o superior</strong>; los certificados TLS custom (incluido el managed certificate) requieren <strong>Basic o superior</strong>.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">www.company1.com no resuelve a WebApp1</div>
+      <p>Dos soluciones completas (subdominio, no apex):</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Record</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>CNAME</strong> → <code>webapp1.azurewebsites.net</code></td><td><span class="yes">Sí</span></td><td>Lo habitual para www. Sobrevive si cambia la IP</td></tr>
+            <tr><td><strong>A</strong> → IP inbound de WebApp1</td><td><span class="yes">Sí</span></td><td>También válido. Hay que actualizar si la IP cambia (IP SSL)</td></tr>
+            <tr><td><strong>NS</strong> → IP de WebApp1</td><td><span class="no">No</span></td><td>NS delega una zona a name servers, no un host a un sitio</td></tr>
+            <tr><td><strong>PTR</strong> → <code>webapp1.azurewebsites.net</code></td><td><span class="no">No</span></td><td>Reverse DNS (IP→nombre). No hace que el browser resuelva www</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> www = CNAME <em>o</em> A (elegí dos). NS y PTR son carnada. En el <strong>apex</strong> el CNAME no vale: ahí es A + TXT, no este ítem.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: apex <code>company1.com</code> → App Service</div>
+      <p>Zona ya comprada y delegada a Azure DNS. La app <code>applicationcs</code> tiene que responder en el root, no en www. PowerShell:</p>
+<pre><code>New-AzDnsRecordSet -Name "@" -RecordType "A" -ZoneName "company1.com" `
+  -ResourceGroupName "APP-RG" -Ttl 600 `
+  -DnsRecords (New-AzDnsRecordConfig -IPv4Address "&lt;IP inbound de la app&gt;")
+
+New-AzDnsRecordSet -Name "@" -RecordType "TXT" -ZoneName "company1.com" `
+  -ResourceGroupName "APP-RG" -Ttl 600 `
+  -DnsRecords (New-AzDnsRecordConfig -Value "applicationcs.azurewebsites.net")</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Hueco</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Nombre <code>@</code> + tipo <strong>A</strong></td><td><span class="yes">Sí</span></td><td>Apex = <code>@</code>. El tráfico va a la IP de App Service</td></tr>
+            <tr><td>Nombre <code>@</code> + tipo <strong>TXT</strong></td><td><span class="yes">Sí</span></td><td>Verificación de dueño. Sin TXT el custom domain no bindea</td></tr>
+            <tr><td>CNAME en <code>@</code></td><td><span class="no">No</span></td><td>RFC: no hay CNAME en apex (ahí ya hay SOA/NS)</td></tr>
+            <tr><td>Nombre <code>www</code></td><td><span class="no">No</span></td><td>Eso es el subdominio, no <code>company1.com</code></td></tr>
+            <tr><td>SRV / PTR</td><td><span class="no">No</span></td><td>No enrutan HTTP al App Service</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>En el portal actual el TXT suele llamarse <code>asuid</code> (o <code>asuid.&lt;host&gt;</code>) y el valor es el <em>Custom Domain Verification ID</em>. El examen a veces pone el TXT en <code>@</code> con el hostname <code>*.azurewebsites.net</code>. En ambos casos: <strong>A + TXT en el apex</strong>, nunca CNAME.</p>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> root domain = <code>@</code> + <strong>A</strong> y <code>@</code> (o <code>asuid</code>) + <strong>TXT</strong>. <code>www</code> y CNAME son para el subdominio. Un A solo, sin TXT, no alcanza para el binding de App Service.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Opciones de certificado</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th>Costo</th><th>Renovación</th><th>Cuándo usarla</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>App Service Managed Certificate</strong></td>
+              <td><span class="chip chip-green">gratis</span></td>
+              <td>Automática por Azure</td>
+              <td>Default para dominios propios simples. Requiere Basic+, el dominio tiene que estar mapeado y ser públicamente resoluble.</td>
+            </tr>
+            <tr>
+              <td><strong>App Service Certificate</strong></td>
+              <td><span class="chip chip-yellow">pago</span></td>
+              <td>Automática (se guarda en Key Vault)</td>
+              <td>Cuando necesitás wildcard o un certificado exportable comprado desde Azure.</td>
+            </tr>
+            <tr>
+              <td><strong>Importar desde Key Vault</strong></td>
+              <td>Según el emisor</td>
+              <td>Azure sincroniza desde el vault</td>
+              <td>Certificado corporativo administrado centralmente.</td>
+            </tr>
+            <tr>
+              <td><strong>Subir un .pfx</strong></td>
+              <td>Según el emisor</td>
+              <td><span class="chip chip-red">manual</span></td>
+              <td>Certificado de una CA externa. Hay que acordarse de renovarlo.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Límites del managed certificate:</strong> no es exportable, no sirve como certificado de cliente, no se puede usar para dominios que no resuelven públicamente, <strong>no soporta wildcard</strong> ni <strong>apex/naked domain</strong> (solo subdominios), un certificado gratis por custom domain, y no está soportado en App Service Environment. Wildcard o exportable → App Service Certificate o .pfx.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SNI SSL vs IP-Based SSL</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th></th><th>SNI SSL</th><th>IP-Based SSL</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Cómo funciona</strong></td><td>El cliente manda el hostname en el handshake TLS (extensión SNI)</td><td>Se reserva una <strong>IP pública dedicada</strong> para ese certificado</td></tr>
+            <tr><td><strong>Certificados por IP</strong></td><td>Varios en la misma IP</td><td>Uno por IP</td></tr>
+            <tr><td><strong>Costo extra</strong></td><td><span class="chip chip-green">$0</span> · es el <strong>default</strong></td><td>Standard/Premium incluyen <strong>1 IP SSL por plan</strong>; extra se cobra. El cert se compra aparte</td></tr>
+            <tr><td><strong>Cuándo</strong></td><td>Casi siempre</td><td>Clientes o dispositivos <strong>legacy que no soportan SNI</strong></td></tr>
+            <tr><td><strong>Efecto lateral</strong></td><td>Ninguno</td><td><strong>Cambia la IP entrante</strong> de la app: hay que actualizar el A record</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Endurecer el transporte</div>
+      <ul>
+        <li><strong>HTTPS Only</strong>: redirige cualquier request HTTP a HTTPS. Se prende en Configuration → General settings / TLS-SSL settings.</li>
+        <li><strong>Minimum TLS version</strong>: se fija la versión mínima aceptada (1.0, 1.1, 1.2, 1.3). Para compliance normalmente se exige <strong>1.2 o superior</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down ARM: TLS mutual authentication (client certs)</div>
+      <p>Exigir certificado de cliente en un App Service, con una ruta exceptuada. Las tres properties van en <code>Microsoft.Web/sites</code> → <code>properties</code>, <strong>al mismo nivel que <code>siteConfig</code></strong>, no adentro.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Property</th><th>Valor del escenario</th><th>Qué hace</th></tr></thead>
+        <tbody>
+          <tr><td><code>clientCertEnabled</code></td><td><code>true</code></td><td>Prende mTLS. Default <code>false</code>: si está apagado, <code>clientCertMode</code> se ignora</td></tr>
+          <tr><td><code>clientCertMode</code></td><td><code>"Required"</code></td><td><code>Required</code> = obligatorio. También: <code>Optional</code>, <code>OptionalInteractiveUser</code></td></tr>
+          <tr><td><code>clientCertExclusionPaths</code></td><td><code>"/sample1"</code></td><td>Paths (separados por coma) que <strong>no</strong> piden cert. El resto sí</td></tr>
+          <tr><td><code>clientAffinityEnabled</code></td><td><span class="no">No</span></td><td>Cookie ARR / session affinity. No es mTLS</td></tr>
+          <tr><td><code>httpsOnly</code> / <code>minTlsVersion</code></td><td><span class="no">No</span></td><td>HTTPS redirect y piso de TLS. No piden certificado de cliente</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>{
+  "type": "Microsoft.Web/sites",
+  "apiVersion": "2020-06-01",
+  "name": "[parameters('myWebApp')]",
+  "properties": {
+    "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('plan'))]",
+    "siteConfig": { "linuxFxVersion": "[parameters('linuxFxVersion')]" },
+    "clientCertEnabled": true,
+    "clientCertMode": "Required",
+    "clientCertExclusionPaths": "/sample1"
+  }
+}
+
+az webapp update -g RG -n myapp --set clientCertEnabled=true \
+  clientCertMode=Required clientCertExclusionPaths=/sample1
+Set-AzWebApp -ResourceGroupName RG -Name myapp -ClientCertEnabled $true</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> mTLS = las <strong>tres</strong> <code>clientCert*</code> en <code>properties</code> del site, no en <code>siteConfig</code>. <code>clientAffinityEnabled</code> es sticky session. <code>Required</code> vs <code>Optional</code>: el escenario “required client certificates” es <code>Required</code>. Una exclusion path no apaga el mTLS del resto del sitio.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> para el <strong>apex/root domain</strong> no alcanza con el A record — Azure exige además el <strong>TXT de verificación</strong> <code>asuid.&lt;dominio&gt;</code> con el Custom Domain Verification ID, o el binding falla. Y no confundas: <strong>SNI SSL es gratis y es el default</strong>; <strong>IP-Based SSL cuesta plata, se usa solo para clientes viejos sin SNI y cambia la IP entrante de la app</strong>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 7 ══ -->
+  <div class="section" id="identidad">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(244,114,182,.15)">🪪</div>
+      <span class="section-title">Identidad administrada y secretos</span>
+      <span class="section-tag">Seguridad</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>System-assigned</th><th>User-assigned</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Ciclo de vida</strong></td><td>Atado a la app: se crea y se <strong>borra con ella</strong></td><td>Recurso de Azure <strong>independiente</strong>, sobrevive a la app</td></tr>
+          <tr><td><strong>Cuántas por app</strong></td><td>Una sola</td><td>Varias, y una misma identidad puede asignarse a <strong>muchos recursos</strong></td></tr>
+          <tr><td><strong>Reutilizable</strong></td><td><span class="no">✗</span></td><td><span class="yes">✓</span> ideal para asignar permisos una vez a una flota de apps</td></tr>
+          <tr><td><strong>Caso típico</strong></td><td>Una app puntual que accede a su propio Key Vault</td><td>Varias apps/VMs que comparten los mismos permisos, o pre-crear permisos antes de desplegar</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Key Vault sin secretos en el código</div>
+      <ol>
+        <li>Prendés una <strong>Managed Identity</strong> en la app (Settings → Identity).</li>
+        <li>Le das permiso de lectura de secretos en el Key Vault: rol <strong>Key Vault Secrets User</strong> si el vault usa RBAC, o una <strong>access policy</strong> con <em>Get</em> si usa el modelo de policies.</li>
+        <li>En vez de guardar el valor, ponés una <strong>Key Vault reference</strong> como app setting:
+          <pre><code>@Microsoft.KeyVault(SecretUri=https://mivault.vault.azure.net/secrets/DbPassword/)
+
+@Microsoft.KeyVault(VaultName=mivault;SecretName=DbPassword)</code></pre>
+        </li>
+        <li>App Service resuelve la referencia en runtime y la app lee un app setting común y corriente. En el portal aparece el estado <strong>Resolved</strong> si funcionó.</li>
+      </ol>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> una Key Vault reference que no resuelve casi siempre es por <strong>falta de permisos de la managed identity sobre el vault</strong> (o porque el vault tiene el firewall cerrado a la app). No se arregla cambiando la sintaxis. Y recordá: si borrás la app, la <strong>system-assigned identity desaparece</strong> junto con todas sus asignaciones de rol — si necesitás que los permisos sobrevivan, usás <strong>user-assigned</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Easy Auth (App Service Authentication)</div>
+      <ul>
+        <li>Módulo de autenticación que corre <strong>fuera del código</strong>, delante de la app: no hay que tocar la aplicación ni instalar librerías.</li>
+        <li>Proveedores soportados: <strong>Microsoft Entra ID</strong>, Facebook, Google, X, Apple y cualquier proveedor <strong>OpenID Connect</strong> genérico.</li>
+        <li>Para requests <strong>no autenticados</strong> elegís la acción: <strong>"Allow unauthenticated access"</strong> (deja pasar y que la app decida) o <strong>"Require authentication"</strong>, que redirige al login del proveedor (HTTP 302) o devuelve <strong>401/403</strong> — esto último es lo correcto para APIs.</li>
+        <li>Inyecta claims e info del usuario en headers y expone el endpoint <code>/.auth/me</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══ 8 ══ -->
+  <div class="section" id="deploy">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(163,230,53,.15)">📦</div>
+      <span class="section-title">Deployment y contenedores</span>
+      <span class="section-tag">CI/CD</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Deployment Center · fuentes</div>
+      <ul>
+        <li><strong>GitHub Actions</strong>: Azure genera el workflow YAML en el repo y configura las credenciales.</li>
+        <li><strong>Azure Repos / Azure DevOps Pipelines</strong>.</li>
+        <li><strong>Bitbucket</strong>.</li>
+        <li><strong>Local Git</strong>: App Service expone un remoto Git y compila en el propio Kudu al hacer push.</li>
+        <li><strong>FTP / FTPS</strong>: se puede exigir solo FTPS o <strong>deshabilitar FTP por completo</strong> (recomendado por seguridad).</li>
+        <li><strong>ZIP deploy</strong> / <code>az webapp deploy</code>: sube el paquete al endpoint de Kudu. Es el método más común para pipelines simples.</li>
+        <li><strong>No nativo:</strong> <strong>AWS CodeCommit</strong>. Si el examen pregunta “cuál NO es compatible de forma nativa con Deployment Center”, esa es la respuesta.</li>
+        <li><strong>Run from package</strong> (<code>WEBSITE_RUN_FROM_PACKAGE</code>): monta el ZIP como read-only, deploy atómico y sin archivos a medio copiar.</li>
+      </ul>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> fuentes nativas de Deployment Center = GitHub, Azure DevOps/Repos, Bitbucket, Local Git, FTP, ZIP. <strong>AWS CodeCommit no</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">App Service para contenedores · settings clave</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>App setting</th><th>Para qué</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>WEBSITES_PORT</code></td>
+              <td>Le dice a App Service <strong>en qué puerto escucha el contenedor</strong> cuando no es el 80. Si el contenedor escucha en 8080 y no configurás esto, la plataforma no recibe respuesta del health check y el <strong>contenedor reinicia en loop</strong> — el síntoma clásico en los logs es "didn't respond to HTTP pings on port".</td>
+            </tr>
+            <tr><td><code>DOCKER_REGISTRY_SERVER_URL</code></td><td>URL del registry (por ejemplo <code>https://miacr.azurecr.io</code>).</td></tr>
+            <tr><td><code>DOCKER_REGISTRY_SERVER_USERNAME</code></td><td>Usuario del registry privado.</td></tr>
+            <tr><td><code>DOCKER_REGISTRY_SERVER_PASSWORD</code></td><td>Password del registry privado (candidato ideal a Key Vault reference).</td></tr>
+            <tr><td><code>DOCKER_ENABLE_CI</code></td><td>En <code>true</code> habilita el <strong>webhook de continuous deployment</strong>: cuando se pushea una imagen nueva al registry, App Service la vuelve a traer y reinicia la app.</td></tr>
+            <tr><td><code>WEBSITES_ENABLE_APP_SERVICE_STORAGE</code></td><td>Controla si el storage persistente de App Service se monta dentro del contenedor.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "desplegué un custom container y la app no levanta / se reinicia todo el tiempo" → lo primero es <strong><code>WEBSITES_PORT</code></strong> apuntando al puerto real del contenedor. No es cuestión de escalar ni de cambiar de tier. Y para que un push de imagen nueva se despliegue solo, hace falta <strong><code>DOCKER_ENABLE_CI = true</code></strong> más el webhook en el registry: sin eso el deploy queda manual.</span>
+    </div>
+  </div>
+
+  <!-- ══ 9 ══ -->
+  <div class="section" id="ops">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(148,163,184,.15)">🧰</div>
+      <span class="section-title">Backup, diagnóstico y operación</span>
+      <span class="section-tag">Operación</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Backup de App Service: automático vs custom</div>
+      <p>Hay dos tipos. Automático corre solo si el plan es Basic+. Custom hay que configurarlo (storage + schedule). En Basic solo se respalda el <strong>slot de producción</strong>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th></th><th>Automático</th><th>Custom</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Tiers</strong></td><td>Basic, Standard, Premium, Isolated</td><td>Basic, Standard, Premium, Isolated</td></tr>
+            <tr><td><strong>Storage account</strong></td><td>No (lo gestiona Microsoft)</td><td>Sí: container en tu cuenta (Standard o Premium)</td></tr>
+            <tr><td><strong>Linked databases</strong></td><td><span class="no">No</span></td><td><span class="yes">Sí</span> (SQL, MySQL, PostgreSQL, MySQL in-app). Flexible Server no. Deprecado 31/3/2028</td></tr>
+            <tr><td><strong>Tamaño</strong></td><td>30 GB</td><td>10 GB total, de los cuales 4 GB de DB</td></tr>
+            <tr><td><strong>Frecuencia</strong></td><td>Horaria, no se cambia</td><td>Configurable (mín. cada 2 h, máx. 12/día)</td></tr>
+            <tr><td><strong>Retención</strong></td><td><strong>30 días fijos</strong></td><td><strong>0–30 días o indefinida</strong> (<code>--retention 0</code>)</td></tr>
+            <tr><td><strong>Descargable</strong></td><td>No</td><td>Sí, como blobs</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li>El restore puede ir <strong>sobre la misma app o sobre una app nueva/slot</strong>. Restaurar sobre la existente <strong>sobrescribe</strong>. Para prod: restore a un slot y después swap.</li>
+        <li>Si el sitio + DB superan el límite, el custom falla. Se excluyen carpetas con <code>_backup.filter</code>.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Yes/No: 6 GB de sitio + MySQL 3 GB, Premium, 1/día, retención indefinida</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Los backups <strong>automáticos</strong> incluyen las linked databases</td><td><span class="no">No</span></td><td>Automático = config + filesystem. La DB no entra</td></tr>
+            <tr><td>Los backups <strong>custom</strong> soportan retención indefinida</td><td><span class="yes">Yes</span></td><td>0–30 días <em>o</em> never delete. Automático no: siempre 30</td></tr>
+            <tr><td>Custom está disponible en el tier <strong>Premium</strong></td><td><span class="yes">Yes</span></td><td>Basic/Standard/Premium/Isolated. El storage destino lo elegís vos (puede ser Premium)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>6 + 3 = 9 GB: entra en el tope custom de 10 GB (DB ≤ 4 GB). Para incluir MySQL + 1/día + retención infinita + storage Premium, es <strong>custom</strong>.</p>
+<pre><code># Custom: 1/día, retención indefinida, incluir MySQL
+az webapp config backup update -g RG -n APP \
+  --container-url $SAS --frequency 1d --retention 0 \
+  --db-type MySql --db-name db1 --db-connection-string "$CS"
+
+# On-demand
+az webapp config backup create -g RG -n APP --container-url $SAS --backup-name b1
+
+# Snapshots automáticos (no incluyen DB)
+az webapp config snapshot list -g RG -n APP</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> automático <strong>no</strong> incluye linked databases — eso es solo custom. Retención indefinida = custom (<code>--retention 0</code>); automático está clavado en 30 días. “Premium storage pricing tier” no es Isolated ni un SKU de Azure Backup: custom corre en Premium (plan y/o storage account que vos pongas). Flexible Server no entra en el backup custom.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">WebApp1: el backup se rompió con 35 GB de media</div>
+      <p>Marketing subió imágenes, audio y video. Mínimo esfuerzo y costo. Elegí dos.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Mover imágenes/audio/video a <strong>Azure Storage</strong></td><td><span class="yes">Sí</span></td><td>El custom backup de App Service topea en <strong>10 GB</strong>. El estático no tiene que vivir en el filesystem de la app</td></tr>
+            <tr><td>Configurar <strong>operational backup</strong> de Azure blobs</td><td><span class="yes">Sí</span></td><td>Protege lo que ahora está en Blob, sin armar un vault on-prem</td></tr>
+            <tr><td>Backup con snapshot de la app</td><td><span class="no">No</span></td><td>El snapshot automático también tiene tope (30 GB) y no saca los 35 GB del sitio; no es la palanca</td></tr>
+            <tr><td>Backup on-premises</td><td><span class="no">No</span></td><td>Viola “minimize effort and cost”: híbrido + infra extra</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> 35 GB &gt; 10 GB de custom backup. La pareja es <strong>sacar la media a Blob</strong> + <strong>operational backup de blobs</strong>. Snapshot no achica el sitio. On-prem es caro.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Always On</div>
+      <ul>
+        <li>Sin <strong>Always On</strong>, una app que no recibe requests durante <strong>20 minutos</strong> se descarga de memoria, y el próximo request paga el arranque en frío.</li>
+        <li>Es obligatorio para <strong>WebJobs continuos</strong> y para timers que tienen que seguir corriendo sin tráfico entrante.</li>
+        <li>Está disponible desde <strong>Basic</strong> en adelante; no existe en Free/Shared.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">WebJobs en Basic, 2 instancias: Yes / No / Yes</div>
+      <p>MyApp1 en MyPlan <strong>Basic</strong>, 2 instancias. Dos scripts tienen que correr en <strong>ambas</strong>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Hay que desplegarlos como <strong>continuous</strong> WebJobs</td><td><span class="yes">Yes</span></td><td>Continuous corre en <strong>todas</strong> las instancias. Triggered corre en una sola</td></tr>
+            <tr><td>Hay que scale up a Standard S1</td><td><span class="no">No</span></td><td>Basic ya tiene Always On y varias instancias. Standard no es requisito</td></tr>
+            <tr><td>Hay que crearlos <strong>linked to a web project</strong></td><td><span class="yes">Yes</span></td><td>Van publicados con MyApp1 a las dos instancias (flujo VS / publish with the app)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Yes / No / Yes. “Scale to Standard” es carnada: Always On y multi-instance empiezan en <strong>Basic</strong>. Triggered ≠ todas las instancias.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Logging: App Service Logs vs Diagnostic Settings</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th></th><th>App Service Logs</th><th>Diagnostic Settings</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Qué captura</strong></td><td>Application logging, Web server logging, Detailed error messages, Failed request tracing</td><td>Categorías de log y métricas de la plataforma (HTTP logs, console, app logs, audit, IPSec…)</td></tr>
+            <tr><td><strong>Destino</strong></td><td>Filesystem de la app o un Blob Storage</td><td><strong>Log Analytics workspace</strong>, Storage Account o Event Hub</td></tr>
+            <tr><td><strong>Retención</strong></td><td>El logging de aplicación a filesystem se apaga solo a las <strong>12 horas</strong>; a blob se define en días</td><td>La del destino elegido</td></tr>
+            <tr><td><strong>Consultas</strong></td><td>Ver archivos o <strong>Log Stream</strong></td><td><strong>KQL</strong> sobre Log Analytics, alertas, workbooks</td></tr>
+            <tr><td><strong>Cuándo</strong></td><td>Debug puntual y rápido</td><td>Retención larga, correlación y análisis centralizado</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: Application Logging (Blob) + Warning</div>
+      <p>ASP.NET Core en App Service <strong>Windows</strong>. Logs de aplicación ≥ <strong>1 semana</strong>, solo <strong>Warning o superior</strong>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Application Logging (Blob)</strong></td><td><span class="yes">Sí</span></td><td>Retención en días (podés poner 7+). Destino: container en Storage</td></tr>
+            <tr><td>Application Logging (Filesystem)</td><td><span class="no">No</span></td><td>Se apaga solo a las <strong>12 h</strong> (o por tamaño). Es debug en vivo, no una semana</td></tr>
+            <tr><td>Web server logging</td><td><span class="no">No</span></td><td>IIS/HTTP, no los traces de la app</td></tr>
+            <tr><td>Severity <strong>Warning</strong></td><td><span class="yes">Sí</span></td><td>Incluye Warning + Error + Critical. “Or higher” = este piso</td></tr>
+            <tr><td>Error / Critical</td><td><span class="no">No</span></td><td>Se pierden los Warning</td></tr>
+            <tr><td>Verbose / Information</td><td><span class="no">No</span></td><td>Guardan de más</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Escala (de más a menos): Verbose → Information → Warning → Error → Critical. Elegís el piso y entra todo lo más grave.</p>
+<pre><code>az webapp log config -g RG -n APP --application-logging azureblobstorage \
+  --level warning --retention-period 7</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “al menos una semana” mata <strong>Filesystem</strong> (12 h). Blob es el que retiene días. Warning = Warning <em>y más graves</em>, no “solo Warning”. Linux no tiene el mismo toggle Filesystem/Blob de Windows: esta pregunta es Windows.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Herramientas de troubleshooting</div>
+      <ul>
+        <li><strong>Log Stream</strong>: consola en vivo con los logs de la app y del web server. Requiere tener el logging habilitado.</li>
+        <li><strong>Application Insights</strong>: telemetría de aplicación — requests, dependencias, excepciones, live metrics, application map y profiler. Se puede habilitar sin tocar el código (instrumentación automática).</li>
+        <li><strong>Kudu / Advanced Tools</strong>: <code>https://&lt;app&gt;.scm.azurewebsites.net</code>. Da consola de comandos, explorador de archivos, process explorer, environment, deployment logs y los endpoints de deploy.</li>
+        <li><strong>Diagnose and solve problems</strong>: detectores guiados para caídas, uso de memoria, reinicios y problemas de performance.</li>
+        <li><strong>Health check</strong>: se define una ruta y App Service <strong>saca de rotación las instancias que no responden</strong> — solo tiene sentido con dos o más instancias.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>Regla rápida de operación: <strong>Log Stream</strong> para ver qué está pasando ahora, <strong>Application Insights</strong> para entender por qué la app está lenta, <strong>Diagnostic Settings + Log Analytics</strong> cuando el requisito dice "retener y consultar los logs a largo plazo", y <strong>Kudu</strong> cuando necesitás mirar el filesystem o las variables de entorno reales del worker.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Cuál es el tier mínimo que te da auto-scale Y deployment slots?", a: "<strong>Standard</strong>. Basic es dedicado, tiene VNet Integration y backup del slot de producción, pero <strong>0 slots</strong> y solo scale out manual. Standard trae <strong>5 slots incluyendo producción</strong>; Premium e Isolated, 20.", cat: "Planes" },
+  { q: "10 instancias, 5 GB, VMs dedicadas, mínimo costo. ¿Standard, Shared, Premium V3 o Isolated?", a: "<strong>Standard</strong> (techo 10, 50 GB, dedicated compute). Shared no es dedicado. Premium e Isolated cumplen y son más caros. “Dedicated to your company” ≠ ASE.", cat: "Planes" },
+  { q: "Dos apps en el mismo App Service Plan: ¿qué comparten?", a: "<strong>Las mismas instancias (VMs)</strong>: CPU, RAM y storage. Si una consume de más, degrada a la otra. Para aislarlas hay que <strong>moverlas a planes distintos</strong>.", cat: "Planes" },
+  { q: "Plan S2 con 3 instancias. Agregás una segunda app al mismo plan. ¿Cuántas instancias tiene?", a: "<strong>3</strong> — comparte las del plan. No arranca con 1 propia ni se suma capacidad. El autoscale es del <em>plan</em>, no de cada app.", cat: "Planes" },
+  { q: "Deployment Center nativo: GitHub Actions, Azure DevOps, Bitbucket… ¿y AWS CodeCommit?", a: "<strong>No</strong> es fuente nativa. GitHub / Azure Repos / Bitbucket / Local Git / FTP / ZIP sí. CodeCommit es el distractor “cuál NO”.", cat: "Deploy" },
+  { q: "Scale Up vs Scale Out en una frase cada uno", a: "<strong>Scale Up</strong> = cambiar el tier/tamaño → más CPU y RAM por instancia, siempre manual. <strong>Scale Out</strong> = agregar instancias → puede ser automático con autoscale (Standard+).", cat: "Escalado" },
+  { q: "Plan Basic, CPU corta en picos. Más CPU solo cuando hace falta. ¿Qué hacés primero: Stop, scale rule, Enable autoscale o Scale up?", a: "<strong>Scale up</strong> a Standard+ (Basic no tiene autoscale). Enable autoscale y Create a scale rule son el paso 2. Stop no habilita autoscale y Stopped sigue cobrando.", cat: "Escalado" },
+  { q: "Definiste solo una regla de scale-out. ¿Qué pasa?", a: "La app <strong>nunca vuelve a bajar</strong> de instancias y la factura queda inflada. Hay que definir siempre la <strong>regla de scale-in</strong> emparejada, con umbrales separados para evitar <em>flapping</em>.", cat: "Escalado" },
+  { q: "¿Un swap de slots es un redeploy?", a: "No. Es un <strong>cambio de routing</strong> entre slots, prácticamente instantáneo. Azure hace <strong>warm-up del slot destino</strong> antes de invertirlo, y el <strong>rollback es simplemente otro swap</strong>.", cat: "Slots" },
+  { q: "Después del swap, producción quedó apuntando a la DB de test. ¿Por qué?", a: "La connection string <strong>no estaba marcada como \"deployment slot setting\"</strong>, así que viajó con el swap. Los settings marcados como sticky <strong>quedan pegados al slot</strong> y no se intercambian.", cat: "Slots" },
+  { q: "¿Para qué sirve \"Swap with preview\"?", a: "Swap multi-fase: la <strong>fase 1</strong> aplica la <strong>config de producción sobre staging</strong> sin cambiar el routing, para poder probar; la <strong>fase 2</strong> completa el swap o lo cancela y revierte la configuración.", cat: "Slots" },
+  { q: "Swap with preview en PowerShell. ¿Cmdlet? ¿ApplySlotConfig vs CompleteSlotSwap vs ResetSlotSwap?", a: "Las dos fases usan <code>Switch-AzWebAppSlot</code> (no otro cmdlet). Preview: <code>-SwapWithPreviewAction ApplySlotConfig</code>. Completar: <code>CompleteSlotSwap</code>. Cancelar: <code>ResetSlotSwap</code>. CLI: <code>az webapp deployment slot swap --action preview|swap|reset</code>.", cat: "Slots" },
+  { q: "¿Cómo forzás tu request a un slot específico en A/B testing?", a: "Con el query string <code>?x-ms-routing-name=staging</code> (o <code>=self</code> para volver a <strong>producción</strong>). Azure fija al cliente con la cookie <code>x-ms-routing-name</code>.", cat: "Slots" },
+  { q: "VNet Integration: ¿qué habilita y qué NO?", a: "Habilita el <strong>tráfico de salida</strong> de la app hacia recursos privados de la VNet. <strong>No</strong> da acceso entrante a la app ni IP privada de entrada — eso es <strong>Private Endpoint</strong>. Requiere una <strong>subred delegada a <code>Microsoft.Web/serverFarms</code></strong>.", cat: "Networking" },
+  { q: "¿Qué hace WEBSITE_VNET_ROUTE_ALL = 1?", a: "Fuerza que <strong>todo el tráfico de salida</strong> (no solo el de rangos privados) pase por la VNet, para que apliquen <strong>NSG y UDR</strong>. Con un <strong>NAT Gateway</strong> en la subred obtenés una <strong>IP pública de salida fija</strong>.", cat: "Networking" },
+  { q: "La app tiene que llegar a un SQL Server on-premises y no hay VPN ni ExpressRoute", a: "<strong>Hybrid Connections</strong>, vía <strong>Azure Relay</strong> con el <strong>Hybrid Connection Manager</strong> instalado on-prem. Es host:puerto puntual, no requiere VNet ni abrir puertos entrantes.", cat: "Networking" },
+  { q: "Agregás una única regla de Access Restrictions tipo allow. ¿Qué le pasa al resto del tráfico?", a: "Queda <strong>bloqueado</strong>: al existir al menos una regla allow, se aplica un <strong>deny implícito al final</strong>. Y el sitio <strong>SCM/Kudu tiene reglas propias</strong>, hay que restringirlo aparte.", cat: "Networking" },
+  { q: "Apex domain (contoso.com): ¿qué records DNS necesitás?", a: "Un <strong>A record</strong> a la IP entrante de la app <strong>más un TXT</strong> <code>asuid.&lt;dominio&gt;</code> con el <em>Custom Domain Verification ID</em>. El CNAME solo sirve para <strong>subdominios</strong>.", cat: "TLS" },
+  { q: "ARM: mTLS en App Service, cert obligatorio salvo /sample1. ¿Qué tres properties?", a: "<code>clientCertEnabled: true</code> · <code>clientCertMode: \"Required\"</code> · <code>clientCertExclusionPaths: \"/sample1\"</code>. Van en <code>properties</code> de <code>Microsoft.Web/sites</code>, no dentro de <code>siteConfig</code>. <code>clientAffinityEnabled</code> es cookie ARR, no mTLS. <code>Optional</code> / <code>OptionalInteractiveUser</code> no sirven si piden required. CLI: <code>az webapp update --set clientCertEnabled=true clientCertMode=Required</code>.", cat: "TLS" },
+  { q: "El custom container se reinicia en loop apenas se despliega. ¿Primera sospecha?", a: "Falta <strong><code>WEBSITES_PORT</code></strong> con el puerto real del contenedor: si no escucha en 80 y no se lo declarás, la plataforma no recibe los HTTP pings y lo reinicia sin parar.", cat: "Contenedores" },
+  { q: "App Service: ¿el backup automático incluye la MySQL linked? ¿Custom puede retención indefinida? ¿Custom en Premium?", a: "<strong>No / Yes / Yes</strong>. Automático = config + files, 30 días fijos, sin DB. Custom = DB (SQL/MySQL/PostgreSQL, no Flexible Server), retención 0–30 o indefinida (<code>--retention 0</code>), storage account tuyo (Standard o Premium). Tiers: Basic+. Tope custom 10 GB (4 GB de DB). CLI: <code>az webapp config backup update --frequency 1d --retention 0 --db-type MySql</code>. Automático: <code>az webapp config snapshot list</code>.", cat: "Backup" },
+  { q: "ASP.NET Core en App Service Windows. Logs ≥ 1 semana, solo Warning o superior. ¿Filesystem o Blob? ¿Qué severity?", a: "<strong>Application Logging (Blob)</strong> + <strong>Warning</strong>. Filesystem se apaga a las <strong>12 h</strong>. Warning incluye Error y Critical. Verbose/Information guardan de más; Error pierde los Warning. <code>az webapp log config --application-logging azureblobstorage --level warning --retention-period 7</code>.", cat: "Logs" },
+  { q: "App Service Windows: ¿Stopped deja de cobrar? ¿Free/Shared tienen SLA? ¿Se cobra por app o por instancia en Standard?", a: "Stopped <strong>sigue cobrando</strong> (borrar o bajar a Free). Free/Shared: <strong>sin SLA</strong>, no producción; Shared cobra <strong>por sitio</strong>. Dedicated (Basic+) cobra <strong>por instancia del plan</strong>, da igual cuántas apps. Isolated = workers + stamp fee. HTTPS de azurewebsites.net es gratis; SNI custom = $0; Standard/Premium incluyen 1 IP SSL por plan.", cat: "Planes" },
+  { q: "Managed Certificate vs SNI vs IP SSL. ¿Apex? ¿Wildcard? ¿1 IP SSL incluido?", a: "Managed: <strong>gratis</strong>, no wildcard, <strong>no apex/naked</strong>, no exportable, no ASE. SNI = default $0. IP SSL: Standard/Premium traen <strong>uno por plan</strong>; cambia la IP (hay que tocar el A). El cert se compra aparte del “SSL connection”.", cat: "TLS" },
+  { q: "App Service applicationcs, zona company1.com ya delegada. Apex, no www. ¿New-AzDnsRecordSet: nombre y tipo de cada comando? ¿CNAME?", a: "1) <code>-Name \"@\" -RecordType A</code> (IP inbound). 2) <code>-Name \"@\" -RecordType TXT</code> (verificación; portal moderno usa <code>asuid</code> + verification ID). CNAME en apex no. <code>www</code> es otro host. SRV/PTR no aplican.", cat: "TLS" },
+  { q: "Web14 = .NET Core East US. Web15 = ASP.NET 4.8 West US. Planes ASP1 Win East, ASP2 Linux East, ASP3 Win West, ASP4 Linux West. ¿Cuáles?", a: "Web14: <strong>ASP1 y ASP2 only</strong> (Core en Win+Linux, misma región). Web15: <strong>ASP3 only</strong> (4.8 = Windows; ASP4 es Linux).", cat: "Planes" },
+  { q: "Autoscale y hasta 20 instancias, mínimo costo. ¿Shared, Basic, Standard o Premium?", a: "<strong>Premium</strong>. Shared/Basic sin autoscale. Standard autoscale pero techo <strong>10</strong>. Premium Pv2 techo 20.", cat: "Planes" },
+  { q: "www.company1.com → WebApp1. Elegí 2: ¿CNAME a azurewebsites.net, NS a la IP, A a la IP, PTR?", a: "<strong>CNAME → webapp1.azurewebsites.net</strong> y <strong>A → IP inbound</strong>. NS delega zona. PTR es reverse DNS.", cat: "TLS" },
+  { q: "Autoscale: start 3, out +2 si CPU≥70×10 min (cd 5), in −1 si ≤35×10 min (cd 5). 15 min al 80% + 20 min al 30%. ¿Instancias a T=35?", a: "<strong>3</strong>. T=10 → 5 (out). T=25 → 4 (primer in). T=35 → 3 (segundo in). 5 ignora el in; 4 se olvida del segundo; 2 sería bajar de a 2.", cat: "Escalado" },
+  { q: "WebJobs en Basic, 2 instancias, correr en ambas. Yes/No: ¿continuous? ¿scale up a Standard? ¿linked to web project?", a: "<strong>Yes / No / Yes</strong>. Continuous = todas las instancias; triggered = una. Always On y multi-instance ya están en Basic. Linked = publican con la app.", cat: "WebJobs" },
+  { q: "Backup de WebApp1 falló al subir 35 GB de media. Elegí 2: ¿mover a Storage, operational backup de blobs, snapshot, backup on-prem?", a: "<strong>Mover media a Azure Storage</strong> + <strong>operational backup de blobs</strong>. Custom topea en 10 GB. Snapshot no saca los 35 GB del sitio. On-prem viola costo/esfuerzo.", cat: "Backup" },
+  { q: "Testers tienen que revisar el web app (código en Azure DevOps). Preparar el ambiente, 4 cmdlets en orden. ¿Publish? ¿Start-Slot?", a: "<code>New-AzResourceGroup</code> → <code>New-AzAppServicePlan</code> → <code>New-AzWebApp</code> → <code>New-AzWebAppSlot</code>. Publish- sube código, no es el ambiente. Start-AzWebAppSlot asume el slot ya creado.", cat: "Slots" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

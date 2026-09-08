@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Azure Monitor</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Azure Monitor</div>
+    <div class="nav-sub">Métricas, logs, KQL, alertas y Network Watcher</div>
+    <div class="nav-weight">Dominio 5 · 10–15%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#sec-arquitectura"><span class="dot"></span>La arquitectura mental</a>
+  <a href="#sec-fuentes"><span class="dot"></span>Fuentes de datos</a>
+  <a href="#sec-diagnostic"><span class="dot"></span>Diagnostic Settings</a>
+  <a href="#sec-agentes"><span class="dot"></span>Agentes, AMA y DCR</a>
+  <a href="#sec-law"><span class="dot"></span>Log Analytics Workspace</a>
+  <a href="#sec-kql"><span class="dot"></span>KQL</a>
+  <a href="#sec-alertas"><span class="dot"></span>Alertas y Action Groups</a>
+  <a href="#sec-visual"><span class="dot"></span>Visualización y Health</a>
+  <a href="#sec-netwatcher"><span class="dot"></span>Network Watcher</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen no te pide escribir KQL avanzado; te pide <strong>elegir la herramienta correcta para un síntoma</strong>. "Comparar latencias on-prem vs VMSS al mismo Storage" → <strong>Connection Monitor</strong> (no IP Flow, no NSG diagnostics, no VPN Troubleshoot). "Allowed or denied al web server" → <strong>IP flow verify</strong> solo. "Qué filtering rule" → <code>Test-AzNetworkWatcherIPFlow</code> + <code>Get-AzEffectiveNetworkSecurityGroup</code>. "Necesito alertar cuando alguien borra una VM" → Activity Log alert. Advisor + Bicep: <code>activityLogAlerts</code> + <code>actionGroups</code>. Cinco VMs restart/stop/deallocate: <strong>3 / 1 / 2</strong>. Alerta cada minuto: email <strong>60</strong>/h, SMS y voice <strong>12</strong>/h. Logs verbosos baratos → plan <strong>Basic/Auxiliary</strong>. “Ver logs solo de su VM” → <strong>resource-context</strong>, no rol en el workspace.
+  </div>
+
+  <!-- ══ 1 ══ -->
+  <div class="section" id="sec-arquitectura">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🏛️</div>
+      <span class="section-title">La arquitectura en una imagen mental</span>
+      <span class="section-tag">Base conceptual</span>
+    </div>
+
+    <p>Azure Monitor es el <strong>paraguas</strong>, no un producto suelto. Debajo del paraguas hay exactamente <strong>dos tipos de dato crudo</strong>, y todo lo demás son consumidores de esos dos.</p>
+
+    <div class="flow">
+      <div class="flow-step">Recursos<br><small>VM, NSG, App, KeyVault…</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">Metrics<br><small>serie temporal</small></div>
+      <div class="flow-step highlight">Logs<br><small>eventos c/ contexto</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Consumidores<br><small>alertas, workbooks, Insights</small></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Los dos tipos de dato</div>
+      <ul>
+        <li><strong>Metrics</strong>: números en una serie temporal. Livianos, indexados por tiempo, latencia de <strong>segundos</strong>. Viven en una time-series database propia (no en el workspace). Retención de <strong>93 días</strong> para platform metrics.</li>
+        <li><strong>Logs</strong>: registros con muchos campos y contexto (quién, qué, con qué resultado). Latencia de <strong>minutos</strong>. Se guardan en un <strong>Log Analytics Workspace</strong> y se consultan con <strong>KQL</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Aspecto</th><th>Metrics</th><th>Logs</th></tr></thead>
+        <tbody>
+          <tr><td>Forma del dato</td><td>Numérico, serie temporal</td><td>Registros con campos de texto y números</td></tr>
+          <tr><td>Latencia</td><td>Segundos (near real-time)</td><td>Minutos</td></tr>
+          <tr><td>Dónde vive</td><td>Time-series DB de Azure Monitor</td><td>Log Analytics Workspace</td></tr>
+          <tr><td>Cómo se consulta</td><td>Metrics Explorer</td><td>KQL en Log Analytics</td></tr>
+          <tr><td>Retención</td><td>93 días (platform metrics)</td><td>Configurable en el workspace</td></tr>
+          <tr><td>Recolección</td><td>Automática para platform metrics</td><td>Requiere Diagnostic Settings o agente</td></tr>
+          <tr><td>Tipo de alerta</td><td>Metric alert (casi instantánea)</td><td>Log alert (query periódica, con delay)</td></tr>
+          <tr><td>Costo típico</td><td><span class="chip chip-green">gratis</span> platform metrics</td><td><span class="chip chip-yellow">por GB ingerido + retención</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> los <strong>Insights</strong> (Application Insights, VM Insights, Container Insights, Network Insights, Storage Insights) <em>no son un tercer tipo de dato</em>. Son soluciones curadas — dashboards, workbooks y queries preempaquetadas — que consumen los mismos metrics y logs. Si la pregunta dice "¿qué tipo de dato recolecta Azure Monitor?", la respuesta son dos: metrics y logs.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Regla práctica para elegir: si necesitás <strong>reaccionar rápido a un número</strong> (CPU, latencia, cola) → metrics. Si necesitás <strong>investigar qué pasó y quién lo hizo</strong> → logs.</span>
+    </div>
+  </div>
+
+  <!-- ══ 2 ══ -->
+  <div class="section" id="sec-fuentes">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">📥</div>
+      <span class="section-title">Fuentes de datos: de dónde sale cada cosa</span>
+      <span class="section-tag">Muy preguntado</span>
+    </div>
+
+    <p>Cada capa del stack aporta su telemetría, y cada una tiene su propio mecanismo de recolección. Esto es lo que el examen ataca sin piedad.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Fuente</th><th>Qué te da</th><th>¿Automático?</th><th>Dónde aterriza</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Platform metrics</strong></td>
+            <td>CPU %, IOPS, requests, latencia del recurso</td>
+            <td><span class="yes">Sí</span> · sin costo</td>
+            <td>Metrics store (93 días)</td>
+          </tr>
+          <tr>
+            <td><strong>Activity Log</strong></td>
+            <td>Plano de control: quién creó, modificó o borró qué, y con qué resultado</td>
+            <td><span class="yes">Sí</span> · sin costo</td>
+            <td>Activity Log · <strong>90 días</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Resource logs</strong><br><small>(ex "diagnostic logs")</small></td>
+            <td>Plano de datos: operaciones internas del recurso (accesos a Key Vault, queries a SQL, NSG rule counters)</td>
+            <td><span class="no">NO</span> · hay que habilitar</td>
+            <td>Donde apunte la <strong>Diagnostic Setting</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Guest OS</strong></td>
+            <td>Performance counters, Windows Event Log, Syslog, archivos de texto</td>
+            <td><span class="no">NO</span> · requiere agente</td>
+            <td>Workspace, vía AMA + DCR</td>
+          </tr>
+          <tr>
+            <td><strong>Aplicación</strong></td>
+            <td>Requests, dependencias, excepciones, traces</td>
+            <td><span class="no">NO</span> · requiere SDK/instrumentación</td>
+            <td>Application Insights (workspace-based)</td>
+          </tr>
+          <tr>
+            <td><strong>Custom / API</strong></td>
+            <td>Lo que le mandes vos</td>
+            <td><span class="no">NO</span></td>
+            <td>Logs Ingestion API, custom metrics</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Activity Log en detalle</div>
+      <ul>
+        <li>Es a nivel de <strong>subscription</strong>, no de recurso individual.</li>
+        <li>Categorías clásicas: <code>Administrative</code>, <code>Service Health</code>, <code>Resource Health</code>, <code>Alert</code>, <code>Autoscale</code>, <code>Policy</code>, <code>Recommendation</code>, <code>Security</code>.</li>
+        <li>Responde a "¿<strong>quién</strong> borró la VM y <strong>cuándo</strong>?" — no responde "¿por qué se cayó el servicio adentro de la VM?".</li>
+        <li>Retención por defecto <strong>90 días, y no se puede extender in situ</strong>. Para guardarlo más tiempo lo exportás con una <strong>Diagnostic Setting</strong> a Log Analytics, Storage o Event Hub.</li>
+        <li>Una vez exportado a un workspace, se consulta con KQL en la tabla <code>AzureActivity</code>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "Necesitás retener los registros de operaciones administrativas por 1 año con el menor costo posible". La respuesta <em>no</em> es cambiar la retención del Activity Log (no existe esa opción). Es crear una <strong>Diagnostic Setting a nivel de subscription exportando el Activity Log a una Storage Account</strong>. Si la pregunta pide además consultarlo con KQL, entonces el destino es Log Analytics Workspace.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">IoT Hub: telemetría de devices + alertas, mín. esfuerzo</div>
+      <p>La LOB lee telemetry con el IoT Hub Service SDK. Hay que monitorear valores y alertar.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Habilitar <strong>resource diagnostic logs</strong> en el IoT Hub</td><td><span class="yes">Sí</span></td><td>Plano de datos del hub (incl. telemetry) → Monitor/LAW + metric/log alerts. Cero SDK extra</td></tr>
+            <tr><td>Application Insights en la LOB</td><td><span class="no">No</span></td><td>Instrumenta la app, no el hub ni los devices. Más esfuerzo</td></tr>
+            <tr><td>Azure Resource Health</td><td><span class="no">No</span></td><td>Salud de la plataforma sobre <em>tu</em> recurso (¿el hub está up?), no umbrales de telemetry</td></tr>
+            <tr><td>Activity Log</td><td><span class="no">No</span></td><td>Control plane (quién creó/borró). No valores de telemetría</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “device telemetry values” = <strong>resource logs / diagnostic settings del IoT Hub</strong>. Activity Log es ARM. Resource Health es “¿Azure ve el recurso sano?”. App Insights es la LOB, no el hub.</span>
+    </div>
+  </div>
+
+  <!-- ══ 3 ══ -->
+  <div class="section" id="sec-diagnostic">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">⚙️</div>
+      <span class="section-title">Diagnostic Settings: el interruptor que todos olvidan</span>
+      <span class="section-tag">Clave del dominio</span>
+    </div>
+
+    <p>Una <strong>Diagnostic Setting</strong> es la configuración que le dice a un recurso: <em>"estas categorías de logs y estas métricas, mandálas a estos destinos"</em>. Sin ella, los resource logs simplemente <strong>no se recolectan y se pierden para siempre</strong>.</p>
+
+    <div class="card">
+      <div class="card-title">Primero el workspace: query cross-resource</div>
+      <p>4 VNets, 48 VMs, 6 storage accounts. Solución universal para consultar todo el diagnóstico/telemetría. ¿Qué hacés <em>primero</em>?</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Crear un Log Analytics workspace</strong></td><td><span class="yes">Sí</span></td><td>Es el destino común. Sin él no hay KQL cross-resource</td></tr>
+            <tr><td>Enable Network Watcher</td><td><span class="no">No</span></td><td>Solo red (IP Flow, pcap). No cubre Storage ni logs de VM</td></tr>
+            <tr><td>Instalar Microsoft Monitoring Agent</td><td><span class="no">No</span></td><td>MMA está <strong>retirado</strong> (hoy AMA). Y el agente necesita un workspace destino</td></tr>
+            <tr><td>Activate diagnostic settings</td><td><span class="no">No</span></td><td>Paso 2: apuntan a un destino. Primero creás el LAW</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “universal / query across all diagnostic data” = <strong>LAW primero</strong>. Diagnostic settings y agentes van después (necesitan el destino). Network Watcher no es el silo de todo.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Destino</th><th>Para qué se usa</th><th>Costo relativo</th><th>Cuándo lo pide el examen</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Log Analytics Workspace</strong></td>
+            <td>Consultar con KQL, correlacionar entre recursos, disparar log alerts, workbooks</td>
+            <td><span class="chip chip-yellow">alto</span></td>
+            <td>"analizar", "consultar", "correlacionar", "KQL"</td>
+          </tr>
+          <tr>
+            <td><strong>Storage Account</strong></td>
+            <td>Archivado barato de largo plazo, compliance, auditoría</td>
+            <td><span class="chip chip-green">bajo</span></td>
+            <td>"retener N años", "menor costo", "archivar"</td>
+          </tr>
+          <tr>
+            <td><strong>Event Hub</strong></td>
+            <td>Streaming hacia afuera de Azure: SIEM de terceros, Splunk, QRadar, pipelines propios</td>
+            <td><span class="chip chip-yellow">medio</span></td>
+            <td>"herramienta de terceros", "SIEM externo", "streaming"</td>
+          </tr>
+          <tr>
+            <td><strong>Partner solution</strong></td>
+            <td>Integración nativa con partners (Datadog, Elastic, etc.)</td>
+            <td><span class="chip chip-blue">variable</span></td>
+            <td>Se nombra el partner explícitamente</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Reglas que hay que saber de memoria</div>
+      <ul>
+        <li>Un mismo recurso puede tener <strong>varias diagnostic settings</strong> — es la forma de mandar el mismo log a Storage (archivo barato) y a Log Analytics (análisis) al mismo tiempo.</li>
+        <li>Cada setting define <strong>qué categorías</strong> se envían: podés mandar solo <code>AuditEvent</code> a Storage y todo a Event Hub.</li>
+        <li>También podés exportar <strong>AllMetrics</strong> por esta vía — así las métricas terminan en el workspace y quedan consultables con KQL en la tabla <code>AzureMetrics</code>.</li>
+        <li>El destino <strong>Storage Account no puede ser premium</strong> para este propósito, y suele exigirse en la misma región del recurso.</li>
+        <li>Se pueden crear en masa con <strong>Azure Policy</strong> usando efecto <code>DeployIfNotExists</code> — la respuesta típica a "asegurate de que todos los recursos nuevos manden logs sin intervención manual".</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> la pregunta clásica es "creaste un Log Analytics Workspace y no ves logs de tu Application Gateway / NSG / Key Vault, ¿qué falta?". Nunca es el agente (esos recursos PaaS no tienen agente): <strong>falta la Diagnostic Setting apuntando al workspace</strong>. Los agentes son solo para el sistema operativo invitado.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Nemotecnia: <strong>Metrics vienen solas, Logs hay que invitarlos</strong>. Platform metrics aparecen sin hacer nada; los resource logs necesitan una invitación formal (Diagnostic Setting).</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><code>metrics:getBatch</code>: varias VMs en un POST</div>
+      <p>LB Standard, Data Path Availability / Health Probe. REST a <code>eastus.metrics.monitor.azure.com</code> con <code>metricNamespace=microsoft.compute/virtualMachines</code> y dos resource IDs en el body.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>El batch evita throttling al consultar varios recursos en un request</td><td><span class="yes">Yes</span></td><td>Un POST en vez de N GETs. Es el motivo de <code>getBatch</code></td></tr>
+            <tr><td>Las VMs pueden estar en <strong>varias regiones</strong></td><td><span class="no">No</span></td><td>El host es regional (<code>eastus.metrics…</code>). Todo el batch = esa región</td></tr>
+            <tr><td>Las VMs tienen que ser el <strong>mismo resource type</strong></td><td><span class="yes">Yes</span></td><td><code>metricNamespace</code> va en la URL. Un tipo por llamada</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Yes / No / Yes. El host regional mata el “spread across regions”. El namespace en el query string mata mezclar VM + LB en el mismo body.</span>
+    </div>
+  </div>
+
+  <!-- ══ 4 ══ -->
+  <div class="section" id="sec-agentes">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🤖</div>
+      <span class="section-title">Agentes: AMA, DCR y Azure Arc</span>
+      <span class="section-tag">Modernizado</span>
+    </div>
+
+    <p>Para todo lo que pase <strong>adentro</strong> del sistema operativo — contadores de performance, Event Log de Windows, Syslog de Linux, archivos de log de una app — Azure no ve nada desde afuera. Necesitás un agente.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Agente</th><th>Estado</th><th>Configuración</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Azure Monitor Agent (AMA)</strong></td>
+            <td><span class="chip chip-green">actual</span></td>
+            <td><strong>Data Collection Rules (DCR)</strong></td>
+            <td>Reemplaza a todos los legacy. Windows y Linux. Manejado como extensión de VM.</td>
+          </tr>
+          <tr>
+            <td>Log Analytics agent (MMA / OMS)</td>
+            <td><span class="chip chip-red">retirado</span></td>
+            <td>Config a nivel de workspace</td>
+            <td>Migrar a AMA es la respuesta correcta si aparece.</td>
+          </tr>
+          <tr>
+            <td>Azure Diagnostics extension (WAD / LAD)</td>
+            <td><span class="chip chip-red">legacy</span></td>
+            <td>Config XML/JSON por VM</td>
+            <td>Mandaba a Storage y a metrics. Superado por AMA.</td>
+          </tr>
+          <tr>
+            <td>Dependency agent</td>
+            <td><span class="chip chip-blue">complemento</span></td>
+            <td>Junto a AMA</td>
+            <td>Solo si querés el <em>mapa de dependencias</em> de VM Insights.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Data Collection Rules (DCR) — el corazón de AMA</div>
+      <ul>
+        <li>Un DCR define <strong>tres cosas</strong>: qué se recolecta (data sources), cómo se transforma opcionalmente, y a dónde va (destinations, típicamente un workspace).</li>
+        <li>Relación <strong>muchos a muchos</strong>: un DCR se asocia a muchas máquinas, y una máquina puede tener varios DCR asociados. Esto permite separar "recolectar Syslog de seguridad" de "recolectar contadores de performance".</li>
+        <li>La asociación se llama <strong>DCRA</strong> (Data Collection Rule Association) y es un recurso propio.</li>
+        <li>El <strong>DCR es regional</strong>: debe estar en la misma región que el workspace destino y que las VMs asociadas.</li>
+        <li>Los <strong>Data Collection Endpoints (DCE)</strong> son puntos de ingesta que se usan para escenarios como Private Link, custom logs y máquinas en redes aisladas.</li>
+      </ul>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">VM / Arc server<br><small>+ AMA extension</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">DCR<br><small>qué recolectar</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">DCE<br><small>opcional</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Log Analytics<br><small>Perf, Event, Syslog</small></div>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span><strong>Azure Arc</strong> es la respuesta cuando la pregunta menciona servidores <strong>on-premises o en otra nube</strong>. Los conectás con Arc-enabled servers, quedan como recursos de Azure con su propio Resource ID, y a partir de ahí les instalás AMA y les asociás DCRs exactamente igual que a una VM de Azure.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> AMA <strong>no recolecta resource logs ni platform metrics</strong>. Si querés los logs de la plataforma de la VM (por ejemplo, el boot diagnostic o los logs del disco a nivel Azure) eso sigue siendo Diagnostic Settings. AMA solo trae lo que está adentro del guest OS. Los dos mecanismos conviven y el examen los mezcla a propósito.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Guest OS diagnostics en VM1 (Cloud Shell)</div>
+      <p><code>$path = "config.xml"</code>. No es boot diagnostics (pantalla de arranque).</p>
+<pre><code>Set-AzVMDiagnosticsExtension -ResourceGroupName $vmRg `
+  -VMName $vm -DiagnosticsConfigurationPath $path</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Drop-down</th><th>Valor</th><th>No es</th></tr></thead>
+          <tbody>
+            <tr><td>Cmdlet</td><td><code>Set-AzVMDiagnosticsExtension</code></td><td><code>Set-AzVMBootDiagnostics</code> = consola/screenshot, no counters del guest</td></tr>
+            <tr><td>Parámetro de <code>$path</code></td><td><code>-DiagnosticsConfigurationPath</code></td><td><code>-StorageAccountName</code> espera un nombre de cuenta, no un XML</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> guest OS (Perf, Event Log) = <strong>Diagnostics extension + XML</strong>. Boot diagnostics es otra palanca. AMA es el agente actual, pero el drop-down clásico sigue pidiendo <code>Set-AzVMDiagnosticsExtension</code>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 5 ══ -->
+  <div class="section" id="sec-law">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">🗄️</div>
+      <span class="section-title">Log Analytics Workspace</span>
+      <span class="section-tag">Diseño</span>
+    </div>
+
+    <p>Es el <strong>contenedor donde viven los logs</strong>. Es un recurso de Azure normal: vive en un resource group, en una <strong>región</strong>, y tiene RBAC propio.</p>
+
+    <div class="card">
+      <div class="card-title">Características que se preguntan</div>
+      <ul>
+        <li><strong>Retención por defecto: 30 días</strong> (interactiva). Analytics se puede subir hasta <strong>730 días</strong> (2 años). Sentinel o App Insights workspace-based: <strong>90 días</strong> incluidos. Se puede fijar <strong>por tabla</strong> (ej. <code>SecurityEvent</code> largo, <code>Perf</code> corto).</li>
+        <li><strong>Archive / long-term</strong>: hasta <strong>12 años</strong> (<code>totalRetentionInDays</code> ≤ 4383). No es query interactiva: hace falta un <strong>search job</strong> (asíncrono) que deja el recorte en una tabla de resultados.</li>
+        <li>El costo tiene dos componentes: <strong>ingesta por GB</strong> y <strong>retención más allá del período incluido</strong>. Hay <em>commitment tiers</em> por volumen. La palanca barata de logs verbosos es el <strong>plan de tabla</strong>, no otro workspace.</li>
+        <li>Un workspace puede recibir datos de <strong>múltiples suscripciones y regiones</strong>, incluso de otros tenants con configuración adecuada. La <strong>región del workspace</strong> es donde viven los datos (soberanía).</li>
+        <li>El tipo de recurso es <code>Microsoft.OperationalInsights/workspaces</code>. Registrar: <code>az provider register --namespace Microsoft.OperationalInsights</code>. <code>Microsoft.Insights</code> cubre alertas y métricas, no el workspace.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Tabla</th><th>Qué contiene</th><th>Cómo llega</th></tr></thead>
+        <tbody>
+          <tr><td><code>Heartbeat</code></td><td>Latido periódico de cada agente conectado</td><td>AMA — sirve para detectar máquinas caídas</td></tr>
+          <tr><td><code>Perf</code></td><td>Contadores de performance del guest OS (CPU, memoria, disco)</td><td>AMA + DCR</td></tr>
+          <tr><td><code>Event</code></td><td>Windows Event Log</td><td>AMA + DCR</td></tr>
+          <tr><td><code>Syslog</code></td><td>Syslog de Linux</td><td>AMA + DCR</td></tr>
+          <tr><td><code>AzureActivity</code></td><td>Activity Log del plano de control</td><td>Diagnostic Setting a nivel subscription</td></tr>
+          <tr><td><code>AzureDiagnostics</code></td><td>Resource logs de recursos que usan el modo tabla común</td><td>Diagnostic Setting del recurso</td></tr>
+          <tr><td><code>AzureMetrics</code></td><td>Métricas de plataforma exportadas al workspace</td><td>Diagnostic Setting (AllMetrics)</td></tr>
+          <tr><td><code>SecurityEvent</code></td><td>Eventos de seguridad de Windows</td><td>AMA + DCR / Defender</td></tr>
+          <tr><td><code>InsightsMetrics</code></td><td>Métricas recolectadas por VM/Container Insights</td><td>AMA + DCR</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+    <div class="card">
+      <div class="card-title">Planes de tabla: Analytics vs Basic vs Auxiliary</div>
+      <p>El plan se elige <strong>por tabla</strong>. Analytics es el default (queries cruzadas, alertas, insights). Para diagnóstico verboso que casi no consultás, bajás el plan — no creás otro workspace.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th></th><th>Analytics</th><th>Basic</th><th>Auxiliary</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Para qué</strong></td><td>Monitoreo continuo, alertas, dashboards</td><td>Troubleshooting, alto volumen</td><td>Compliance / verbose, casi no se consulta</td></tr>
+            <tr><td><strong>Ingesta</strong></td><td>Precio estándar</td><td>Más barata</td><td>La más barata</td></tr>
+            <tr><td><strong>Interactivo</strong></td><td>4–730 días</td><td>Fijo (~30 días)</td><td>Fijo (~30 días)</td></tr>
+            <tr><td><strong>KQL</strong></td><td>Completo, multi-tabla</td><td>Una tabla (+ lookup a Analytics)</td><td>Una tabla, no optimizado</td></tr>
+            <tr><td><strong>Log alerts</strong></td><td><span class="yes">Sí</span></td><td>Limitado (simple, preview)</td><td><span class="no">No</span> el log alert estándar</td></tr>
+            <tr><td><strong>Archive</strong></td><td colspan="3">Hasta 12 años en los tres; consultar = <strong>search job</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>az monitor log-analytics workspace create -g RG -n LAW -l eastus --retention-time 30
+az monitor log-analytics workspace table update -g RG --workspace-name LAW \
+  -n ContainerLogV2 --plan Basic</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “bajar costo de logs de diagnóstico verbosos” → plan <strong>Basic</strong> (o Auxiliary si es aún más frío), no Storage Account ni otro LAW. Dumps viejos dicen Basic = 8 días; docs actuales dejan ~30 días interactivos. Archive 12 años <strong>no</strong> se consulta con KQL normal: es <strong>search job</strong>. MMA/OMS no es la respuesta de ingesta en VMs.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">¿Un workspace o varios?</div>
+      <ul>
+        <li><strong>Uno solo (centralizado)</strong>: correlacionás todo con una query, administración simple, mejor aprovechamiento de commitment tiers. Es el default recomendado.</li>
+        <li><strong>Varios</strong> cuando hay: <strong>soberanía de datos</strong> (los logs de la UE no pueden salir de la UE), <strong>aislamiento por RBAC</strong> entre equipos o clientes, <strong>chargeback</strong> por unidad de negocio, o retenciones legalmente distintas.</li>
+        <li>Con varios workspaces todavía podés hacer cross-workspace queries con <code>workspace()</code> y <code>union</code>, pero es más incómodo.</li>
+        <li>Ojo con los <strong>cargos de egreso</strong> si mandás datos entre regiones a un workspace centralizado.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">RBAC: workspace-context vs resource-context</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Rol / modelo</th><th>Qué ve</th></tr></thead>
+          <tbody>
+            <tr><td><code>Log Analytics Reader</code></td><td>Queries y config del workspace (no cambia recolección)</td></tr>
+            <tr><td><code>Log Analytics Contributor</code></td><td>Configurar workspace, fuentes, settings</td></tr>
+            <tr><td><code>Monitoring Reader / Contributor</code></td><td>Más amplio: alertas, dashboards, workspaces</td></tr>
+            <tr><td><strong>Resource-context</strong></td><td>Reader (o más) <em>sobre el recurso</em> → solo los logs de ese recurso, sin rol en el LAW</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “un usuario tiene que ver los logs <em>solo de su VM</em>, sin el resto del workspace” → <strong>resource-context</strong> (permiso en la VM). No hace falta <code>Log Analytics Reader</code> en el LAW: ese rol le abre <em>todo</em> el workspace.</span>
+    </div>
+  </div>
+
+  <!-- ══ 6 ══ -->
+  <div class="section" id="sec-kql">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(165,180,252,.15)">🔍</div>
+      <span class="section-title">KQL: los operadores que se preguntan</span>
+      <span class="section-tag">Lectura, no escritura</span>
+    </div>
+
+    <p>Una query KQL empieza siempre con una <strong>tabla</strong> y encadena operadores con el <strong>pipe</strong> <code>|</code>. Cada operador recibe la tabla del anterior y devuelve otra tabla. Se lee de arriba hacia abajo.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Operador</th><th>Qué hace</th><th>Ejemplo</th></tr></thead>
+        <tbody>
+          <tr><td><code>search</code></td><td>Busca un texto en todas las columnas (y hasta en todas las tablas). Cómodo pero caro.</td><td><code>search "error"</code></td></tr>
+          <tr><td><code>where</code></td><td>Filtra filas por condición. <strong>Ponelo lo más arriba posible.</strong></td><td><code>where Level == "Error"</code></td></tr>
+          <tr><td><code>project</code></td><td>Selecciona qué columnas devolver (y en qué orden)</td><td><code>project Computer, TimeGenerated</code></td></tr>
+          <tr><td><code>project-away</code></td><td>Devuelve todo <em>menos</em> las columnas indicadas</td><td><code>project-away TenantId</code></td></tr>
+          <tr><td><code>extend</code></td><td>Crea una columna calculada nueva</td><td><code>extend GB = Size / 1024 / 1024 / 1024</code></td></tr>
+          <tr><td><code>summarize</code></td><td>Agrega filas; con <code>by</code> agrupa</td><td><code>summarize count() by Computer</code></td></tr>
+          <tr><td><code>order by</code> / <code>sort by</code></td><td>Ordena. Son sinónimos exactos. <code>desc</code> por defecto</td><td><code>order by TimeGenerated desc</code></td></tr>
+          <tr><td><code>top</code></td><td>Ordena <strong>y</strong> corta en N. Equivale a sort + take</td><td><code>top 10 by CounterValue desc</code></td></tr>
+          <tr><td><code>take</code> / <code>limit</code></td><td>Devuelve N filas <strong>sin garantía de orden</strong>. Sinónimos</td><td><code>take 100</code></td></tr>
+          <tr><td><code>distinct</code></td><td>Valores únicos de las columnas indicadas</td><td><code>distinct Computer</code></td></tr>
+          <tr><td><code>count</code></td><td>Cuenta filas del resultado (operador, no función)</td><td><code>| count</code></td></tr>
+          <tr><td><code>join</code></td><td>Combina dos tablas por una clave</td><td><code>join kind=inner (Perf) on Computer</code></td></tr>
+          <tr><td><code>union</code></td><td>Apila filas de varias tablas (no necesita clave)</td><td><code>union Event, Syslog</code></td></tr>
+          <tr><td><code>render</code></td><td>Dibuja el resultado como gráfico</td><td><code>render timechart</code></td></tr>
+          <tr><td><code>let</code></td><td>Define una variable o subquery reutilizable</td><td><code>let umbral = 90;</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tiempo: lo que aparece en casi toda query</div>
+      <ul>
+        <li><code>TimeGenerated</code> es la columna estándar de timestamp en todas las tablas del workspace.</li>
+        <li><code>ago(1h)</code>, <code>ago(7d)</code>, <code>ago(30m)</code> — punto en el pasado relativo a ahora. Unidades: <code>d</code>, <code>h</code>, <code>m</code>, <code>s</code>.</li>
+        <li><code>bin(TimeGenerated, 5m)</code> — redondea el timestamp hacia abajo en cubetas. Es <strong>lo que hace posible un timechart</strong>: agrupa por intervalos.</li>
+        <li><code>now()</code>, <code>startofday()</code>, <code>between(datetime(...) .. datetime(...))</code>.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Comparaciones: la letra chica que se pregunta</div>
+      <ul>
+        <li><code>==</code> es <strong>case-sensitive</strong>; <code>=~</code> es <strong>case-insensitive</strong>. (<code>!=</code> y <code>!~</code> son sus negaciones.)</li>
+        <li><code>contains</code> busca una subcadena en cualquier parte, case-insensitive. <code>contains_cs</code> es la variante sensible a mayúsculas.</li>
+        <li><code>has</code> busca un <strong>término completo</strong> (palabra indexada). Es <strong>mucho más rápido</strong> que <code>contains</code> porque usa el índice. Preferilo cuando buscás una palabra entera.</li>
+        <li><code>startswith</code>, <code>endswith</code>, <code>in (...)</code>, <code>matches regex</code>.</li>
+        <li>Ejemplo de la diferencia: <code>has "win"</code> <strong>no</strong> matchea "Windows"; <code>contains "win"</code> <strong>sí</strong>.</li>
+      </ul>
+    </div>
+
+    <p><strong>Query 1 — VMs que no reportan hace más de 15 minutos</strong> (detección de máquinas caídas):</p>
+<pre>Heartbeat
+| where TimeGenerated &gt; ago(24h)
+| summarize UltimoLatido = max(TimeGenerated) by Computer
+| where UltimoLatido &lt; ago(15m)
+| order by UltimoLatido asc</pre>
+
+    <p><strong>Query 2 — CPU promedio por máquina en cubetas de 5 minutos, graficado</strong>:</p>
+<pre>Perf
+| where ObjectName == "Processor" and CounterName == "% Processor Time"
+| where TimeGenerated &gt; ago(6h)
+| summarize CPUProm = avg(CounterValue) by Computer, bin(TimeGenerated, 5m)
+| render timechart</pre>
+
+    <p><strong>Query 3 — quién borró recursos en los últimos 7 días</strong> (Activity Log ya exportado al workspace):</p>
+<pre>AzureActivity
+| where TimeGenerated &gt; ago(7d)
+| where OperationNameValue has "DELETE"
+| where ActivityStatusValue =~ "Success"
+| project TimeGenerated, Caller, OperationNameValue, ResourceGroup, _ResourceId
+| order by TimeGenerated desc</pre>
+
+    <p><strong>Query 4 — top 10 de errores por computadora con percentil de duración</strong>:</p>
+<pre>Event
+| where TimeGenerated &gt; ago(1d)
+| where EventLevelName == "Error"
+| summarize Errores = count(), Ultimo = max(TimeGenerated) by Computer, Source
+| top 10 by Errores desc</pre>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> confundir <code>take</code> con <code>top</code>. <code>take 10</code> te devuelve 10 filas <strong>cualquiera</strong>, sin orden garantizado — sirve para espiar el shape de una tabla, nunca para "los 10 más altos". Para eso es <code>top 10 by Columna desc</code>. Otra que cae seguido: <code>summarize count()</code> es una <em>función de agregación</em> dentro de summarize, mientras que <code>| count</code> a secas es un <em>operador</em> que devuelve una sola fila con el total.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Kinds de <code>join</code> que conviene reconocer: <code>innerunique</code> (el <strong>default</strong> en KQL, deduplica la clave del lado izquierdo), <code>inner</code>, <code>leftouter</code>, <code>rightouter</code>, <code>fullouter</code>, <code>leftanti</code> / <code>rightanti</code> (las filas que <em>no</em> matchean — buenísimo para "qué servidores están en el inventario pero no reportan").</span>
+    </div>
+  </div>
+
+  <!-- ══ 7 ══ -->
+  <div class="section" id="sec-alertas">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(244,114,182,.15)">🚨</div>
+      <span class="section-title">Alertas, severidades y Action Groups</span>
+      <span class="section-tag">Alto rendimiento</span>
+    </div>
+
+    <p>Una alert rule tiene siempre la misma anatomía: <strong>scope</strong> (sobre qué recurso), <strong>condición</strong> (el signal y su lógica), <strong>acciones</strong> (a qué action group dispara) y <strong>detalles</strong> (nombre, severidad, descripción).</p>
+
+    <div class="flow">
+      <div class="flow-step">Scope<br><small>qué recurso</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Condición<br><small>signal + umbral</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">Alert rule<br><small>severity 0–4</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Action Group<br><small>notificar + accionar</small></div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Tipo de alerta</th><th>Sobre qué evalúa</th><th>Velocidad</th><th>Caso típico del examen</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Metric alert</strong></td>
+            <td>Una métrica contra un umbral estático o <strong>dynamic threshold</strong></td>
+            <td><span class="chip chip-green">near real-time</span></td>
+            <td>"CPU &gt; 80% por 5 minutos". Soporta <strong>multi-resource</strong> (una regla para todas las VMs de un RG o región).</td>
+          </tr>
+          <tr>
+            <td><strong>Log alert</strong></td>
+            <td>Una query KQL que corre cada cierto intervalo</td>
+            <td><span class="chip chip-yellow">con delay</span></td>
+            <td>"Más de 5 errores 500 en 15 minutos". Lo único que puede correlacionar entre recursos.</td>
+          </tr>
+          <tr>
+            <td><strong>Activity Log alert</strong></td>
+            <td>Eventos del plano de control</td>
+            <td><span class="chip chip-green">rápida</span></td>
+            <td>"Alguien borró una VM", "se creó un NSG", "Service Health degradado", <strong>recomendación nueva de Advisor</strong>.</td>
+          </tr>
+          <tr>
+            <td>Smart Detection</td>
+            <td>Anomalías detectadas por ML en Application Insights</td>
+            <td><span class="chip chip-blue">automática</span></td>
+            <td>Degradación anómala de performance sin regla manual.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">CLI: alerta CPU &gt; 95% × 10 min + AG1</div>
+<pre><code>az monitor metrics alert create -n A1 -g RG1 \
+  --scopes $vmId \
+  --condition "avg Percentage CPU > 95" \
+  --window-size 10m \
+  --action AG1</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Drop-down</th><th>Valor</th><th>No es</th></tr></thead>
+          <tbody>
+            <tr><td>Subcomando</td><td><code>create</code></td><td><code>update</code> / <code>set</code> (el recurso no existe)</td></tr>
+            <tr><td>Condición</td><td><code>--condition</code></td><td><code>--expression</code> / <code>--criteria</code> no son el flag de este comando</td></tr>
+            <tr><td>10 minutos</td><td><code>--window-size 10m</code></td><td><code>--evaluation-frequency</code> es cada cuánto se evalúa, no la ventana</td></tr>
+            <tr><td>Action group</td><td><code>--action AG1</code></td><td>En este comando no es <code>--action-group</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “for at least 10 minutes” = <strong><code>--window-size</code></strong>, no frequency. <code>az monitor metrics alert create … --condition … --action</code>.</span>
+    </div>
+      <p>LOB con Azure SQL + VMs Windows y Linux (capas business y presentation). Alertar cada excepción, mínimo esfuerzo.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Log alert: excepciones en <strong>Windows servers</strong></td><td><span class="yes">Sí</span></td><td>Una fuente de logs (Event / Windows). Query KQL + action group</td></tr>
+            <tr><td>Log alert: excepciones en <strong>Linux servers</strong></td><td><span class="yes">Sí</span></td><td>Otra fuente (Syslog). Win y Linux no van en la misma tabla</td></tr>
+            <tr><td>Query por capa business / presentation / application</td><td><span class="no">No</span></td><td>Log Analytics no se parte por “capa funcional”. Más reglas, mismo OS</td></tr>
+            <tr><td>Una sola query “toda la app” mezclando Win+Linux+SQL</td><td><span class="no">No</span></td><td>Tablas distintas. SQL PaaS ni siquiera es el agente de VM</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “any part of the application” + mínimo esfuerzo = <strong>dos log alerts por SO</strong> (Windows y Linux), no por capa (business/presentation). Las capas no son un filtro de KQL; el agente sí.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Severity</th><th>Etiqueta</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip chip-red">Sev 0</span></td><td>Critical</td><td>Producción caída, despertar a alguien</td></tr>
+          <tr><td><span class="chip chip-red">Sev 1</span></td><td>Error</td><td>Falla que degrada el servicio</td></tr>
+          <tr><td><span class="chip chip-yellow">Sev 2</span></td><td>Warning</td><td>Umbral rozado, revisar</td></tr>
+          <tr><td><span class="chip chip-blue">Sev 3</span></td><td>Informational</td><td>Cambio que vale la pena registrar</td></tr>
+          <tr><td><span class="chip chip-purple">Sev 4</span></td><td>Verbose</td><td>Ruido de bajo nivel</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Action Groups</div>
+      <p>Un action group es una <strong>lista reutilizable de destinatarios y acciones</strong>. Se crea una vez y se referencia desde muchas alert rules.</p>
+      <ul>
+        <li><strong>Notificaciones</strong>: Email, SMS, Azure app push notification, Voice, y "Email Azure Resource Manager role" (mandarle a todos los que tengan un rol dado en la suscripción).</li>
+        <li><strong>Acciones</strong>: Webhook, Secure Webhook, <strong>Logic App</strong>, <strong>Azure Function</strong>, <strong>Automation Runbook</strong>, Event Hub, e <strong>ITSM</strong> (ServiceNow, System Center Service Manager, etc., vía <strong>ITSM Connector / ITSMC</strong>).</li>
+        <li>Si la pregunta pide <strong>remediar automáticamente</strong> (reiniciar la VM, escalar), la respuesta pasa por Automation Runbook, Function o Logic App dentro del action group. Si pide <strong>abrir un ticket en SCSM/ServiceNow</strong> con mínimo esfuerzo, es <strong>ITSMC + acción ITSM</strong> en el action group, no un runbook a SCSM.</li>
+        <li>Webhook, Function, Logic App y Runbook <strong>no</strong> tienen el rate limit de SMS/voz/email: si la alerta dispara cada minuto, esas acciones corren las 60 veces.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí 2: SQL CPU 70% → mail + SMS + ticket SCSM</div>
+      <p>Azure SQL Database. System Center Service Manager on-prem. Alerta al 70% CPU: notificar usuarios (email y SMS) y <strong>crear ticket ITSM</strong>, mínimo esfuerzo.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>ITSM Connector (ITSMC)</strong></td><td><span class="yes">Sí</span></td><td>Puente nativo Azure Monitor ↔ SCSM / ServiceNow</td></tr>
+            <tr><td><strong>Un</strong> action group con dos acciones: email+SMS <em>y</em> ITSM</td><td><span class="yes">Sí</span></td><td>Un grupo, dos action types. Mínimo admin</td></tr>
+            <tr><td>Dos action groups (uno notify, uno ITSM)</td><td><span class="no">No</span></td><td>Funciona, pero no es “minimum effort”</td></tr>
+            <tr><td>SCSM + Azure Automation</td><td><span class="no">No</span></td><td>Overkill frente al conector nativo</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>az monitor action-group create -n ag-sql -g RG --short-name sql \
+  --action email ops ops@contoso.com \
+  --action sms ops 1 5555550100 \
+  --action itsm itsm1 &lt;workspace&gt; &lt;connId&gt; &lt;ticketConfig&gt;</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “minimum administrative effort” + mail/SMS + ticket = <strong>ITSMC + un action group con dos acciones</strong>. Dos grupos funcionan y sobran. Automation hacia SCSM es el distractor “más ingeniería”.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: mínimo de rules / action groups / notifications</div>
+      <p>Cinco VMs. Alertar cuando una <strong>reinicia, se detiene o se dealloca</strong>. Avisar a <strong>dos</strong> admins por <strong>email y Azure app push</strong>. Son <strong>Activity Log alerts</strong> (operaciones de control plane), no queries de Log Analytics.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th></th><th>Mínimo</th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td>Alert rules</td><td><strong>3</strong></td><td>Una condición = una operación: restart / powerOff (stop) / deallocate. El <strong>scope cubre las 5 VMs</strong> (RG o subscription). No es 15 (5×3).</td></tr>
+          <tr><td>Action groups</td><td><strong>1</strong></td><td>Se crea una vez y las tres reglas lo reutilizan.</td></tr>
+          <tr><td>Notifications</td><td><strong>2</strong></td><td>Una fila por persona. En la misma fila tildás <strong>email y Azure app push</strong>. No es 4 (2×2 canales).</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>az monitor action-group create -n ag-vmops -g RG --short-name vmops \
+  --action email admin1 a1@contoso.com \
+  --action azureapppush admin1 a1@contoso.com \
+  --action email admin2 a2@contoso.com \
+  --action azureapppush admin2 a2@contoso.com
+
+# Una regla por operación (scope = subscription o RG de las 5 VMs)
+az monitor activity-log alert create -n vm-restart -g RG --action-group ag-vmops \
+  --condition category=Administrative \
+             operationName=Microsoft.Compute/virtualMachines/restart/action
+az monitor activity-log alert create -n vm-stop -g RG --action-group ag-vmops \
+  --condition category=Administrative \
+             operationName=Microsoft.Compute/virtualMachines/powerOff/action
+az monitor activity-log alert create -n vm-dealloc -g RG --action-group ag-vmops \
+  --condition category=Administrative \
+             operationName=Microsoft.Compute/virtualMachines/deallocate/action
+
+New-AzActionGroup -Name ag-vmops -ResourceGroupName RG -ShortName vmops `
+  -EmailReceiver $e1,$e2 -AzureAppPushReceiver $p1,$p2
+New-AzActivityLogAlert ...  # tres veces, una por operationName</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> no multipliques por las 5 VMs (eso daría 15 reglas) ni por canal (eso daría 4 notificaciones). <strong>3 / 1 / 2</strong>. Restart, stop y deallocate son <strong>tres operaciones distintas</strong> del Activity Log; una regla clásica no las junta. Email + Azure app push van en la <strong>misma notificación</strong> del destinatario.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Bicep: alerta de recomendaciones de Advisor</div>
+      <p>Advisor no emite métricas: cuando aparece una recomendación nueva, entra al <strong>Activity Log</strong> (categoría <code>Recommendation</code>). Para avisar hace falta la regla <strong>y</strong> quién recibe el aviso.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Tipo en Bicep / ARM</th><th>¿Va?</th><th>Para qué es</th></tr></thead>
+        <tbody>
+          <tr><td><code>Microsoft.Insights/activityLogAlerts</code></td><td><span class="yes">Sí</span></td><td>Advisor, Service Health, Resource Health, create/delete/restart de VMs</td></tr>
+          <tr><td><code>Microsoft.Insights/actionGroups</code></td><td><span class="yes">Sí</span></td><td>Email, push, SMS, webhook, runbook. Sin esto la regla no notifica.</td></tr>
+          <tr><td><code>Microsoft.Insights/metricAlerts</code></td><td><span class="no">No</span></td><td>Umbral numérico (CPU, cola). Advisor no es una métrica.</td></tr>
+          <tr><td><code>Microsoft.Insights/alertrules</code></td><td><span class="no">No</span></td><td>API clásica / deprecada. El examen quiere la moderna.</td></tr>
+          <tr><td><code>Microsoft.Insights/dataCollectionRules</code></td><td><span class="no">No</span></td><td>AMA: qué recolecta el agente. No dispara alertas.</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>resource ag 'Microsoft.Insights/actionGroups@2023-01-01' = {
+  name: 'ag-advisor'
+  location: 'Global'
+  properties: {
+    groupShortName: 'advisor'
+    enabled: true
+    emailReceivers: [{ name: 'ops' emailAddress: 'ops@contoso.com' }]
+  }
+}
+resource advisorAlert 'Microsoft.Insights/activityLogAlerts@2020-10-01' = {
+  name: 'advisor-new-recs'
+  location: 'Global'
+  properties: {
+    enabled: true
+    scopes: [ subscription().id ]
+    condition: {
+      allOf: [
+        { field: 'category' equals: 'Recommendation' }
+      ]
+    }
+    actions: { actionGroups: [{ actionGroupId: ag.id }] }
+  }
+}</code></pre>
+<pre><code>az deployment group create -g RG --template-file main.bicep
+New-AzResourceGroupDeployment -ResourceGroupName RG -TemplateFile main.bicep</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “alerta de Advisor con Bicep, elegí dos” = <code>activityLogAlerts</code> + <code>actionGroups</code>. <code>metricAlerts</code> es CPU/cola. <code>alertrules</code> es el tipo viejo. <code>dataCollectionRules</code> es AMA. Referenciar <code>ag.id</code> ya crea la dependencia implícita; location de ambos es <strong>Global</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Rate limits de notificaciones (números del examen)</div>
+      <p>Son topes <strong>por destinatario</strong> (email o número), no se configuran a mano: “maximum values” = estos límites de servicio. La alerta que dispara cada minuto intenta 60 veces por hora; el envío real es <code>min(disparos, tope)</code>.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Canal</th><th>Tope de servicio</th><th>Alerta cada 1 min → por hora</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Email</strong></td><td>100 por hora</td><td><strong>60</strong> (hay 60 disparos; el tope 100 no corta)</td></tr>
+          <tr><td><strong>SMS</strong></td><td>1 cada <strong>5 minutos</strong></td><td><strong>12</strong> (60 ÷ 5)</td></tr>
+          <tr><td><strong>Voice</strong></td><td>1 cada <strong>5 minutos</strong></td><td><strong>12</strong></td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code># Action group con email + SMS + voz
+az monitor action-group create -n ag-ops -g RG --short-name ops \
+  --email-receivers name=oncall email=ops@contoso.com \
+  --sms-receivers name=oncall country-code=54 phone-number=11xxxxxxxx \
+  --voice-receivers name=oncall country-code=54 phone-number=11xxxxxxxx
+
+New-AzActionGroup -Name ag-ops -ResourceGroupName RG -ShortName ops `
+  -EmailReceiver $email -SmsReceiver $sms -VoiceReceiver $voice</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> alerta cada minuto, action group con email/SMS/voz. Por hora: email <strong>60</strong> (no 100: el 100 es el techo, no lo que se envía), SMS <strong>12</strong>, voice <strong>12</strong>. No pongas 100 en email ni 60 en SMS. En action group de <em>test</em> los topes son más holgados (email 2/min, SMS/voz 1/min) — el examen de producción usa 100/h y 1/5 min.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Estados y supresión</div>
+      <ul>
+        <li><strong>Monitor condition</strong> (la determina el sistema): <code>Fired</code> o <code>Resolved</code>. Las metric alerts se auto-resuelven cuando la condición deja de cumplirse.</li>
+        <li><strong>Alert state</strong> (la manejás vos): <code>New</code> → <code>Acknowledged</code> → <code>Closed</code>. Cambiarla no afecta a la monitor condition.</li>
+        <li><strong>Alert processing rules</strong> (antes "action rules"): suprimen notificaciones o agregan acciones en bloque. El caso canónico es <strong>silenciar alertas durante una ventana de mantenimiento planificado</strong> sin tener que deshabilitar cada regla una por una.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si el enunciado pide <strong>la menor latencia posible</strong> para reaccionar a un umbral numérico, la respuesta es <strong>metric alert</strong>, no log alert — aunque el dato también exista en el workspace. La log alert tiene que esperar a que el dato se ingiera (minutos) más el intervalo de evaluación. Al revés: si necesitás <strong>correlacionar varias fuentes o buscar un patrón en texto</strong>, la metric alert no puede y va sí o sí log alert.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el action group <strong>no es opcional</strong> para notificar. Muchos escenarios describen una alerta "que no notifica a nadie" — la falla es que la regla se creó sin action group asociado, o que el action group existe pero el destinatario no está en él. Y recordá: los action groups son un recurso global aparte, reutilizable entre reglas.</span>
+    </div>
+  </div>
+
+  <!-- ══ 8 ══ -->
+  <div class="section" id="sec-visual">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(45,212,191,.15)">📊</div>
+      <span class="section-title">Visualización, Application Insights y Health</span>
+      <span class="section-tag">Reconocer nombres</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Formas de ver los datos</div>
+      <ul>
+        <li><strong>Metrics Explorer</strong>: gráfico interactivo de métricas. Elegís recurso, métrica, <strong>agregación</strong> (avg, min, max, sum, count) y podés hacer <strong>splitting por dimensión</strong> (por ejemplo, latencia partida por nombre de instancia o por código de respuesta). También permite filtrar por dimensión.</li>
+        <li><strong>Workbooks</strong>: reportes interactivos que mezclan texto, métricas, queries KQL, parámetros y gráficos en un solo documento. Es lo que respondés cuando piden "un reporte rico y parametrizable, reutilizable entre equipos".</li>
+        <li><strong>Azure Dashboards</strong>: tablero del portal donde pineás tiles de distintos recursos. Más simple y menos interactivo que un workbook; se comparte como recurso de Azure con RBAC.</li>
+        <li><strong>Insights</strong>: vistas curadas listas para usar (VM Insights, Container Insights, Network Insights, Storage Insights).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Storage Insights: 4.500 cuentas, dos subscriptions</div>
+      <p>Identificar cuentas sin uso, métricas interactivas, coloring de Availability. Vista Storage Insights de Azure Monitor.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Ordenar por Transactions ascendente identifica cuentas sin uso</td><td><span class="yes">Yes</span></td><td>Cero/bajas transacciones quedan arriba</td></tr>
+            <tr><td>El Overview workbook muestra hasta <strong>500</strong> storage accounts</td><td><span class="no">No</span></td><td>El selector del workbook llega a <strong>200</strong>. 500 es la cuota de cuentas por región, otro número</td></tr>
+            <tr><td>Se puede aplicar coloring custom en Availability threshold</td><td><span class="yes">Yes</span></td><td>El workbook se edita: umbrales y colores de Availability</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Yes / No / Yes. “hasta 500” es carnada de la cuota de Storage Accounts. Storage Insights: <strong>hasta 200</strong> cuentas en el Overview, hasta 10 subscriptions.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Pinear un chart de Log Analytics al dashboard</div>
+      <p>Query tabular → chart en un dashboard compartido (p. ej. App Insights Overview).</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Los datos del chart están limitados a <strong>≤ 30 días</strong></td><td><span class="yes">Yes</span></td><td>Tile pineado a Azure Dashboard: time range máx. 30 días</td></tr>
+            <tr><td>Máximo 4 columnas y top 7 filas</td><td><span class="no">No</span></td><td>Ese tope no existe para el chart pineado</td></tr>
+            <tr><td>Solo line y stacked column</td><td><span class="no">No</span></td><td>También bar, pie, area, etc.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Yes / No / No. La restricción real al pinear a un <em>shared dashboard</em> es el <strong>time range de 30 días</strong>, no el tipo de gráfico ni “4×7”.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Application Insights</div>
+      <ul>
+        <li><strong>Availability tests</strong>: pings sintéticos desde varias ubicaciones geográficas para verificar que tu endpoint responde. Es la respuesta a "monitorear disponibilidad desde afuera, desde múltiples regiones".</li>
+        <li><strong>Application Map</strong>: topología automática de componentes y dependencias con sus tiempos de respuesta y tasas de falla.</li>
+        <li><strong>Live Metrics</strong>: telemetría en streaming casi sin delay, ideal durante un deployment.</li>
+        <li><strong>Transaction search</strong> y <strong>end-to-end transaction details</strong> para seguir una request individual.</li>
+        <li>Hoy es <strong>workspace-based</strong>: los datos se guardan en un Log Analytics Workspace y se consultan con KQL (<code>requests</code>, <code>dependencies</code>, <code>exceptions</code>).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">30 Application Gateways: vista consolidada</div>
+      <p>WAF (queries de requests bloqueadas) + métricas de requests de hasta 1 mes + insights de performance al servir páginas. Un solo “monitoring solution”.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Azure Monitor</strong></td><td><span class="yes">Sí</span></td><td>Paraguas: Metrics (1 mes), Logs/WAF, App Gateway Insights</td></tr>
+            <tr><td>Azure Log Analytics</td><td><span class="no">No</span></td><td>Solo el backend de logs. No cubre métricas ni Insights</td></tr>
+            <tr><td>Application Insights</td><td><span class="no">No</span></td><td>Apps instrumentadas (SDK). No es el blade de App Gateway</td></tr>
+            <tr><td>Microsoft Sentinel</td><td><span class="no">No</span></td><td>SIEM. Overkill y no es performance de páginas</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si el enunciado mezcla <strong>métricas + logs WAF + insights</strong>, la respuesta es <strong>Azure Monitor</strong>, no Log Analytics (es un pedazo). App Insights ≠ App Gateway. Sentinel = seguridad, no consolidado de requests.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Servicio</th><th>Responde a</th><th>Alcance</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Service Health</strong></td>
+            <td>"¿Hay un problema de Azure que afecta <em>a mis</em> servicios y regiones?"</td>
+            <td>Personalizado a tus suscripciones. Incluye service issues, <strong>planned maintenance</strong> y health advisories. Se puede alertar vía Activity Log alert.</td>
+          </tr>
+          <tr>
+            <td><strong>Resource Health</strong></td>
+            <td>"¿Está sano <em>este recurso puntual</em>?"</td>
+            <td>Un recurso individual. Estados: Available, Unavailable, Degraded, Unknown. Distingue si la causa fue tuya (user-initiated) o de la plataforma.</td>
+          </tr>
+          <tr>
+            <td><strong>Azure Status</strong></td>
+            <td>"¿Se cayó Azure para todo el mundo?"</td>
+            <td>Página pública global, no personalizada. Es el último recurso cuando ni el portal responde.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Discriminador rápido: <strong>Service Health = problema de Azure</strong>, <strong>Resource Health = problema de tu recurso</strong>, <strong>Azure Status = tablero público</strong>. Si la pregunta habla de "mantenimiento planificado que puede afectar mis VMs", es <strong>Service Health</strong>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 9 ══ -->
+  <div class="section" id="sec-netwatcher">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(96,165,250,.15)">🛰️</div>
+      <span class="section-title">Network Watcher: herramienta por herramienta</span>
+      <span class="section-tag">Se pregunta el síntoma</span>
+    </div>
+
+    <p><strong>Network Watcher es un servicio regional</strong>: se habilita por región y por suscripción, y una instancia solo puede diagnosticar recursos <em>de esa región</em>. Históricamente Azure lo crea automáticamente en un resource group llamado <code>NetworkWatcherRG</code> cuando creás una VNet en una región nueva. El menú del portal son <strong>cuatro bloques</strong>; el examen te pide el ítem, no el grupo.</p>
+
+    <div class="card">
+      <div class="card-title">Menú del portal (1:1)</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Bloque</th><th>Ítem</th><th>Para qué</th></tr></thead>
+          <tbody>
+            <tr><td rowspan="3"><strong>Monitoring</strong></td><td><strong>Topology</strong></td><td>Diagrama interactivo de recursos de red y relaciones (VNets, NICs, LB…; cruza RG/subscription/región)</td></tr>
+            <tr><td><strong>Connection monitor</strong></td><td>Conectividad y <strong>latencia</strong> continuas, Azure e híbrido</td></tr>
+            <tr><td><strong>Traffic Analytics</strong></td><td>Flow logs procesados en un LAW: top talkers, geografía, anomalías</td></tr>
+            <tr><td rowspan="7"><strong>Network diagnostic tools</strong></td><td><strong>IP flow verify</strong></td><td>5-tuple en una <strong>VM</strong>: Allowed/Denied + nombre de la regla</td></tr>
+            <tr><td><strong>NSG diagnostics</strong></td><td>Mismo veredicto, pero el target puede ser VM, NIC, <strong>VMSS</strong> o <strong>App Gateway v2</strong></td></tr>
+            <tr><td><strong>Next hop</strong></td><td>Ruteo: tipo de next hop + route table (UDR/NVA/None)</td></tr>
+            <tr><td><strong>Effective security rules</strong></td><td>Lista unificada NIC+subnet (no simula un paquete)</td></tr>
+            <tr><td><strong>VPN troubleshoot</strong></td><td>VPN Gateway y conexiones S2S; informe a Storage</td></tr>
+            <tr><td><strong>Packet capture</strong></td><td>pcap desde la VM (agente + VM encendida) → Storage</td></tr>
+            <tr><td><strong>Connection troubleshoot</strong></td><td>Test <em>puntual</em> origen→destino (¿llega? saltos, latencia)</td></tr>
+            <tr><td><strong>Metrics</strong></td><td><strong>Usage + quotas</strong></td><td>Uso vs límite de recursos de <em>red</em> por subscription+región (VNets, PIP, NIC…). No es conectividad</td></tr>
+            <tr><td rowspan="3"><strong>Logs</strong></td><td><strong>Flow logs</strong></td><td>5-tuples persistentes. Hoy: <strong>VNet flow logs</strong> → Storage. NSG flow logs en retiro</td></tr>
+            <tr><td><strong>Migrate flow logs</strong></td><td>Pasa NSG flow logs existentes a VNet flow logs (ya no se crean NSG nuevos)</td></tr>
+            <tr><td><strong>Diagnostic logs</strong></td><td>Diagnostic Settings del recurso de red (plataforma) → LAW / Storage / Event Hub. <strong>No</strong> son flow logs</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Herramienta</th><th>Qué responde exactamente</th><th>Síntoma en la pregunta</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>IP Flow Verify</strong></td>
+            <td>Si un flujo (5-tuple: IP origen, IP destino, puerto origen, puerto destino, protocolo, dirección) es <strong>Allowed o Denied</strong> por NSG, y <strong>te nombra la regla exacta</strong> que decidió.</td>
+            <td>"¿Por qué el NSG bloquea este tráfico? ¿Qué regla lo hace?"</td>
+          </tr>
+          <tr>
+            <td><strong>NSG Diagnostics</strong></td>
+            <td>Simula un flujo y te dice Allowed/Denied con la regla, igual que IP Flow, pero el destino puede ser <strong>VM, NIC, VMSS o App Gateway v2</strong> (IP Flow es VM).</td>
+            <td>"El App Gateway / el scale set, ¿qué NSG lo filtra?"</td>
+          </tr>
+          <tr>
+            <td><strong>Next Hop</strong></td>
+            <td>A dónde enruta el paquete: <code>Internet</code>, <code>VirtualNetwork</code>, <code>VirtualNetworkPeering</code>, <code>VirtualNetworkGateway</code>, <code>VirtualAppliance</code>, <code>None</code>. Te devuelve también el ID de la route table que decidió.</td>
+            <td>"El tráfico no llega y sospechamos de una UDR / de la NVA"</td>
+          </tr>
+          <tr>
+            <td><strong>Effective security rules</strong></td>
+            <td>La <strong>unión resuelta</strong> de todas las reglas NSG que aplican a una NIC (NSG de NIC + NSG de subnet), incluyendo las default.</td>
+            <td>"Quiero ver todas las reglas efectivas sobre esta VM"</td>
+          </tr>
+          <tr>
+            <td><strong>Connection Troubleshoot</strong></td>
+            <td>Test de conectividad <strong>puntual</strong> de origen a destino: latencia, saltos y qué componente bloquea.</td>
+            <td>"Probá si la VM A puede llegar al puerto 443 de B, una vez"</td>
+          </tr>
+          <tr>
+            <td><strong>Connection Monitor</strong></td>
+            <td>Monitoreo de conectividad <strong>continuo y en el tiempo</strong>, con métricas de <strong>latencia</strong>, pérdida y alertas. Híbrido: Azure (VM/VMSS) <strong>y on-prem</strong> (agente) hacia el mismo destino (URL, IP, Storage).</td>
+            <td>"Comparar latencias on-prem vs Azure hacia el mismo endpoint"</td>
+          </tr>
+          <tr>
+            <td><strong>Packet Capture</strong></td>
+            <td>Captura de paquetes real desde la VM, guardada en <strong>Storage Account</strong> o disco local. Requiere la <strong>extensión de Network Watcher agent</strong> en la VM.</td>
+            <td>"Necesitamos analizar el contenido del tráfico en Wireshark"</td>
+          </tr>
+          <tr>
+            <td><strong>VPN Troubleshoot</strong></td>
+            <td>Diagnóstico de VPN Gateway y conexiones site-to-site; resultados a una Storage Account.</td>
+            <td>"El túnel S2S no levanta"</td>
+          </tr>
+          <tr>
+            <td><strong>VNet Flow Logs</strong> (reemplazo de NSG Flow Logs)</td>
+            <td>Registro de <strong>todos los flujos</strong> permitidos y denegados a nivel de VNet/subnet. Se escriben a una <strong>Storage Account</strong> (JSON). NSG Flow Logs siguen existiendo pero van a retiro: para diseños nuevos usá VNet flow logs.</td>
+            <td>"Registro persistente de qué se permitió y qué se bloqueó"</td>
+          </tr>
+          <tr>
+            <td><strong>Traffic Analytics</strong></td>
+            <td>Los flow logs <strong>procesados y enriquecidos</strong> en un Log Analytics Workspace: mapas de tráfico, top talkers, geografía, puertos abiertos, hosts maliciosos.</td>
+            <td>"Visualizar patrones de tráfico y detectar anomalías"</td>
+          </tr>
+          <tr>
+            <td><strong>Topology</strong></td>
+            <td>Vista interactiva de la red: recursos y relaciones, no un diagnóstico de un paquete.</td>
+            <td>"Visualizar la arquitectura de red que heredé"</td>
+          </tr>
+          <tr>
+            <td><strong>Usage + quotas</strong></td>
+            <td>Cuántos recursos de red hay vs el límite de la región/subscription.</td>
+            <td>"No me deja crear otra Public IP / VNet en East US"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí una: comparar latencias on-prem vs VMSS al mismo Storage</div>
+      <p>App on-prem y una en VMSS hablan con el <strong>mismo endpoint</strong> de storage. Hay que hacer un <strong>análisis comparativo de latencias</strong>. Eso es serie temporal + varios orígenes + un destino, no un test puntual ni un NSG.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Herramienta</th><th></th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Connection Monitor</strong></td><td><span class="yes">Sí</span></td><td>Continuo, híbrido, mide <strong>latencia</strong> de cada origen al mismo dest (blob FQDN / 443)</td></tr>
+          <tr><td>IP flow verify</td><td><span class="no">No</span></td><td>Allowed/Denied de un 5-tuple. Un shot, no compara latencias</td></tr>
+          <tr><td>NSG diagnostics</td><td><span class="no">No</span></td><td>Qué NSG decide en el camino. No hay métrica de RTT</td></tr>
+          <tr><td>VPN Troubleshoot</td><td><span class="no">No</span></td><td>Túnel S2S / VPN Gateway. No es el path a Storage</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>az network watcher connection-monitor create -n cm-storage -g NetworkWatcherRG \
+  --location eastus --source-resource $vmssId \
+  --dest-address cuenta.blob.core.windows.net --dest-port 443
+
+New-AzNetworkWatcherConnectionMonitor -NetworkWatcherName NetworkWatcher_eastus `
+  -ResourceGroupName NetworkWatcherRG -Name cm-storage</code></pre>
+      <p>On-prem: máquina con <strong>Network Watcher agent</strong> (o Arc) como endpoint de origen. Connection Troubleshoot (<code>Test-AzNetworkWatcherConnectivity</code>) es <em>una vez</em>: no sirve para comparar en el tiempo.</p>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “comparative analysis of <em>latencies</em>” + origen on-prem <em>y</em> Azure → <strong>Connection Monitor</strong>. IP Flow y NSG diagnostics son filtrado. VPN Troubleshoot es el túnel. Connection Troubleshoot (si aparece) es un ping puntual, no un comparativo continuo.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">HTTPS entre VNets peereadas: ¿qué hacés primero?</div>
+      <p>Server1 (NSG1, VNet1) no llega a Server2 (NSG2, VNet2) por TCP 443. El agente de Network Watcher <strong>ya está en Server2</strong>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Network Watcher: test TCP Server1 → Server2</td><td><span class="yes">Sí</span></td><td>Connection Troubleshoot. El agente hace falta en el <strong>destino</strong>, y ya está. Te dice NSG, ruteo o plataforma</td></tr>
+            <tr><td>Instalar el agente en Server1</td><td><span class="no">No</span></td><td>No es el primer paso: el destino ya tiene agente</td></tr>
+            <tr><td>Network Performance Monitor</td><td><span class="no">No</span></td><td>Tendencia de latencia (legacy). Hoy Connection Monitor, no un fallo puntual de 443</td></tr>
+            <tr><td><code>Test-Connection</code> (PowerShell)</td><td><span class="no">No</span></td><td>ICMP. Los NSG default suelen bloquear ping; no nombra la regla que corta HTTPS</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “first” + HTTPS + agente en el destino = <strong>Connection Troubleshoot TCP</strong>. No instales el agente en el origen primero. NPM no diagnostica un puerto. Ping ≠ 443.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Flow Logs + Traffic Analytics: la cadena completa</div>
+      <ul>
+        <li>Para diseños nuevos usá <strong>VNet flow logs</strong> (NSG flow logs van a retiro). <strong>Siempre necesitan una Storage Account</strong> como destino primario, incluso si después vas a usar Traffic Analytics.</li>
+        <li><strong>Traffic Analytics se habilita encima</strong> del flow log y necesita además un <strong>Log Analytics Workspace</strong>. Es la capa de procesamiento y visualización, no una fuente independiente.</li>
+        <li>El intervalo de procesamiento de Traffic Analytics es configurable (por ejemplo, cada 10 minutos o cada hora): <strong>no es en tiempo real</strong>.</li>
+        <li>Requiere que el proveedor <code>Microsoft.Insights</code> esté registrado en la suscripción.</li>
+      </ul>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">NSG / VNet</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">Flow Logs<br><small>Storage Account</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Traffic Analytics<br><small>Log Analytics</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Dashboards + KQL</div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <strong>IP Flow Verify vs Next Hop</strong> es la confusión más explotada. Si el problema es un <strong>NSG que permite o bloquea</strong> → IP Flow Verify. Si el problema es <strong>hacia dónde se enruta</strong> el paquete (una UDR mal puesta, tráfico que se va a una NVA o cae en <code>None</code>) → Next Hop. Y si te piden ver <em>todas</em> las reglas que aplican a una NIC sin probar un flujo específico → Effective security rules.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí dos: qué regla de filtrado bloquea a VM01</div>
+      <p>VMs en VNets distintas, NSGs custom, VM01 nueva no conecta. Hay que <strong>nombrar la filtering rule</strong>, no el next hop ni si “llega o no llega”.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Cmdlet</th><th></th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td><code>Test-AzNetworkWatcherIPFlow</code></td><td><span class="yes">Sí</span></td><td>Allowed/Denied y <strong>nombra la regla</strong> del NSG</td></tr>
+          <tr><td><code>Get-AzEffectiveNetworkSecurityGroup</code></td><td><span class="yes">Sí</span></td><td>Unión NIC+subnet (custom + default) sobre esa NIC</td></tr>
+          <tr><td><code>Test-AzNetworkWatcherNextHop</code></td><td><span class="no">No</span></td><td>Ruteo / UDR / NVA, no filtrado</td></tr>
+          <tr><td><code>Test-AzNetworkWatcherConnectivity</code></td><td><span class="no">No</span></td><td>Connection Troubleshoot: ¿llega? latencia y saltos</td></tr>
+          <tr><td><code>Get-AzNetworkSecurityGroup</code></td><td><span class="no">No</span></td><td>El recurso NSG crudo, no lo efectivo en la NIC</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>$nw = Get-AzNetworkWatcher -Name NetworkWatcher_eastus -ResourceGroupName NetworkWatcherRG
+Test-AzNetworkWatcherIPFlow -NetworkWatcher $nw -TargetVirtualMachineId $vm.Id `
+  -Direction Inbound -Protocol TCP -LocalPort 3389 -RemotePort 12345 `
+  -LocalIPAddress 10.1.0.4 -RemoteIPAddress 10.0.0.4
+Get-AzEffectiveNetworkSecurityGroup -NetworkInterfaceName nic-vm01 -ResourceGroupName RG
+
+az network watcher test-ip-flow --vm VM01 --direction Inbound --protocol TCP \
+  --local 10.1.0.4:3389 --remote 10.0.0.4:12345 -g RG --watcher-name NetworkWatcher_eastus
+az network nic list-effective-nsg -g RG -n nic-vm01</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “qué <em>filtering rule</em>” = <strong>IP Flow + Effective NSG</strong>. Next Hop es ruteo. Connectivity es “¿llega?”. <code>Get-AzNetworkSecurityGroup</code> no junta NIC+subnet ni te dice qué regla ganó. CLI: <code>az network watcher test-ip-flow</code> + <code>az network nic list-effective-nsg</code>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Una sola: ¿el paquete al web server es Allowed o Denied?</div>
+      <p>Conectividad intermitente a un web server. Te piden la herramienta que verifica si los paquetes están <strong>allowed or denied</strong>. Acá Effective security rules <em>no</em> entra: lista reglas, no simula el 5-tuple.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Herramienta</th><th></th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td><strong>IP flow verify</strong></td><td><span class="yes">Sí</span></td><td>Única que responde Allowed/Denied para un flujo (IP, puerto, protocolo, dirección)</td></tr>
+          <tr><td>Effective security rules</td><td><span class="no">No</span></td><td>Foto de todas las reglas en la NIC. No prueba un paquete concreto</td></tr>
+          <tr><td>Next hop</td><td><span class="no">No</span></td><td>Ruteo / UDR, no filtrado</td></tr>
+          <tr><td>Connection troubleshoot</td><td><span class="no">No</span></td><td>¿Llega ahora? Latencia y saltos. No es el veredicto NSG del 5-tuple</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>Test-AzNetworkWatcherIPFlow -NetworkWatcher $nw -TargetVirtualMachineId $vm.Id `
+  -Direction Inbound -Protocol TCP -LocalPort 80 -RemotePort 12345 `
+  -LocalIPAddress 10.1.0.4 -RemoteIPAddress 203.0.113.10
+
+az network watcher test-ip-flow --vm Web01 --direction Inbound --protocol TCP \
+  --local 10.1.0.4:80 --remote 203.0.113.10:12345 -g RG --watcher-name NetworkWatcher_eastus</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> leé el verbo, no el ruido. “Allowed or denied” = <strong>IP flow verify solo</strong>. “Qué filtering rule” = IP Flow <em>y</em> Effective NSG. “Last 24 hours / intermittent” es carnada de Connection Troubleshoot, Connection Monitor o Flow Logs: ignorala si el pedido es allow/deny de un paquete.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Network Watcher se habilita <strong>por región</strong>. Si el escenario dice "no puedo diagnosticar la VM de West Europe" y Network Watcher solo está habilitado en East US, la solución es habilitarlo en West Europe. Además, <strong>Packet Capture exige la extensión del agente instalada en la VM</strong> y que la VM esté encendida — no funciona sobre un recurso PaaS ni sobre una VM apagada.</span>
+    </div>
+    <div class="card">
+      <div class="card-title">Capturar paquetes 2 h y guardarlos en storage de la VM</div>
+      <p>Todo el tráfico in/out de VM1. Elegí la herramienta.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Herramienta</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Network Watcher</strong> Packet Capture</td><td><span class="yes">Sí</span></td><td>Captura real (.cap), duración, destino Storage o disco de la VM. Agente NW en la VM</td></tr>
+            <tr><td>Azure Monitor</td><td><span class="no">No</span></td><td>Métricas y logs, no el payload de los paquetes</td></tr>
+            <tr><td>Windows Performance Monitor</td><td><span class="no">No</span></td><td>Contadores (CPU, disco). No es un pcap</td></tr>
+            <tr><td>Network Performance Monitor</td><td><span class="no">No</span></td><td>Solución vieja de conectividad (hoy Connection Monitor). Mide RTT, no captura frames</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “capture all network packets” = <strong>Packet Capture de Network Watcher</strong>. Monitor/PerfMon/NPM no generan un .cap. “VM1's storage” = Storage Account o file path local que configura el capture, no “Azure Monitor logs”.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Script del examen: packet capture de SFTP desconocido</div>
+      <p>La VM inicia la conexión (puerto local efímero). El servicio remoto es desconocido → cualquier IP. SFTP va por SSH = <strong>TCP 22</strong>, no FTP 21.</p>
+<pre><code>$res = Get-AzResource | Where-Object {
+  $_.ResourceType -eq "Microsoft.Network/networkWatchers" -and $_.Location -eq "EastUS"
+}
+$networkWatcher = Get-AzNetworkWatcher -Name $res.Name -ResourceGroupName $res.ResourceGroupName
+$diagnosticSA = Get-AzStorageAccount -ResourceGroupName Diagnostics-RG -Name "Diagnostics-Storage"
+
+$filter1 = New-AzPacketCaptureFilterConfig -Protocol TCP `
+  -RemoteIPAddress "0.0.0.0-255.255.255.255" `
+  -LocalIPAddress "10.0.0.3" -LocalPort "1-65535" -RemotePort "22"
+
+New-AzNetworkWatcherPacketCapture -NetworkWatcher $networkWatcher `
+  -TargetVirtualMachineId $vm.Id `
+  -PacketCaptureName "Capture SFTP Traffic" -StorageAccountId $diagnosticSA.Id `
+  -TimeLimitInSeconds 60 -Filter $filter1</code></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Hueco</th><th>Correcto</th><th>Distractor</th></tr></thead>
+        <tbody>
+          <tr><td>ResourceType</td><td><code>Microsoft.Network/networkWatchers</code></td><td><code>Microsoft.Network/virtualNetworks</code> · <code>networkWatchers</code> sin el publisher</td></tr>
+          <tr><td>Remote IP (servicio desconocido)</td><td><code>0.0.0.0-255.255.255.255</code></td><td>La IP de la VM · un /32 inventado</td></tr>
+          <tr><td>Local port (la VM origina)</td><td><code>1-65535</code></td><td><code>22</code> — el 22 es el <em>remoto</em></td></tr>
+          <tr><td>Remote port (SFTP)</td><td><code>22</code></td><td><code>21</code> (FTP) · <code>443</code> · <code>990</code> (FTPS)</td></tr>
+          <tr><td>Arrancar la captura</td><td><code>New-AzNetworkWatcherPacketCapture</code></td><td><code>Start-AzNetworkWatcher</code> · <code>New-AzPacketCapture</code> (no existe)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Comandos de Packet Capture</div>
+<pre><code># Agente (obligatorio). Windows / Linux
+Set-AzVMExtension -ResourceGroupName RG -VMName VM01 -Name NetworkWatcherAgent `
+  -Publisher Microsoft.Azure.NetworkWatcher -ExtensionType NetworkWatcherAgentWindows `
+  -TypeHandlerVersion 1.4
+# Linux: NetworkWatcherAgentLinux
+
+# Atajo: watcher de la región, sin filtrar Get-AzResource
+$nw = Get-AzNetworkWatcher -Location eastus
+
+Get-AzNetworkWatcherPacketCapture -NetworkWatcher $nw
+Stop-AzNetworkWatcherPacketCapture -NetworkWatcher $nw -PacketCaptureName "Capture SFTP Traffic"
+Remove-AzNetworkWatcherPacketCapture -NetworkWatcher $nw -PacketCaptureName "Capture SFTP Traffic"
+
+# CLI
+az network watcher packet-capture create -n "Capture SFTP Traffic" --vm VM01 \
+  --storage-account Diagnostics-Storage --time-limit 60 \
+  --filters '[{"protocol":"TCP","remotePort":"22","localPort":"1-65535","remoteIPAddress":"0.0.0.0-255.255.255.255"}]'
+az vm extension set --publisher Microsoft.Azure.NetworkWatcher \
+  --name NetworkWatcherAgentLinux --vm-name VM01 -g RG</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen (drop-down SFTP):</strong> SFTP ≠ FTP. Puerto remoto <strong>22</strong>, protocolo <strong>TCP</strong>. Como el destino es desconocido, remote IP = todo el rango. Como la VM <em>inicia</em> la sesión, local port = <code>1-65535</code>. El tipo de recurso del watcher es <code>Microsoft.Network/networkWatchers</code> (plural, con el publisher).</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <strong>Diagnostic logs</strong> del menú ≠ <strong>Flow logs</strong>. Diagnostic = plataforma (Diagnostic Settings). Flow = 5-tuples a Storage. <strong>Migrate flow logs</strong> no es un tipo nuevo de log: pasa NSG flow logs (retiro 2027; ya no se crean) a <strong>VNet flow logs</strong>. <strong>Usage + quotas</strong> no diagnostica conectividad: es el techo de PIP/VNet/NIC de la región. Topology no dice Allowed/Denied.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Mapa mental de un solo renglón: <strong>¿permite o bloquea?</strong> IP Flow Verify (VM) / NSG diagnostics (VMSS, App GW) · <strong>¿a dónde va?</strong> Next Hop · <strong>¿qué reglas hay?</strong> Effective rules · <strong>¿llega o no llega?</strong> Connection Troubleshoot (una vez) / Connection Monitor (siempre) · <strong>¿qué había adentro del paquete?</strong> Packet Capture · <strong>¿qué pasó históricamente?</strong> Flow Logs + Traffic Analytics · <strong>¿cómo está armada la red?</strong> Topology · <strong>¿me quedé sin cupo?</strong> Usage + quotas. Diagnostic logs ≠ flow logs. Migrate = NSG → VNet flow logs.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Cuáles son los dos tipos de dato crudo de Azure Monitor, y dónde encajan los Insights?", a: "<strong>Metrics</strong> (serie temporal numérica) y <strong>Logs</strong> (registros con contexto). Los <strong>Insights no son un tercer tipo</strong>: son soluciones curadas que consumen metrics y logs.", cat: "Arquitectura" },
+  { q: "30 App Gateways. WAF bloqueados + métricas de requests 1 mes + performance de páginas. ¿Monitor, Log Analytics, App Insights o Sentinel?", a: "<strong>Azure Monitor</strong> (métricas + logs + Insights de App Gateway). Log Analytics es solo logs. Application Insights es para apps con SDK, no el gateway. Sentinel es SIEM.", cat: "Arquitectura" },
+  { q: "¿Cuánto retiene las platform metrics Azure Monitor, y cuánto el Activity Log por defecto?", a: "Platform metrics: <strong>93 días</strong>. Activity Log: <strong>90 días</strong>, y no se extiende in situ — hay que exportarlo con una Diagnostic Setting.", cat: "Retención" },
+  { q: "¿Por qué no ves los resource logs de un Key Vault o de un Application Gateway en tu workspace?", a: "Porque los <strong>resource logs no se recolectan por defecto</strong>. Falta crear una <strong>Diagnostic Setting</strong> en el recurso apuntando al Log Analytics Workspace. No tiene nada que ver con agentes.", cat: "Diagnostics" },
+  { q: "¿Cuáles son los destinos posibles de una Diagnostic Setting y cuándo se elige cada uno?", a: "<strong>Log Analytics Workspace</strong> (analizar con KQL), <strong>Storage Account</strong> (archivado barato de largo plazo), <strong>Event Hub</strong> (streaming a SIEM/terceros) y <strong>partner solutions</strong>. Un recurso puede tener varias settings a la vez.", cat: "Diagnostics" },
+  { q: "¿Qué agente es el actual y con qué se configura?", a: "<strong>Azure Monitor Agent (AMA)</strong>, que reemplazó al Log Analytics agent (MMA) y a la Diagnostics extension. Se configura con <strong>Data Collection Rules (DCR)</strong> y, cuando hace falta, Data Collection Endpoints.", cat: "Agentes" },
+  { q: "¿Qué relación hay entre DCRs y máquinas?", a: "<strong>Muchos a muchos</strong>: un DCR se asocia a muchas VMs y una VM puede tener varios DCRs. El DCR es <strong>regional</strong> y debe coincidir con la región del workspace destino.", cat: "Agentes" },
+  { q: "¿Cómo monitoreás servidores on-premises o en otra nube con Azure Monitor?", a: "Los conectás con <strong>Azure Arc</strong> (Arc-enabled servers), quedan como recursos de Azure y a partir de ahí les instalás <strong>AMA</strong> y les asociás DCRs igual que a una VM de Azure.", cat: "Agentes" },
+  { q: "¿Cuál es la retención por defecto de un Log Analytics Workspace?", a: "<strong>30 días</strong> interactivos. Sentinel o App Insights workspace-based: <strong>90 días</strong> incluidos. Analytics se sube hasta <strong>730 días</strong>. Distinto por tabla. Archive / long-term: hasta <strong>12 años</strong>; consultar = <strong>search job</strong>, no KQL interactivo.", cat: "Workspace" },
+  { q: "Logs de diagnóstico verbosos, bajar costo. ¿Analytics, Basic o otro workspace? ¿Archive se consulta cómo?", a: "Plan <strong>Basic</strong> (o Auxiliary si es aún más frío) <em>en esa tabla</em>. Analytics es el default caro (multi-tabla + alertas). No hace falta otro LAW. Archive hasta 12 años → <strong>search job</strong>. CLI: <code>az monitor log-analytics workspace table update --plan Basic</code>. MMA no es la ingesta actual.", cat: "Workspace" },
+  { q: "Un usuario debe ver logs solo de su VM, no del resto del workspace. ¿Log Analytics Reader en el LAW?", a: "<strong>No.</strong> Eso es <strong>resource-context</strong>: Reader (o más) <em>sobre la VM</em>. <code>Log Analytics Reader</code> en el workspace le abre todo. Contributor en el LAW configura recolección.", cat: "Workspace" },
+  { q: "¿En qué tabla del workspace buscás quién borró un recurso? ¿Y el latido de los agentes?", a: "<code>AzureActivity</code> para el plano de control (requiere exportar el Activity Log). <code>Heartbeat</code> para saber qué agentes reportan — es la tabla para detectar máquinas caídas.", cat: "KQL" },
+  { q: "Diferencia entre <code>top</code> y <code>take</code> en KQL", a: "<code>top 10 by X desc</code> <strong>ordena y corta</strong>. <code>take 10</code> (= <code>limit 10</code>) devuelve 10 filas <strong>sin ningún orden garantizado</strong>: sirve para espiar la tabla, no para rankings.", cat: "KQL" },
+  { q: "En KQL: <code>==</code> vs <code>=~</code>, y <code>contains</code> vs <code>has</code>", a: "<code>==</code> es <strong>case-sensitive</strong>, <code>=~</code> es <strong>case-insensitive</strong>. <code>contains</code> busca subcadena en cualquier parte; <code>has</code> busca un <strong>término completo</strong> usando el índice y es mucho más rápido.", cat: "KQL" },
+  { q: "¿Qué hace <code>bin()</code> y por qué se usa antes de <code>render timechart</code>?", a: "<code>bin(TimeGenerated, 5m)</code> redondea los timestamps a cubetas de 5 minutos, lo que permite <strong>agrupar la serie por intervalo</strong> dentro de un <code>summarize</code> — que es lo que necesita un timechart.", cat: "KQL" },
+  { q: "Metric alert vs Log alert vs Activity Log alert: ¿cuándo cada una? ¿Qué rango tiene la severity?", a: "<strong>Metric</strong>: umbral sobre una métrica, near real-time, soporta dynamic thresholds y multi-resource. <strong>Log</strong>: query KQL periódica, con delay, única que correlaciona fuentes. <strong>Activity Log</strong>: eventos del plano de control (ej. se borró una VM). Severity <strong>0 (Critical) a 4 (Verbose)</strong>.", cat: "Alertas" },
+  { q: "Alerta cada 1 minuto. Action group con email, SMS y voice al máximo de rate limit. ¿Cuántas notificaciones por hora?", a: "<strong>Email 60</strong> (60 disparos; el tope es 100/h, no se llega). <strong>SMS 12</strong> y <strong>voice 12</strong> (1 cada 5 min). Webhook/Function/Runbook no tienen ese tope. Cmdlets: <code>az monitor action-group create</code> / <code>New-AzActionGroup</code>.", cat: "Alertas" },
+  { q: "5 VMs. Alertar restart, stop y deallocate. 2 admins, email + Azure app push. ¿Mínimo de rules / action groups / notifications?", a: "<strong>3 / 1 / 2</strong>. Tres Activity Log alerts (una por operación; el scope cubre las 5 VMs). Un action group reutilizado. Dos notificaciones (una por persona, con email y push en la misma fila). No 15 reglas ni 4 notificaciones. <code>az monitor activity-log alert create</code> / <code>New-AzActivityLogAlert</code>.", cat: "Alertas" },
+  { q: "LOB con SQL + VMs Win y Linux. Alertar cada excepción, mínimo esfuerzo. ¿Por capa o por SO?", a: "Dos log alerts: excepciones en <strong>Windows servers</strong> y en <strong>Linux servers</strong>. Business/presentation/application no son tablas de KQL. Win y Linux ingestan distinto (Event vs Syslog). SQL PaaS no entra en el agente de VM.", cat: "Alertas" },
+  { q: "SQL CPU 70%. Mail + SMS + ticket en SCSM. Mínimo esfuerzo. ¿ITSMC? ¿Uno o dos action groups? ¿Automation?", a: "<strong>ITSM Connector (ITSMC)</strong> + <strong>un</strong> action group con dos acciones: email+SMS e ITSM. Dos grupos funcionan pero no es mínimo. SCSM + Automation es overkill. CLI: <code>az monitor action-group create</code> con <code>--action email</code> / <code>sms</code> / <code>itsm</code>.", cat: "Alertas" },
+  { q: "Advisor: alerta de recomendaciones nuevas con Bicep. ¿Qué dos resources ponés en main.bicep?", a: "<code>Microsoft.Insights/activityLogAlerts</code> + <code>Microsoft.Insights/actionGroups</code>. Advisor no es métrica (<code>metricAlerts</code> no va). <code>alertrules</code> es el tipo viejo. <code>dataCollectionRules</code> es AMA. Location <strong>Global</strong>. Deploy: <code>az deployment group create --template-file main.bicep</code>.", cat: "Alertas" },
+  { q: "¿Qué herramienta de Network Watcher usás para saber si un NSG bloquea un flujo, y cuál para saber a dónde se enruta el paquete?", a: "<strong>IP Flow Verify</strong> dice Allowed/Denied y <strong>nombra la regla</strong>. <strong>Next Hop</strong> dice hacia dónde va (Internet, VirtualNetwork, VirtualNetworkGateway, VirtualAppliance, None) y qué route table decidió. Network Watcher se habilita <strong>por región</strong>.", cat: "Network Watcher" },
+  { q: "VM01 no conecta. Hay que ver qué filtering rule lo bloquea. ¿Qué dos cmdlets?", a: "<code>Test-AzNetworkWatcherIPFlow</code> (Allowed/Denied + nombre de la regla) y <code>Get-AzEffectiveNetworkSecurityGroup</code> (unión NIC+subnet). No NextHop (ruteo), no Connectivity (¿llega?), no <code>Get-AzNetworkSecurityGroup</code> (el recurso crudo). CLI: <code>az network watcher test-ip-flow</code> + <code>az network nic list-effective-nsg</code>.", cat: "Network Watcher" },
+  { q: "Web server con cortes intermitentes 24 h. Hay que ver si los paquetes están allowed or denied. ¿Qué herramienta?", a: "<strong>IP flow verify</strong> sola. Effective security rules lista las reglas de la NIC, no simula el 5-tuple. Next hop = ruteo. Connection troubleshoot = ¿llega ahora? El “24 h / intermittent” es carnada (Flow Logs / Connection Monitor). Cmdlet: <code>Test-AzNetworkWatcherIPFlow</code> / <code>az network watcher test-ip-flow</code>.", cat: "Network Watcher" },
+  { q: "On-prem y un VMSS hablan con el mismo Storage. Hay que comparar latencias. ¿Qué herramienta?", a: "<strong>Connection Monitor</strong> (continuo, híbrido, métrica de RTT). IP flow verify y NSG diagnostics = filtrado NSG. VPN Troubleshoot = túnel S2S. Connection Troubleshoot = un test puntual. On-prem necesita el agente de Network Watcher. Cmdlets: <code>az network watcher connection-monitor create</code> / <code>New-AzNetworkWatcherConnectionMonitor</code>.", cat: "Network Watcher" },
+  { q: "VM01 habla con un SFTP desconocido. Filtro de packet capture: protocol, remote IP, local port, remote port, cmdlet.", a: "<strong>TCP</strong> · remote IP <code>0.0.0.0-255.255.255.255</code> · local port <code>1-65535</code> · remote port <strong>22</strong> (SFTP=SSH, no FTP 21) · <code>New-AzPacketCaptureFilterConfig</code> + <code>New-AzNetworkWatcherPacketCapture</code>. ResourceType del watcher: <code>Microsoft.Network/networkWatchers</code>.", cat: "Network Watcher" },
+  { q: "Requisito y cmdlets para Packet Capture (además del filtro).", a: "La VM tiene que estar <strong>encendida</strong> y con la extensión <strong>NetworkWatcherAgentWindows / Linux</strong> (<code>Set-AzVMExtension</code> / <code>az vm extension set</code>). Watcher de la región: <code>Get-AzNetworkWatcher -Location eastus</code>. Parar: <code>Stop-AzNetworkWatcherPacketCapture</code>. El .cap va a una Storage Account.", cat: "Network Watcher" },
+  { q: "Menú de Network Watcher: Topology, Usage + quotas, Flow logs, Diagnostic logs, Migrate. ¿Cada uno?", a: "<strong>Topology</strong> = diagrama de la red. <strong>Usage + quotas</strong> = límites de recursos de red por región (no conectividad). <strong>Flow logs</strong> = 5-tuples a Storage (VNet; NSG en retiro). <strong>Diagnostic logs</strong> = Diagnostic Settings de plataforma, no flow. <strong>Migrate</strong> = NSG flow logs → VNet flow logs. IP Flow = VM; NSG diagnostics = también VMSS/App GW.", cat: "Network Watcher" },
+  { q: "Capturar todo el tráfico de VM1 2 h y guardarlo. ¿Monitor, PerfMon, Network Performance Monitor o Network Watcher?", a: "<strong>Network Watcher</strong> Packet Capture (.cap a Storage o disco de la VM; agente NW). Monitor = métricas/logs. PerfMon = contadores. NPM (viejo) = latencia, hoy Connection Monitor — no es pcap.", cat: "Network Watcher" },
+  { q: "metrics:getBatch a eastus. Yes/No: ¿evita throttling? ¿las VMs pueden estar en varias regiones? ¿mismo resource type?", a: "<strong>Yes / No / Yes</strong>. Un POST para N recursos. El host es regional. <code>metricNamespace</code> en la URL = un tipo por llamada (no mezclar VM + LB).", cat: "Metrics" },
+  { q: "Query cross-resource (VNets, VMs, Storage). ¿Primero: Network Watcher, LAW, MMA o diagnostic settings?", a: "<strong>Crear el Log Analytics workspace</strong>. NW es solo red. MMA está retirado y necesita destino. Diagnostic settings son el paso 2 (apuntan al LAW).", cat: "Workspace" },
+  { q: "Storage Insights, 4500 cuentas. Yes/No: ¿sort Transactions asc = unused? ¿Overview hasta 500? ¿coloring en Availability?", a: "<strong>Yes / No / Yes</strong>. Sort por transacciones bajas = sin uso. Overview muestra hasta <strong>200</strong> (500 es cuota de cuentas). Availability threshold sí admite colores custom.", cat: "Insights" },
+  { q: "Pinear un chart de Log Analytics a un dashboard compartido. Yes/No: ¿máx. 30 días? ¿4 columnas y 7 filas? ¿solo line y stacked column?", a: "<strong>Yes / No / No</strong>. Time range del tile = 30 días. No hay tope 4×7. Hay más tipos de gráfico (bar, pie, area).", cat: "Dashboards" },
+  { q: "IoT Hub + LOB SDK. Monitorear telemetry de devices y alertar, mín. esfuerzo. ¿App Insights, Resource Health, Activity Log o diagnostic logs del hub?", a: "<strong>Diagnostic logs (resource logs) en el IoT Hub</strong>. App Insights es la LOB. Resource Health = ¿el recurso está up?. Activity Log = control plane, no valores de telemetry.", cat: "Logs" },
+  { q: "Server1 no llega HTTPS a Server2 (peering). Agente NW ya en Server2. ¿Primero: test TCP NW, agente en Server1, NPM o Test-Connection?", a: "<strong>Network Watcher Connection Troubleshoot TCP</strong> (destino ya tiene agente). Instalar en el origen no es el first. NPM = tendencia de latencia. Test-Connection = ICMP, no nombra la regla de 443.", cat: "Network Watcher" },
+  { q: "Alerta VM1 CPU &gt;95% × 10 min + AG1. ¿create o update? ¿--condition o --criteria? ¿window-size o evaluation-frequency? ¿--action o --action-group?", a: "<code>az monitor metrics alert create</code> · <code>--condition \"avg Percentage CPU &gt; 95\"</code> · <code>--window-size 10m</code> · <code>--action AG1</code>. Frequency es el intervalo de chequeo. update no crea. --action-group no es el flag de este comando.", cat: "Alertas" },
+  { q: "Guest OS diagnostics en VM1, Cloud Shell, $path=config.xml. ¿Set-AzVMBootDiagnostics o Set-AzVMDiagnosticsExtension? ¿-StorageAccountName o -DiagnosticsConfigurationPath?", a: "<code>Set-AzVMDiagnosticsExtension … -DiagnosticsConfigurationPath $path</code>. Boot diagnostics = consola, no counters. StorageAccountName no recibe un XML.", cat: "Agentes" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

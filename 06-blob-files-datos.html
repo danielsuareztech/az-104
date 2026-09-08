@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Blob, Files y Movimiento de Datos</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Blob, Files y Movimiento de Datos</div>
+    <div class="nav-sub">Lifecycle, protección de datos y herramientas de transferencia</div>
+    <div class="nav-weight">Dominio 2 · 15–20%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#sec-blob"><span class="dot"></span>Blob: containers y jerarquía</a>
+  <a href="#sec-proteccion"><span class="dot"></span>Protección de datos de Blob</a>
+  <a href="#sec-inmutable"><span class="dot"></span>Immutable storage (WORM)</a>
+  <a href="#sec-lifecycle"><span class="dot"></span>Lifecycle management</a>
+  <a href="#sec-orep"><span class="dot"></span>Object replication</a>
+  <a href="#sec-files"><span class="dot"></span>Azure Files</a>
+  <a href="#sec-auth"><span class="dot"></span>Autenticación en Files</a>
+  <a href="#sec-sync"><span class="dot"></span>Azure File Sync</a>
+  <a href="#sec-mover"><span class="dot"></span>Movimiento de datos</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen no te pide teoría de Blob, te tira escenarios. "Necesito recuperar un blob borrado hace 3 días", "quiero que se archive solo a los 90 días", "versioning: ¿Put Blob From URL crea versión?" → <strong>no</strong> (sí: Put Blob, Put Block List, Copy Blob, Set Blob Metadata). "System error 67" → <strong>abrir TCP 445</strong>. Conexión lenta o cientos de TB → <strong>Data Box</strong>. Share persistente: <strong>New-AzStorageAccount → keys → context → share → CMDKEY → New-PSDrive</strong>.
+  </div>
+
+  <!-- ══ 1 ══ -->
+  <div class="section" id="sec-blob">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🗂️</div>
+      <span class="section-title">Blob Storage: containers y jerarquía</span>
+      <span class="section-tag">Fundamentos</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">La jerarquía completa</div>
+      <div class="flow">
+        <div class="flow-step">Subscription</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Resource group</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Storage account<br><small>nombre global único</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Container</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Blob</div>
+      </div>
+      <ul>
+        <li>El <strong>container</strong> es el único nivel de agrupación real dentro del servicio Blob. No hay containers anidados.</li>
+        <li>El nombre del container va en minúsculas, letras/números/guiones, y forma parte de la URL: <code>https://&lt;cuenta&gt;.blob.core.windows.net/&lt;container&gt;/&lt;blob&gt;</code>.</li>
+        <li>El container <code>$root</code> permite servir blobs sin nombre de container en la URL.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Las "carpetas" son mentira (salvo con HNS)</div>
+      <p>En una cuenta <strong>flat namespace</strong> (Blob Storage clásico), un blob llamado <code>2024/enero/reporte.csv</code> <strong>no está en dos carpetas</strong>: el nombre del blob es literalmente <code>2024/enero/reporte.csv</code>, barras incluidas. El portal y Storage Explorer dibujan un árbol simulando directorios a partir del delimitador <code>/</code>, pero es una ilusión de UI.</p>
+      <ul>
+        <li>Consecuencia: <strong>no podés renombrar ni mover una "carpeta"</strong> en una operación atómica. Renombrar implica copiar cada blob al nombre nuevo y borrar el viejo.</li>
+        <li>Con <strong>hierarchical namespace (HNS)</strong> habilitado — o sea <strong>Azure Data Lake Storage Gen2</strong> — los directorios son objetos reales: rename y delete de directorio son operaciones atómicas y hay ACLs POSIX por directorio.</li>
+        <li>HNS se habilita <strong>al crear la cuenta</strong> y afecta qué features podés usar (por ejemplo, deshabilita algunas como point-in-time restore).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Metadata, properties e index tags</div>
+      <ul>
+        <li><strong>Metadata</strong>: pares clave-valor definidos por vos, en el blob o en el container. Son nombres válidos de identificador C#, no se pueden buscar de forma nativa: los tenés que enumerar y filtrar del lado del cliente.</li>
+        <li><strong>System properties</strong>: las pone Azure (<code>Content-Type</code>, <code>ETag</code>, <code>Last-Modified</code>, tier). Algunas son de solo lectura.</li>
+        <li><strong>Blob index tags</strong>: pares clave-valor <strong>indexados y consultables</strong> con <code>Find Blobs by Tags</code>. Sirven como filtro en reglas de lifecycle y para RBAC condicional. Son distintos de metadata.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: context → container → blob en Cool</div>
+      <p>La cuenta existe. Hay que crear el container y subir <code>file01.docx</code> al tier <strong>Cool</strong> en el mismo script.</p>
+<pre><code>$ctx = New-AzStorageContext -StorageAccountName $storageAccount -UseConnectedAccount
+New-AzStorageContainer -Name $containerName -Context $ctx
+Set-AzStorageBlobContent -Container $containerName `
+  -File "file01.docx" -Blob "file01.docx" `
+  -Context $ctx -StandardBlobTier Cool</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Cmdlet</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>New-AzStorageContext</code></td><td><span class="yes">Sí</span></td><td>Sesión de data plane. <code>-UseConnectedAccount</code> = Entra; también acepta key. Sin context no hay container ni upload</td></tr>
+            <tr><td><code>New-AzStorageContainer</code></td><td><span class="yes">Sí</span></td><td>Crea el container. Pide <code>-Context</code></td></tr>
+            <tr><td><code>Set-AzStorageBlobContent</code> + <code>-StandardBlobTier Cool</code></td><td><span class="yes">Sí</span></td><td>El upload. El tier se setea <strong>en el mismo comando</strong></td></tr>
+            <tr><td><code>New-AzStorageAccount</code></td><td><span class="no">No</span></td><td>Crea la cuenta (control plane). Acá ya existe</td></tr>
+            <tr><td><code>New-AzStorageBlob</code> / <code>Upload-AzBlob</code></td><td><span class="no">No</span></td><td>No existen</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> upload = <code>Set-AzStorageBlobContent</code>, no New-/Upload-AzBlob. Context = <code>New-AzStorageContext</code>, no <code>New-AzStorageAccount</code>. Cool en el upload = <code>-StandardBlobTier Cool</code>, no un cmdlet aparte de “migrate tier”.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si la pregunta dice "quiero organizar los blobs en carpetas y poder renombrar un directorio completo" o menciona "ACLs por directorio" / "analytics con Data Lake", la respuesta es <strong>habilitar hierarchical namespace</strong>, y solo se puede <strong>en el momento de crear la cuenta</strong> (la migración de una cuenta existente es una operación aparte, no un checkbox del panel de propiedades).</span>
+    </div>
+  </div>
+
+  <!-- ══ 2 ══ -->
+  <div class="section" id="sec-proteccion">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">🛡️</div>
+      <span class="section-title">Protección de datos de Blob</span>
+      <span class="section-tag">Alta frecuencia</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Soft delete — de blob y de container</div>
+      <ul>
+        <li><strong>Blob soft delete</strong>: al borrar un blob (o al sobrescribirlo, si además hay versioning/snapshots) el dato queda en estado <em>soft-deleted</em> y se puede hacer <code>Undelete</code> durante el período de retención. Retención configurable, típicamente entre <strong>1 y 365 días</strong>.</li>
+        <li><strong>Container soft delete</strong>: es una feature <strong>separada</strong>, con su propio switch y su propia retención (también en el rango de 1 a 365 días). Recupera el container entero con su contenido.</li>
+        <li>Ninguno de los dos es retroactivo: si el blob se borró <strong>antes</strong> de habilitar soft delete, no lo recuperás.</li>
+        <li>El reloj de retención se cuenta desde el borrado, y se aplica la retención vigente <strong>en ese momento</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> blob soft delete <strong>no</strong> te salva si te borran el container entero (con la cuenta plana, borrar un container elimina sus blobs sin pasar por el estado soft-deleted individual). Para eso necesitás <strong>container soft delete</strong>, que es un toggle distinto. Si el escenario dice "alguien borró el container por accidente", la respuesta no es blob soft delete.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Versioning</div>
+      <ul>
+        <li>Se habilita a nivel <strong>cuenta</strong> y aplica a todos los containers.</li>
+        <li>No es “cualquier write”: el examen lista <strong>cuatro operaciones REST</strong> que crean versión. Put Page, Append Block y Put Blob From URL <strong>no</strong>.</li>
+        <li>Al borrar el blob "actual" con versioning activo, las versiones previas siguen existiendo: la restauración es promover una versión a current (copiándola sobre el blob base).</li>
+        <li><strong>Costo</strong>: cada versión se factura como datos almacenados. Un workload que sobrescribe mucho puede multiplicar la factura.</li>
+        <li>Se combina con lifecycle: hay filtros/acciones específicas para versiones (por ejemplo, borrar o mover a cool las versiones con cierta antigüedad desde su creación, distintas del blob current).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí varias: qué operación crea una versión</div>
+      <p>Versioning habilitado. ¿Cuáles disparan un version ID nuevo? Memorizá las cuatro del overview de Microsoft; el resto son el cebo.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Operación REST</th><th></th><th>Qué hace</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Put Blob</strong></td><td><span class="yes">Sí</span></td><td>Crea o reemplaza el blob entero (block/page/append)</td></tr>
+          <tr><td><strong>Put Block List</strong></td><td><span class="yes">Sí</span></td><td>Commitea la lista de bloques. Put Block (subir un bloque suelto) <em>no</em> versiona</td></tr>
+          <tr><td><strong>Copy Blob</strong></td><td><span class="yes">Sí</span></td><td>Copia a un destino en la misma cuenta</td></tr>
+          <tr><td><strong>Set Blob Metadata</strong></td><td><span class="yes">Sí</span></td><td>Pisa metadata; también es un write que versiona</td></tr>
+          <tr><td>Put Page</td><td><span class="no">No</span></td><td>Escribe un rango de un <strong>page blob</strong> (VHD). Snapshot manual si hace falta</td></tr>
+          <tr><td>Append Block</td><td><span class="no">No</span></td><td>Agrega al final de un <strong>append blob</strong> (logs)</td></tr>
+          <tr><td>Put Blob From URL</td><td><span class="no">No</span></td><td>Crea un block blob leyendo de una URL. Parece Copy/Put Blob; <strong>no</strong> entra en la lista</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>az storage account blob-service-properties update -n cuenta -g RG --enable-versioning true
+Update-AzStorageBlobServiceProperty -ResourceGroupName RG -StorageAccountName cuenta -IsVersioningEnabled $true
+
+az storage blob upload -f ./file.bin -c data -n file.bin          # Put Blob
+az storage blob copy start --source-uri $src --destination-blob dest -c data  # Copy Blob
+az storage blob metadata update -c data -n file.bin --metadata env=prod       # Set Blob Metadata</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “cada write crea versión” es demasiado amplio. Las cuatro: <strong>Put Blob, Put Block List, Copy Blob, Set Blob Metadata</strong>. Put Blob From URL parece Copy y está mal. Put Page / Append Block son writes incrementales de page/append y tampoco. Put Block (sin List) tampoco: solo stagea.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Snapshots</div>
+      <ul>
+        <li>Copia <strong>manual</strong>, de <strong>solo lectura</strong>, de un blob en un punto del tiempo. Vos la disparás; nada la crea sola.</li>
+        <li>Comparte los bloques no modificados con el blob base: solo pagás el delta de los bloques que cambian después.</li>
+        <li>El snapshot se identifica por el blob base + un timestamp de snapshot.</li>
+        <li>Para restaurar: se copia el snapshot sobre el blob base (o a otro nombre).</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Criterio</th><th>Snapshot</th><th>Version</th><th>Soft delete</th></tr></thead>
+        <tbody>
+          <tr><td>Se crea</td><td>Manual, a pedido</td><td>Automático en cada write</td><td>Automático al borrar/sobrescribir</td></tr>
+          <tr><td>Ámbito de habilitación</td><td>Por blob (operación)</td><td>Cuenta</td><td>Cuenta (blob y container por separado)</td></tr>
+          <tr><td>Escribible</td><td><span class="no">No</span> (read-only)</td><td><span class="no">No</span> (inmutable)</td><td><span class="no">No</span> hasta hacer undelete</td></tr>
+          <tr><td>Expira solo</td><td><span class="no">No</span> (vive hasta que lo borres o por lifecycle)</td><td><span class="no">No</span> (idem, gestionalo con lifecycle)</td><td><span class="yes">Sí</span>, al vencer la retención</td></tr>
+          <tr><td>Protege de un delete</td><td>Sí, si el snapshot existía antes</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span>, dentro de la ventana</td></tr>
+          <tr><td>Caso típico</td><td>Punto de restauración antes de un cambio planificado</td><td>Historial completo de cambios</td><td>Red de seguridad contra el error humano</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Point-in-time restore (PITR)</div>
+      <p>Restaura un <strong>conjunto de block blobs</strong> (uno o varios containers, con filtros de prefijo) al estado que tenían en un instante pasado. Es la única feature que devuelve "todo el container como estaba el martes a las 14:00".</p>
+      <div class="rule-box">
+        <strong>Prerrequisitos (los pregunta en combo):</strong> blob <strong>versioning</strong> + <strong>change feed</strong> + <strong>blob soft delete</strong>, los tres habilitados. Además: cuenta GPv2 estándar, solo <strong>block blobs</strong>, y no soportado con hierarchical namespace.
+      </div>
+      <ul>
+        <li>El período de restauración que definas debe ser <strong>menor</strong> que la retención de soft delete.</li>
+        <li>Solo podés restaurar a un punto posterior al momento en que habilitaste PITR.</li>
+        <li>Es una operación destructiva sobre el estado actual: sobreescribe con lo que había en el punto elegido.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span><strong>Cómo decidir rápido:</strong> "un blob puntual borrado por error" → <strong>soft delete</strong>. "Necesito el contenido de ayer de un archivo que se sobrescribe seguido" → <strong>versioning</strong>. "Quiero un punto de restauración antes de correr un batch" → <strong>snapshot</strong>. "Un ransomware/script me pisó cientos de blobs, devolveme todo el container al martes" → <strong>point-in-time restore</strong>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 3 ══ -->
+  <div class="section" id="sec-inmutable">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">🔒</div>
+      <span class="section-title">Immutable storage (WORM)</span>
+      <span class="section-tag">Compliance</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">WORM: Write Once, Read Many</div>
+      <p>Mientras una política inmutable esté activa, el dato <strong>no se puede borrar ni sobrescribir</strong> — ni por vos, ni por el Owner de la suscripción, ni por Microsoft. Se aplica a nivel de <strong>container</strong> o a nivel de <strong>versión</strong> de blob. Sirve para escenarios regulatorios (SEC 17a-4, retención legal, auditoría financiera, historia clínica).</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Política</th><th>Tiene fecha</th><th>Cómo termina</th><th>Uso típico</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Time-based retention</strong></td>
+            <td><span class="yes">Sí</span> — definís un intervalo de retención en días</td>
+            <td>Vence sola. Mientras corre, el intervalo se puede <strong>extender</strong> pero no acortar una vez que la política está <em>locked</em></td>
+            <td>"Guardar los registros 7 años"</td>
+          </tr>
+          <tr>
+            <td><strong>Legal hold</strong></td>
+            <td><span class="no">No</span> — no tiene fecha de fin</td>
+            <td>Solo se levanta <strong>manualmente</strong>, quitando el tag del hold</td>
+            <td>Litigio en curso, investigación: no sabés cuándo termina</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ul>
+      <li>Una política time-based empieza en modo <strong>unlocked</strong> (para probar: se puede acortar o borrar) y al pasarla a <strong>locked</strong> se vuelve irreversible.</li>
+      <li>Pueden coexistir: si hay un legal hold activo, el dato queda protegido <strong>aunque la retención por tiempo ya haya vencido</strong>.</li>
+      <li>Con la política activa <strong>sí podés seguir agregando blobs nuevos</strong> al container; lo que no podés es modificar ni eliminar los existentes protegidos.</li>
+      <li>No se puede borrar el container mientras contenga blobs protegidos, y la cuenta tampoco.</li>
+    </ul>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si el escenario dice "no sabemos cuánto va a durar la investigación" o "hasta que el departamento legal lo autorice", la respuesta es <strong>legal hold</strong>, no time-based retention. Y al revés: "conservar exactamente 5 años" es <strong>time-based retention</strong>. Otra variante: preguntan si el Storage Account Owner puede borrar un blob bajo policy <em>locked</em> — la respuesta es <strong>no</strong>, ningún rol puede.</span>
+    </div>
+  </div>
+
+  <!-- ══ 4 ══ -->
+  <div class="section" id="sec-lifecycle">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">♻️</div>
+      <span class="section-title">Lifecycle management</span>
+      <span class="section-tag">Optimización de costo</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cómo funciona</div>
+      <ul>
+        <li>Es una <strong>policy en JSON a nivel de storage account</strong>, con un conjunto de <strong>reglas</strong>. Se configura en el portal (form o JSON), CLI, PowerShell o ARM.</li>
+        <li>Cada regla tiene un <strong>filterSet</strong> (a qué aplica) y un <strong>actionSet</strong> (qué hace).</li>
+        <li>Aplica a <strong>block blobs</strong> (y append blobs solo para la acción <code>delete</code>). No mueve de tier a page blobs ni a Azure Files.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Filtros disponibles</div>
+      <ul>
+        <li><code>prefixMatch</code>: prefijo del nombre, empezando por el container — ej. <code>logs/2024/</code>.</li>
+        <li><code>blobTypes</code>: <code>blockBlob</code> / <code>appendBlob</code>.</li>
+        <li><code>blobIndexMatch</code>: por <strong>blob index tags</strong> (ej. <code>Project == Alpha</code>).</li>
+        <li>Se puede apuntar a <code>baseBlob</code>, a <code>snapshot</code> y a <code>version</code> por separado dentro del actionSet.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Acciones y condiciones</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th>Qué hace</th><th>Condición típica</th></tr></thead>
+          <tbody>
+            <tr><td><code>tierToCool</code></td><td>Mueve el blob a Cool</td><td><code>daysAfterModificationGreaterThan</code></td></tr>
+            <tr><td><code>tierToCold</code></td><td>Mueve el blob a Cold</td><td><code>daysAfterModificationGreaterThan</code></td></tr>
+            <tr><td><code>tierToArchive</code></td><td>Mueve el blob a Archive (offline, hay que hacer rehydrate para leerlo). <strong>No funciona</strong> en cuentas ZRS/GZRS/RA-GZRS</td><td><code>daysAfterModificationGreaterThan</code></td></tr>
+            <tr><td><code>delete</code></td><td>Elimina el blob, snapshot o versión</td><td><code>daysAfterModificationGreaterThan</code> / <code>daysAfterCreationGreaterThan</code> (snapshots y versiones)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La condición alternativa <code>daysAfterLastAccessTimeGreaterThan</code> se basa en el <strong>último acceso</strong> en lugar de la última modificación, y <strong>requiere habilitar <em>last access time tracking</em></strong> en la cuenta (tiene costo de transacciones extra).</p>
+      <pre><code>{
+  "rules": [{
+    "enabled": true,
+    "name": "archivar-logs",
+    "type": "Lifecycle",
+    "definition": {
+      "filters": {
+        "blobTypes": [ "blockBlob" ],
+        "prefixMatch": [ "logs/" ]
+      },
+      "actions": {
+        "baseBlob": {
+          "tierToCool":    { "daysAfterModificationGreaterThan": 30 },
+          "tierToArchive": { "daysAfterModificationGreaterThan": 90 },
+          "delete":        { "daysAfterModificationGreaterThan": 365 }
+        }
+      }
+    }
+  }]
+}</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down PowerShell: Hot → Cool a los 30 días</div>
+      <p>Orden: Action → Filter → Rule → Set en la cuenta. Prefijos <code>ef,gh</code>, block blobs.</p>
+<pre><code>$action = Add-AzStorageAccountManagementPolicyAction `
+  -BaseBlobAction TierToCool -daysAfterModificationGreaterThan 30
+$filter = New-AzStorageAccountManagementPolicyFilter `
+  -PrefixMatch ef,gh -BlobType blockBlob
+$rule  = New-AzStorageAccountManagementPolicyRule `
+  -Name test-rule -Action $action -Filter $filter
+Set-AzStorageAccountManagementPolicy -ResourceGroupName $rgName `
+  -StorageAccountName $accountName -Rule $rule</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Cmdlet</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>Add-AzStorageAccountManagementPolicyAction</code></td><td><span class="yes">Sí</span></td><td>El action es <code>Add-</code>, no New-</td></tr>
+            <tr><td><code>New-AzStorageAccountManagementPolicyFilter</code></td><td><span class="yes">Sí</span></td><td>Prefijo + blob type</td></tr>
+            <tr><td><code>New-AzStorageAccountManagementPolicyRule</code></td><td><span class="yes">Sí</span></td><td>Une action + filter</td></tr>
+            <tr><td><code>Set-AzStorageAccountManagementPolicy</code></td><td><span class="yes">Sí</span></td><td>Aplica la policy a la cuenta. No New-/Update-</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el action es <code>Add-AzStorageAccountManagementPolicyAction</code> (no New-). El cierre es <code>Set-…ManagementPolicy</code> sobre la cuenta. La condición del enunciado es <em>modification</em> 30 días, no creation ni last access.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el motor de lifecycle <strong>corre una vez por día</strong> y la evaluación no es instantánea — después de crear o modificar una policy puede pasar bastante hasta que se vea el efecto. Si la pregunta plantea "creé la regla de 30 días y el blob que tiene 45 días sigue en Hot, ¿qué pasa?", la respuesta correcta es <strong>esperar: la policy se ejecuta en el ciclo diario</strong>, no "la regla está mal". Y ojo: mover a Cool/Cold/Archive <strong>no</strong> cambia la fecha de última modificación, pero sí puede haber cargos de <strong>early deletion</strong> si sacás el blob antes del mínimo del tier (Cool 30 · Cold 90 · Archive 180). Si te piden el <em>default access tier de la cuenta</em> para datos estáticos ~100 días, la respuesta es <strong>Cold</strong> (ver <a href="04-storage-accounts.html#sec3">04 · Access tiers</a>), no Archive.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span><strong>Para el examen:</strong> si te muestran un JSON, mirá primero <code>prefixMatch</code> (¿incluye el container?) y después el orden lógico de los días: Cool &lt; Archive &lt; Delete. Un JSON donde <code>tierToArchive</code> tiene menos días que <code>tierToCool</code> es la respuesta incorrecta plantada.</span>
+    </div>
+  </div>
+
+  <!-- ══ 5 ══ -->
+  <div class="section" id="sec-orep">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">🔁</div>
+      <span class="section-title">Object replication</span>
+      <span class="section-tag">Distribución</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué es</div>
+      <p>Copia <strong>asíncrona</strong> de <strong>block blobs</strong> desde un container de una cuenta <strong>source</strong> a un container de una cuenta <strong>destination</strong>, según reglas de <strong>prefijo</strong>. Vos elegís origen, destino y qué se replica.</p>
+      <div class="flow">
+        <div class="flow-step">Cuenta source<br><small>versioning + change feed</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Replication policy<br><small>reglas por container y prefijo</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Cuenta destination<br><small>versioning</small></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Requisitos (memorizalos)</div>
+      <ul>
+        <li>En la cuenta <strong>origen</strong>: <strong>blob versioning</strong> y <strong>change feed</strong> habilitados. El change feed es lo que le dice al servicio qué cambió.</li>
+        <li>En la cuenta <strong>destino</strong>: <strong>blob versioning</strong> habilitado.</li>
+        <li>Las reglas se definen a nivel de <strong>container</strong> (origen → destino), con filtros de <strong>prefijo</strong> opcionales y un timestamp opcional para replicar solo lo creado/modificado desde entonces.</li>
+        <li>Origen y destino pueden estar en <strong>regiones, suscripciones o tenants distintos</strong>.</li>
+        <li>En el container destino <strong>no se permiten escrituras directas</strong> de usuarios (responden <code>409 Conflict</code>). <strong>Lectura y delete sí</strong>. Solo la policy de replicación escribe blobs.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down del examen: mínimo para object replication</div>
+      <p>Enunciado: replicar entre cuentas de <strong>dos regiones</strong> y <strong>minimizar cambios</strong>. No es PITR: no hace falta soft delete.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Feature</th><th>Configuración mínima</th><th>Para qué</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Change feed</strong></td>
+            <td><strong>Source account only</strong></td>
+            <td>Log ordenado de altas/bajas/modificaciones en el origen. El motor de replicación lee ese feed. En el destino no hace falta (minimizar cambios).</td>
+          </tr>
+          <tr>
+            <td><strong>Blob versioning</strong></td>
+            <td><strong>Both source and destination</strong></td>
+            <td>Cada write genera una versión; OR replica versiones. El destino también tiene que tener versioning o la policy no se crea.</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code># Origen: versioning + change feed
+Update-AzStorageBlobServiceProperty -ResourceGroupName RG -StorageAccountName origen `
+  -IsVersioningEnabled $true -ChangeFeed $true
+# Destino: solo versioning
+Update-AzStorageBlobServiceProperty -ResourceGroupName RG -StorageAccountName destino `
+  -IsVersioningEnabled $true
+
+az storage account blob-service-properties update -n origen -g RG \
+  --enable-versioning true --enable-change-feed true
+az storage account blob-service-properties update -n destino -g RG \
+  --enable-versioning true</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> object replication ≠ PITR. OR = <strong>change feed solo origen</strong> + <strong>versioning en las dos</strong>. PITR pide <strong>versioning + change feed + blob soft delete en la misma cuenta</strong>. Habilitar change feed en el destino o soft delete “por las dudas” viola <em>minimize configuration changes</em>. Tampoco es GRS: acá vos elegís la cuenta y la región destino.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Yes/No: Policy Deny de allowCrossTenantReplication</div>
+      <p>Policy en el MG: si es Storage Account y <code>allowCrossTenantReplication</code> <strong>no</strong> es <code>false</code> → <code>deny</code>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Impide <strong>crear</strong> una cuenta que permita OR cross-tenant</td><td><span class="yes">Yes</span></td><td>Deny en el PUT de create si la property no es false</td></tr>
+            <tr><td>Permite <strong>cualquier</strong> cambio en una cuenta existente que todavía lo tiene en true</td><td><span class="no">No</span></td><td>Deny también evalúa updates. El estado final seguiría non-compliant</td></tr>
+            <tr><td>Si hay policies de OR activas, no podés poner la property en false hasta borrarlas</td><td><span class="yes">Yes</span></td><td>Requisito de Storage, no de Policy. Primero delete de las replication policies</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Deny <strong>no es retroactivo</strong> (las cuentas viejas siguen sirviendo) pero <strong>sí bloquea updates</strong> mientras el JSON final no cumpla. “Any configuration changes” = No. Y no confundas Policy con el prereq de Storage: hay que borrar las OR policies antes de apagar <code>allowCrossTenantReplication</code>.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>Object replication</th><th>Geo-redundancia (GRS / GZRS)</th></tr></thead>
+        <tbody>
+          <tr><td>¿Elegís el destino?</td><td><span class="yes">Sí</span> — cualquier cuenta, cualquier región</td><td><span class="no">No</span> — es la región emparejada, fija</td></tr>
+          <tr><td>Granularidad</td><td>Container + prefijo</td><td>Toda la cuenta</td></tr>
+          <tr><td>Tipos de datos</td><td>Solo block blobs</td><td>Todos los servicios de la cuenta</td></tr>
+          <tr><td>¿Se lee el destino?</td><td><span class="yes">Sí</span>, siempre (es una cuenta normal)</td><td>Solo con RA-GRS / RA-GZRS, y en modo lectura</td></tr>
+          <tr><td>Objetivo</td><td>Acercar datos a los consumidores, distribuir cargas, mover a otra región/tenant</td><td>Durabilidad y recuperación ante desastre regional</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Si el escenario dice "los usuarios en Europa necesitan leer localmente los mismos blobs que produce la app en East US" → <strong>object replication</strong>. Si dice "necesito que los datos sobrevivan a la caída de una región completa, sin elegir cuál" → <strong>GRS/GZRS</strong>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 6 ══ -->
+  <div class="section" id="sec-files">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.12)">📁</div>
+      <span class="section-title">Azure Files: shares, protocolos y tiers</span>
+      <span class="section-tag">SMB / NFS</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Protocolos</div>
+      <ul>
+        <li><strong>SMB 3.x</strong>: el caso general. Montable desde Windows, Linux y macOS. Soporta cifrado en tránsito y es el único que admite autenticación basada en identidad (AD).</li>
+        <li><strong>NFS 4.1</strong>: <strong>solo en Premium file shares</strong> (cuentas FileStorage). Autenticación/autorización estilo POSIX basada en red — <strong>no</strong> soporta identidad de AD ni access key para el montaje, así que se protege con <strong>service endpoints / private endpoints</strong> y restricción de red. Cifrado en tránsito no aplica igual que en SMB.</li>
+        <li>Un share es SMB <strong>o</strong> NFS; el protocolo se elige al crear el share y no se cambia después.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Aspecto</th><th>Premium (FileStorage)</th><th>Standard (GPv2)</th></tr></thead>
+        <tbody>
+          <tr><td>Medio</td><td>SSD</td><td>HDD</td></tr>
+          <tr><td>Modelo de facturación</td><td><strong>Provisioned</strong>: pagás el tamaño que provisionás</td><td><strong>Pay-as-you-go</strong>: pagás lo usado + transacciones</td></tr>
+          <tr><td>Tiers</td><td>Único (premium)</td><td>Transaction optimized · Hot · Cool</td></tr>
+          <tr><td>Protocolos</td><td>SMB y <strong>NFS 4.1</strong></td><td>Solo SMB</td></tr>
+          <tr><td>Redundancia</td><td>LRS y ZRS</td><td>LRS, ZRS, GRS, GZRS</td></tr>
+          <tr><td>Latencia</td><td>Baja y consistente</td><td>Variable</td></tr>
+          <tr><td>Uso típico</td><td>Bases de datos, perfiles FSLogix, cargas sensibles a IOPS</td><td>File shares de propósito general, archivos con poco acceso</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tamaño del share</div>
+      <ul>
+        <li>Un share <strong>standard</strong> llega hasta <strong>100 TiB</strong> (en cuentas nuevas ese techo ya viene habilitado; el toggle legacy de <em>large file shares</em> era el que subía el default de 5 TiB).</li>
+        <li>Los 100 TiB aplican también con <strong>GRS y GZRS</strong> en shares standard: ya no es un combo exclusivo de LRS/ZRS.</li>
+        <li>Los shares <strong>premium</strong> soportan hasta <strong>100 TiB</strong> sin ese toggle; el rendimiento escala con el tamaño provisionado.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Protección de datos del share</div>
+      <ul>
+        <li><strong>Share snapshots</strong>: copias de solo lectura, incrementales, a nivel de <strong>share entero</strong>. Se disparan manualmente, por script, o automáticamente si usás <strong>Azure Backup</strong> para Azure Files. El usuario final las ve como <strong>"Versiones anteriores"</strong> en Windows: recupera un archivo que alguien pisó, sin restaurar el share entero.</li>
+        <li><strong>Soft delete de file share</strong>: recupera un <strong>share eliminado</strong> durante el período de retención (1–365 días). Es una propiedad del servicio <strong>File</strong>, no del servicio Blob — son switches distintos en la misma cuenta GPv2; en FileStorage solo existe el de Files.</li>
+        <li><strong>Azure Backup</strong> para Azure Files orquesta snapshots con políticas de retención y da restore granular. Cumple las dos protecciones, pero suma vault, policy y costo: no es “reducir overhead”.</li>
+        <li>Azure Files <strong>no tiene</strong> blob versioning, lifecycle de blobs ni point-in-time restore (eso es Blob).</li>
+      </ul>
+<pre><code># Soft delete del share (cuenta)
+az storage account file-service-properties update -n cuenta -g RG \
+  --enable-delete-retention true --delete-retention-days 14
+Update-AzStorageFileServiceProperty -ResourceGroupName RG -StorageAccountName cuenta `
+  -EnableShareDeleteRetentionPolicy -ShareRetentionDays 14
+
+# Snapshot (versiones de archivos)
+az storage share snapshot --name configs --account-name cuenta
+$ctx = New-AzStorageContext -StorageAccountName cuenta -StorageAccountKey $key
+New-AzStorageShareSnapshot -ShareName configs -Context $ctx
+# Restore del share borrado (dentro de la ventana de soft delete)
+az storage share restore --account-name cuenta --deleted-share-name configs --deleted-share-version &lt;version&gt;</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Disable soft delete ≠ borrar el share para siempre</div>
+      <p>El enunciado pide borrar un file share que ya está soft-deleted. Te muestran:</p>
+<pre><code>Update-AzStorageFileServiceProperty -ResourceGroupName $rg -StorageAccountName $sa `
+  -EnableShareDeleteRetentionPolicy $false</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>El comando <strong>solo desactiva</strong> soft delete en la cuenta</td><td><span class="yes">Sí</span></td><td>Cambia la policy futura. No toca shares ya borrados</td></tr>
+            <tr><td>Undeletea el share</td><td><span class="no">No</span></td><td>Restore = <code>az storage share restore</code> / <code>Restore-AzRmStorageShare</code></td></tr>
+            <tr><td>No desactiva soft delete</td><td><span class="no">No</span></td><td><code>$false</code> sí apaga la retention policy</td></tr>
+            <tr><td>Desactiva y además púrga el share soft-deleted</td><td><span class="no">No</span></td><td>No hay purge implícito. Los ya borrados siguen en la ventana hasta que expire o los restaures</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <code>EnableShareDeleteRetentionPolicy $false</code> = <strong>apagar la feature</strong>. No es undelete ni “borrar permanente ahora”. Para recuperar: <code>az storage share restore</code>. Para que expire el soft-deleted, esperás la retención o lo dejás morir; este cmdlet no lo púrga.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Opción</th><th>Versiones de archivos</th><th>Share borrado</th><th>Costo / overhead</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Share snapshots + soft delete</strong></td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span></td><td>El mínimo: nativo, sin vault</td></tr>
+          <tr><td>Blob versioning + lifecycle</td><td><span class="no">No</span> (es Blob)</td><td><span class="no">No</span></td><td>—</td></tr>
+          <tr><td>Azure Backup, policy diaria</td><td><span class="yes">Sí</span></td><td>Parcial / más complejo</td><td>Más caro y más gestión</td></tr>
+          <tr><td>Point-in-time restore for Files</td><td colspan="3"><span class="no">No existe.</span> PITR es de <strong>blobs</strong> (versioning + change feed + blob soft delete)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen (FileStorage premium):</strong> usuarios pisan configs + un admin borra el share, minimizar costo. Respuesta: <strong>share snapshots + soft delete de file shares</strong>. Versioning/lifecycle/PITR son de Blob. Backup funciona pero viola “reducir overhead”.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Montaje SMB on-premises: el puerto 445</div>
+      <p>Montar el share <strong>directamente</strong> desde la oficina por SMB 3.x (Premium FileStorage o Standard) es tráfico <strong>TCP 445 saliente</strong> hacia <code>&lt;cuenta&gt;.file.core.windows.net</code>. El 443 es HTTPS/REST (portal, AzCopy, FileREST), no el protocolo de montaje.</p>
+<pre><code># ¿El 445 llega a Azure?
+Test-NetConnection &lt;cuenta&gt;.file.core.windows.net -Port 445
+
+# Windows: guardar credencial y mapear
+cmdkey /add:&lt;cuenta&gt;.file.core.windows.net /user:localhost\&lt;cuenta&gt; /pass:&lt;key&gt;
+net use Z: \\&lt;cuenta&gt;.file.core.windows.net\&lt;share&gt;
+
+# Persistente (PowerShell)
+New-SmbMapping -LocalPath 'Z:' -RemotePath '\\cuenta.file.core.windows.net\share' -Persistent $true
+
+# Linux (CIFS / SMB 3)
+sudo mount -t cifs //cuenta.file.core.windows.net/share /mnt/share \
+  -o vers=3.1.1,username=cuenta,password=&lt;key&gt;,sec=ntlmssp,serverino</code></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Opción del examen</th><th>¿Montaje SMB directo?</th><th>Esfuerzo</th><th>Cuándo va</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Abrir TCP 445</strong> en el firewall on-prem (saliente a Internet)</td>
+            <td><span class="yes">Sí</span></td>
+            <td>El mínimo</td>
+            <td>Enunciado: <em>montar directo</em> + <em>minimizar esfuerzo</em></td>
+          </tr>
+          <tr>
+            <td>Abrir TCP <strong>443</strong></td>
+            <td><span class="no">No</span></td>
+            <td>—</td>
+            <td>Nunca para SMB. Es REST/HTTPS</td>
+          </tr>
+          <tr>
+            <td>ExpressRoute (o S2S / P2S VPN, Private Endpoint)</td>
+            <td><span class="yes">Sí</span> (por red privada)</td>
+            <td>Alto</td>
+            <td>El ISP <strong>bloquea el 445</strong> o piden no salir a Internet</td>
+          </tr>
+          <tr>
+            <td>Azure File Sync</td>
+            <td><span class="no">No</span> — cachea en un Windows Server</td>
+            <td>Alto (agente + Sync Service)</td>
+            <td>Querés un file server local con cloud tiering, no un UNC a Azure</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen (esta sale tal cual):</strong> cuenta FileStorage premium, montar el share <strong>directo on-prem por SMB 3.0</strong>, minimizar esfuerzo. La respuesta es <strong>abrir TCP 445</strong> en el firewall de Internet on-premises. ExpressRoute funciona pero no es mínimo esfuerzo. File Sync no es un montaje directo. El 443 no sirve para SMB.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: qué Windows monta Azure Files</div>
+      <p>Migrar file share on-prem a Azure Files y mapear desde los servers. SMB 3.x + cifrado en tránsito.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Server</th><th>OS</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>Server01 / 02</td><td>Windows Server 2022</td><td><span class="yes">Supports File Mapping</span></td></tr>
+            <tr><td>Server03</td><td>Windows Server 2016</td><td><span class="yes">Supports File Mapping</span></td></tr>
+            <tr><td>Server04</td><td>Windows Server 2019</td><td><span class="yes">Supports File Mapping</span></td></tr>
+            <tr><td>Server05</td><td>Windows Server 2012 R2</td><td><span class="no">Requires Upgrading</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> 2016 / 2019 / 2022 = SMB 3.1.1, mapeo OK. <strong>2012 R2 hay que upgradear</strong> (fuera de mainstream; el dump de examen lo marca así). No es “abrir 445” en esta pregunta: es compatibilidad de OS.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Variante:</strong> "el montaje funciona en Azure y falla desde la oficina" (el 445 ya está bloqueado por el ISP y no te ofrecen abrirlo). Ahí sí: <strong>VPN Site-to-Site o Point-to-Site, ExpressRoute o Private Endpoint</strong>. Regenerar la access key o un SAS no arregla nada.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Error 67 al mapear el share en Windows Server</div>
+      <p>VM Windows + Azure Files SMB. <code>net use</code> / Map Network Drive tira <strong>System error 67</strong> (<em>The network name cannot be found</em>). El verbo del examen es desbloquear <strong>TCP 445</strong> (NSG, Windows Firewall o el ISP). Los otros tres ítems existen en troubleshooting, pero <em>no con este código</em>.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Opción</th><th></th><th>¿Tiene validez?</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Unblock port 445</strong></td><td><span class="yes">Sí</span></td><td>Error 53 <em>o</em> 67 cuando el 445 saliente está tapado. Microsoft lo lista como cause 1.</td></tr>
+          <tr><td>Check permissions / IAM</td><td><span class="no">No</span></td><td>Válido para <strong>Error 5</strong> (<em>Access is denied</em>) o “No Access”. El 67 es conectividad: ni siquiera llegás a autenticar.</td></tr>
+          <tr><td>Unblock port 2049</td><td><span class="no">No</span></td><td>Es <strong>NFS 4.1</strong> (Premium FileStorage, típico Linux). Windows mapea SMB, nunca 2049.</td></tr>
+          <tr><td>Enable NTLMv1</td><td><span class="no">No</span></td><td>Al revés: Azure Files <strong>solo NTLMv2</strong> (o Kerberos). Activar v1 empeora. Microsoft lo asocia a Error <strong>53 o 87</strong>, no al 67. Fix: <code>LmCompatibilityLevel = 3</code>.</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>Test-NetConnection cuenta.file.core.windows.net -Port 445
+# TcpTestSucceeded : True  → el 445 llega; si es False, NSG/firewall/ISP
+
+# Si TcpTestSucceeded es True y sigue el 67: typo en el nombre del share
+net use Z: \\cuenta.file.core.windows.net\share /user:AZURE\cuenta &lt;key&gt;</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> memorizá el código, no el “algo de red/auth”. <strong>67 = 445 tapado</strong> (o el UNC mal escrito). <strong>53</strong> es ambiguo (445 <em>o</em> NTLMv1). <strong>5 = permisos</strong>. <strong>2049 = NFS</strong>, no Windows. Nunca “enable NTLMv1”: hay que <em>deshabilitarlo</em>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drag-and-drop: share nuevo + montaje persistente en VMs Windows</div>
+      <p>Cuenta <strong>nueva</strong>, share con archivos de recursos, montar en todos los IaaS Windows y que <strong>sobreviva al reboot</strong>. Seis acciones, en este orden. Las primeras cuatro son Azure; las últimas dos, <em>adentro</em> de cada servidor.</p>
+      <div class="flow">
+        <div class="flow-step highlight">1 New-AzStorageAccount</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">2 Get-AzStorageAccountKeys</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">3 New-AzStorageContext</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">4 New-AzStorageShare</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">5 CMDKEY</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">6 New-PSDrive</div>
+      </div>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>#</th><th>Acción</th><th>Por qué va ahí</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>New-AzStorageAccount</code></td><td>El share vive en una cuenta. El enunciado pide cuenta <em>nueva</em>.</td></tr>
+          <tr><td>2</td><td><code>Get-AzStorageAccountKeys</code></td><td>La key es la “password” del share y alimenta el context.</td></tr>
+          <tr><td>3</td><td><code>New-AzStorageContext</code></td><td>Objeto cliente (nombre + key). Sin context no creás el share por data plane.</td></tr>
+          <tr><td>4</td><td><code>New-AzStorageShare</code></td><td>Crea el share. Necesita el context del paso 3.</td></tr>
+          <tr><td>5</td><td><code>CMDKEY</code> en cada Windows</td><td>Guarda cuenta+key en Credential Manager → el mapeo <strong>persiste el reboot</strong>.</td></tr>
+          <tr><td>6</td><td><code>New-PSDrive</code> en cada Windows</td><td>Mapea la letra (<code>-Persist</code>). Sin CMDKEY previo, al reiniciar pide password.</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>$sa = New-AzStorageAccount -ResourceGroupName RG -Name stfiles01 -SkuName Standard_LRS -Location eastus -Kind StorageV2
+$key = (Get-AzStorageAccountKey -ResourceGroupName RG -Name stfiles01)[0].Value
+$ctx = New-AzStorageContext -StorageAccountName stfiles01 -StorageAccountKey $key
+New-AzStorageShare -Name resources -Context $ctx
+
+# En cada VM Windows (persistente):
+cmdkey /add:stfiles01.file.core.windows.net /user:AZURE\stfiles01 /pass:$key
+New-PSDrive -Name Z -PSProvider FileSystem -Root '\\stfiles01.file.core.windows.net\resources' -Persist</code></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Distractor</th><th>Por qué no va</th></tr></thead>
+        <tbody>
+          <tr><td><code>Get-AzStorageAccount</code></td><td>Trae una cuenta <em>existente</em>. Acá hay que <strong>crearla</strong>.</td></tr>
+          <tr><td><code>Set-AzStorageAccount</code></td><td>Cambia properties de una cuenta que ya existe.</td></tr>
+          <tr><td><code>Get-PSDrive</code></td><td>Lista drives. No mapea nada.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el orden es rígido: <strong>cuenta → keys → context → share → CMDKEY → New-PSDrive</strong>. Context <em>antes</em> del share; CMDKEY <em>antes</em> del drive (si invertís esos dos, monta ahora y se cae al reboot). <code>New-</code> vs <code>Get-</code>/<code>Set-</code> en la cuenta: el enunciado dice “new storage account”. Persistencia = <code>CMDKEY</code>, no un segundo <code>New-AzStorageShare</code>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 7 ══ -->
+  <div class="section" id="sec-auth">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(165,180,252,.15)">🪪</div>
+      <span class="section-title">Autenticación y permisos en Azure Files</span>
+      <span class="section-tag">Identidad</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Método</th><th>Cómo funciona</th><th>Cuándo lo elige el examen</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Storage account key</strong></td>
+            <td>La clave de la cuenta actúa como contraseña del share. El usuario que monta obtiene acceso <strong>total</strong>, sin identidad individual.</td>
+            <td>Pruebas, servidores sin dominio, montaje rápido. Nunca cuando piden "permisos por usuario" o "auditoría".</td>
+          </tr>
+          <tr>
+            <td><strong>Microsoft Entra Domain Services</strong></td>
+            <td>Dominio administrado en Azure; las VMs unidas a ese dominio autentican con Kerberos contra el share.</td>
+            <td>Todo cloud, sin controladores de dominio propios ni conectividad a on-prem.</td>
+          </tr>
+          <tr>
+            <td><strong>AD DS on-premises</strong></td>
+            <td>Tu Active Directory de siempre. Se registra la cuenta de storage en el dominio y las identidades se sincronizan a Entra ID con <strong>Entra Connect</strong>. Requiere línea de vista al DC.</td>
+            <td>Escenario híbrido: usuarios de dominio existentes deben mantener sus permisos NTFS.</td>
+          </tr>
+          <tr>
+            <td><strong>Entra Kerberos (identidades híbridas)</strong></td>
+            <td>Dispositivos unidos a Entra ID acceden sin línea de vista al DC, para identidades híbridas.</td>
+            <td>Perfiles FSLogix en Azure Virtual Desktop con dispositivos Entra-joined.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Files SMB: híbrido, internet, sin línea de vista al DC</div>
+      <p>GPv2 GZRS + Entra ID. Identity-based auth para SMB. Tres condiciones juntas.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Kerberos para identidades híbridas</strong> (Entra Kerberos)</td><td><span class="yes">Sí</span></td><td>Identidades híbridas, acceso por internet, <strong>sin line-of-sight a DCs</strong></td></tr>
+            <tr><td>AD Kerberos para clientes Linux (AD DS / Entra DS)</td><td><span class="no">No</span></td><td>Caso Linux puntual; no cubre el paquete de las tres condiciones</td></tr>
+            <tr><td>Microsoft Entra Domain Services</td><td><span class="no">No</span></td><td>La máquina suele ir domain-joined al managed domain → línea de vista a esos DCs</td></tr>
+            <tr><td>AD DS on-premises</td><td><span class="no">No</span></td><td>Kerberos contra el DC on-prem: exige line-of-sight</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “hybrid + over the internet + no line-of-sight to DCs” = <strong>Entra Kerberos</strong>. AD DS y Entra DS piden ver un DC. Linux Kerberos no es el escenario general.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Los DOS niveles de permiso — se evalúan juntos</div>
+      <div class="flow">
+        <div class="flow-step highlight">RBAC de share<br><small>nivel share, plano de datos</small></div>
+        <span class="flow-arrow">+</span>
+        <div class="flow-step highlight">NTFS / ACL<br><small>nivel carpeta y archivo</small></div>
+        <span class="flow-arrow">=</span>
+        <div class="flow-step">Permiso efectivo<br><small>la intersección</small></div>
+      </div>
+      <ul>
+        <li><strong>Nivel share (Azure RBAC)</strong>: roles como <em>Storage File Data SMB Share Reader</em>, <em>… Contributor</em> y <em>… Elevated Contributor</em> (este último es el único que permite modificar ACLs NTFS). Se asignan sobre el share, el resource group o la suscripción.</li>
+        <li><strong>Nivel directorio/archivo (NTFS)</strong>: las ACL de Windows de siempre, gestionadas con <code>icacls</code> o el Explorador desde una máquina unida al dominio.</li>
+        <li>El permiso efectivo es la <strong>intersección</strong>: el más restrictivo gana. RBAC Contributor + NTFS Read = <strong>solo lectura</strong>. RBAC Reader + NTFS Full Control = <strong>solo lectura</strong>.</li>
+        <li>La <strong>access key sortea todo esto</strong>: quien la tiene es superusuario del share, sin importar RBAC ni NTFS. Por eso, cuando hay identity-based auth, lo correcto es deshabilitar el acceso por key.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> te dan un usuario con el rol <em>Storage File Data SMB Share Contributor</em> y ACL NTFS de <em>Read</em>, y preguntan si puede escribir. <strong>No.</strong> El permiso efectivo es la intersección de ambos, nunca la unión. Variante: preguntan quién puede cambiar las ACL NTFS desde una VM — solo <strong>Elevated Contributor</strong> (o quien monte con la access key).</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">FSLogix: perfil temporal, el admin sí monta el share</div>
+      <p>AVD + Azure Files. El path está en el session host. Los usuarios entran con <strong>temporary profile</strong>; un admin monta el mismo share en esa VM.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Causa</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Los usuarios <strong>no tienen permiso</strong> en el file share (RBAC SMB y/o NTFS)</td><td><span class="yes">Sí</span></td><td>FSLogix no puede adjuntar el VHD → perfil temporal. El admin monta porque él sí tiene ACL/rol</td></tr>
+            <tr><td>Ya existen perfiles locales</td><td><span class="no">No</span></td><td>Eso daría perfil <em>local</em> viejo, no el temporary de FSLogix</td></tr>
+            <tr><td>Firewall del session host</td><td><span class="no">No</span></td><td>El admin no podría montar desde la misma VM</td></tr>
+            <tr><td>Network settings del share demasiado restrictivos</td><td><span class="no">No</span></td><td>Idem: el montaje del admin fallaría</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “admin monta, usuario ve temporary profile” = <strong>permisos de identidad</strong> (<em>Storage File Data SMB Share Contributor</em> + NTFS en el share), no red. Temporary ≠ local profile preexistente.</span>
+    </div>
+  </div>
+
+  <!-- ══ 8 ══ -->
+  <div class="section" id="sec-sync">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(96,165,250,.13)">🔄</div>
+      <span class="section-title">Azure File Sync</span>
+      <span class="section-tag">Híbrido</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Los componentes, en orden de creación</div>
+      <ol>
+        <li><strong>Storage Sync Service</strong>: el recurso de Azure que gobierna todo. Vive en un resource group y es el "top level".</li>
+        <li><strong>Registered server</strong>: un <strong>Windows Server</strong> con el <strong>agente de Azure File Sync</strong> instalado y registrado contra el Storage Sync Service.</li>
+        <li><strong>Sync group</strong>: define el ámbito de sincronización. Contiene <strong>exactamente un cloud endpoint</strong> y uno o varios server endpoints.</li>
+        <li><strong>Cloud endpoint</strong>: <strong>un Azure file share</strong>. Uno solo por sync group.</li>
+        <li><strong>Server endpoint</strong>: una <strong>ruta específica</strong> en un servidor registrado (un volumen o una carpeta). Un mismo servidor puede tener server endpoints en varios sync groups.</li>
+      </ol>
+      <div class="flow">
+        <div class="flow-step">Storage Sync Service</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Sync group</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">1 cloud endpoint<br><small>= el file share</small></div>
+        <span class="flow-arrow">+</span>
+        <div class="flow-step highlight">N server endpoints<br><small>= rutas en servers</small></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cloud tiering</div>
+      <ul>
+        <li>Se habilita <strong>por server endpoint</strong>. Los archivos "fríos" se suben a Azure y en el disco local queda un puntero.</li>
+        <li>Ese puntero es un <strong>reparse point</strong>: ocupa unos pocos KB, el usuario ve el archivo con su tamaño real, y al abrirlo se hace <strong>recall</strong> transparente desde el share.</li>
+        <li>Dos políticas, combinables:
+          <ul>
+            <li><strong>Volume free space policy</strong>: mantené X% del volumen libre — File Sync va tirando a la nube lo menos usado hasta cumplirlo.</li>
+            <li><strong>Date policy</strong>: mantené en local solo lo accedido en los últimos N días.</li>
+          </ul>
+        </li>
+        <li>Si conviven ambas, la de espacio libre tiene prioridad: primero se garantiza el espacio.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Casos de uso que el examen premia</div>
+      <ul>
+        <li><strong>Centralizar file servers de sucursales</strong>: cada sucursal con su cache local, un único share como fuente de verdad.</li>
+        <li><strong>Reducir footprint on-prem</strong> sin comprarle discos al file server: cloud tiering.</li>
+        <li><strong>Backup / DR</strong>: si el server muere, instalás el agente en uno nuevo, lo registrás y el namespace se rehidrata rápido (primero los reparse points, después el contenido bajo demanda).</li>
+        <li><strong>Migración lift-and-shift</strong>: sincronizás, verificás, y después apuntás a Azure Files.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el agente de Azure File Sync corre <strong>solo en Windows Server</strong> (no en Windows 10/11 cliente ni en Linux) y el server endpoint requiere un volumen <strong>NTFS</strong> — cloud tiering <strong>no funciona sobre ReFS ni sobre el volumen de sistema</strong>. Otra: <strong>un sync group tiene un único cloud endpoint</strong>; si necesitás dos file shares distintos, necesitás dos sync groups. Y no confundas File Sync (sincroniza y cachea, es bidireccional y continuo) con <strong>AzCopy sync</strong> (copia puntual, unidireccional, se corre a mano o por schedule).</span>
+    </div>
+  </div>
+
+  <!-- ══ 9 ══ -->
+  <div class="section" id="sec-mover">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,146,60,.15)">🚚</div>
+      <span class="section-title">Herramientas de movimiento de datos</span>
+      <span class="section-tag">Escenarios</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Herramienta</th><th>Tipo</th><th>Fuerte en</th><th>Señales en el enunciado</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>AzCopy</strong></td>
+            <td>CLI (Windows/Linux/macOS)</td>
+            <td>Copias masivas scriptables, server-to-server, sync incremental</td>
+            <td>"automatizar", "script", "recurrente", "copiar entre dos storage accounts sin bajar los datos"</td>
+          </tr>
+          <tr>
+            <td><strong>Azure Storage Explorer</strong></td>
+            <td>App de escritorio (GUI)</td>
+            <td>Explorar, arrastrar y soltar, gestionar SAS y ACLs a mano</td>
+            <td>"interfaz gráfica", "sin línea de comandos", "explorar el contenido"</td>
+          </tr>
+          <tr>
+            <td><strong>Azure Data Box</strong></td>
+            <td>Dispositivo físico enviado por Microsoft</td>
+            <td>Terabytes a petabytes offline</td>
+            <td><span class="chip chip-yellow">clave</span> "conexión lenta", "ancho de banda limitado", "cientos de TB", "tardaría meses"</td>
+          </tr>
+          <tr>
+            <td><strong>Import/Export</strong></td>
+            <td>Discos <strong>propios</strong> enviados al datacenter</td>
+            <td>Offline, cuando ya tenés el hardware</td>
+            <td>"usar nuestros propios discos", "export de datos a disco"</td>
+          </tr>
+          <tr>
+            <td><strong>Azure Migrate</strong></td>
+            <td>Servicio de migración</td>
+            <td>Discovery, assessment y migración de <strong>servidores/VMs</strong>, bases y apps</td>
+            <td>"migrar máquinas virtuales VMware/Hyper-V", "evaluar antes de migrar" — <strong>no</strong> para archivos sueltos</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">AzCopy: los dos verbos que preguntan</div>
+      <pre><code># copy: copia todo lo que matchee (no borra nada en el destino)
+azcopy copy "C:\datos\*" "https://cuenta.blob.core.windows.net/cont?&lt;SAS&gt;" --recursive
+
+# sync: deja el destino IGUAL al origen (puede BORRAR en el destino)
+azcopy sync "C:\datos" "https://cuenta.blob.core.windows.net/cont?&lt;SAS&gt;" --recursive
+
+# server-to-server: los datos NO pasan por tu máquina
+azcopy copy "https://origen.blob.core.windows.net/c1?&lt;SAS&gt;" \
+            "https://destino.blob.core.windows.net/c2?&lt;SAS&gt;" --recursive
+
+# autenticación con Entra ID en vez de SAS
+azcopy login
+azcopy login --identity     # con managed identity, desde una VM</code></pre>
+      <ul>
+        <li><strong>Autenticación</strong>: token <strong>SAS</strong> pegado en la URL, o <code>azcopy login</code> con Entra ID / managed identity. Con Entra ID necesitás el rol de datos correspondiente (ej. <em>Storage Blob Data Contributor</em>) — ser Owner del recurso <strong>no alcanza</strong> para el plano de datos.</li>
+        <li><code>copy</code> vs <code>sync</code>: <strong>sync compara y puede eliminar</strong> en el destino lo que no está en el origen; <code>copy</code> nunca borra. Si la pregunta dice "espejo exacto" → <code>sync</code>. Si dice "agregar sin tocar lo existente" → <code>copy</code>.</li>
+        <li><strong>Server-to-server</strong>: si origen y destino son URLs de Azure, los datos viajan dentro de Azure y no consumen tu ancho de banda.</li>
+      </ul>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Auth para AzCopy → Blob (sin SAS)</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Microsoft Entra ID</strong> (<code>azcopy login</code>)</td><td><span class="yes">Sí</span></td><td>La alternativa nativa. RBAC de datos: Blob Data Contributor</td></tr>
+            <tr><td>Anonymous public read</td><td><span class="no">No</span></td><td>Solo lectura pública. No sirve para migrar/escribir</td></tr>
+            <tr><td>Microsoft Entra Domain Services</td><td><span class="no">No</span></td><td>Managed AD (LDAPS/GPO), no token de AzCopy</td></tr>
+            <tr><td>AD DS on-prem</td><td><span class="no">No</span></td><td>Kerberos de Files, no auth de Blob REST</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> policy “sin SAS” + AzCopy a Blob = <strong>Entra ID</strong>. Entra DS y AD DS son carnada de “directorio”. Anonymous no escribe.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">AzCopy a DevStore: Blob vs Files</div>
+      <p>Hay keys, Entra y SAS. El comando apunta al share o a la cuenta. El examen pregunta qué auth <em>acepta AzCopy</em> en cada servicio.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Destino</th><th>Métodos</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Blob</strong></td><td><strong>Entra ID y SAS</strong></td><td><code>azcopy login</code> (OAuth + RBAC de datos) o SAS en la URL</td></tr>
+            <tr><td><strong>Azure Files</strong></td><td><strong>SAS only</strong></td><td>En el drop-down del examen, AzCopy a Files <strong>no</strong> toma Entra. SAS (o account key, si el combo la lista)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “si Entra sirve en Blob, sirve en Files” — en AzCopy el examen espera <strong>Blob = Entra + SAS</strong> y <strong>Files = SAS only</strong>. Tener la account key no cambia el combo si las opciones agrupan Entra/SAS.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><code>azcopy sync</code> share1 → share2 + borrar temporales</div>
+      <p>share1 (SubA, source of record) y share2 (SubB). En share2 hay temporales y copias viejas. Mínimo tiempo y costo: que share2 quede igual a share1.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>azcopy sync</code> share1→share2 con <code>--delete-destination=true</code></td><td><span class="yes">Sí</span></td><td>Solo deltas + borra en dest lo que no está en origen (los temporales)</td></tr>
+            <tr><td>Storage Explorer: comparar, copiar, borrar a mano</td><td><span class="no">No</span></td><td>GUI lento, no “minimize time”</td></tr>
+            <tr><td>Crear share3, mezclar con Explorer, borrar share2</td><td><span class="no">No</span></td><td>Recurso extra + pasos manuales</td></tr>
+            <tr><td>Borrar share2 entero y <code>azcopy copy</code> todo</td><td><span class="no">No</span></td><td>Copia full, no delta. Más tiempo y egress</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>azcopy sync "https://a.file.core.windows.net/share1" \
+            "https://b.file.core.windows.net/share2" \
+            --recursive --delete-destination=true</code></pre>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> espejo + limpiar dest = <code>sync --delete-destination</code>, no <code>copy</code> full ni Explorer. <code>copy</code> nunca borra.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">La familia Data Box</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Producto</th><th>Formato</th><th>Capacidad usable aprox.</th><th>Escenario</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Data Box Disk</strong></td><td>Discos SSD sueltos (hasta 5 por pedido)</td><td>~35 TB por pedido</td><td>Volumen chico, varias sucursales</td></tr>
+            <tr><td><strong>Data Box 120</strong></td><td>Appliance de escritorio</td><td>~120 TB usable</td><td>El caso medio</td></tr>
+            <tr><td><strong>Data Box 525</strong></td><td>Appliance de mayor capacidad</td><td>~525 TB usable</td><td>Cientos de TB / datacenter. Reemplaza al retirado Data Box Heavy</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li>Flujo: pedís el dispositivo → llega → copiás por SMB/NFS → lo devolvés → Microsoft sube los datos → confirmás y se borra de forma segura.</li>
+        <li>Los datos van <strong>cifrados con AES</strong> y el dispositivo se desinfecta después de la carga.</li>
+        <li>Existe además <strong>Data Box Gateway</strong> (appliance virtual) para transferencia <em>online</em> continua: no es lo mismo que el envío físico.</li>
+      </ul>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla de oro del examen:</strong> si el escenario menciona <strong>"conexión lenta"</strong>, <strong>"ancho de banda limitado"</strong>, <strong>"tardaría semanas/meses"</strong> o <strong>"cientos de TB / petabytes"</strong> → la respuesta es <strong>Azure Data Box</strong>. Si menciona <strong>"nuestros propios discos"</strong> → <strong>Import/Export</strong>. Si menciona <strong>"script recurrente"</strong> o <strong>"incremental"</strong> → <strong>AzCopy</strong>. Si menciona <strong>"sin CLI / gráfico"</strong> → <strong>Storage Explorer</strong>. Si menciona <strong>"servidores y VMs"</strong> → <strong>Azure Migrate</strong>.
+    </div>
+
+    <div class="card">
+      <div class="card-title">15 GB a Azure Files Premium + GUI</div>
+      <p>Marketing: 15 GB del file server on-prem → <strong>Azure Files Premium</strong>. Poco Azure Portal. Quieren <strong>GUI</strong>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Herramienta</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Azure Storage Explorer</strong></td><td><span class="yes">Sí</span></td><td>App de escritorio con GUI. Copia a Blob y a Files. No hace falta el portal</td></tr>
+            <tr><td>AzCopy</td><td><span class="no">No</span></td><td>CLI. Copia bien, pero no es gráfico</td></tr>
+            <tr><td>PowerShell</td><td><span class="no">No</span></td><td>Misma trampa: no hay GUI</td></tr>
+            <tr><td>Azure Data Box</td><td><span class="no">No</span></td><td>Appliance físico para TB/PB. 15 GB es ridículo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “GUI / no saben el portal / 15 GB / Azure Files” = <strong>Storage Explorer</strong>. AzCopy es el distractor de performance. Data Box es el de “migración grande”. El volumen chico mata Data Box; la palabra GUI mata AzCopy y PowerShell.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Complementos que aparecen como distractores válidos: <strong>Azure Data Factory</strong> (pipelines ETL programados entre muchos orígenes), <strong>Azure Backup</strong> (protección, no migración), y <strong>Storage Mover</strong> (migración administrada de file shares a Azure). Si la pregunta es puramente "copiar archivos ahora", quedate con AzCopy o Storage Explorer.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Qué tres features hay que tener habilitadas para poder usar point-in-time restore?", a: "<strong>Blob versioning + change feed + blob soft delete</strong>. Además: cuenta GPv2 estándar, solo block blobs y sin hierarchical namespace. El período de restore debe ser menor que la retención de soft delete.", cat: "PITR" },
+  { q: "En una cuenta sin hierarchical namespace, ¿qué es realmente la \"carpeta\" en <code>2024/enero/reporte.csv</code>?", a: "Nada: el <strong>nombre completo del blob</strong> es <code>2024/enero/reporte.csv</code>, barras incluidas. El árbol de carpetas lo dibuja la UI usando <code>/</code> como delimitador. Por eso <strong>no se puede renombrar una carpeta</strong> de forma atómica. Con HNS (ADLS Gen2) sí son directorios reales.", cat: "Blob" },
+  { q: "Un usuario borró un container entero por accidente. ¿Blob soft delete lo salva?", a: "<strong>No.</strong> Blob soft delete protege blobs individuales. Para recuperar el container hay que tener habilitado <strong>container soft delete</strong>, que es un toggle separado con su propia retención (típicamente 1–365 días).", cat: "Soft delete" },
+  { q: "Snapshot vs version: ¿cuál es la diferencia clave?", a: "El <strong>snapshot es manual</strong> — vos lo creás cuando querés. La <strong>version se crea automáticamente</strong> si versioning está habilitado a nivel cuenta, pero <strong>no en cualquier write</strong>: Put Blob, Put Block List, Copy Blob y Set Blob Metadata sí. Put Page, Append Block y Put Blob From URL no.", cat: "Protección" },
+  { q: "Versioning on. ¿Qué cuatro operaciones REST crean una versión nueva?", a: "<strong>Put Blob</strong>, <strong>Put Block List</strong>, <strong>Copy Blob</strong>, <strong>Set Blob Metadata</strong>. No: Put Page (page blob), Append Block (append blob), Put Blob From URL (parece Copy y no entra), Put Block suelto (solo stagea). Enable: <code>az storage account blob-service-properties update --enable-versioning true</code> / <code>Update-AzStorageBlobServiceProperty -IsVersioningEnabled</code>.", cat: "Versioning" },
+  { q: "Diferencia entre time-based retention y legal hold en immutable storage.", a: "<strong>Time-based retention</strong> tiene un intervalo en días y vence sola (una vez <em>locked</em> solo se puede extender, nunca acortar). El <strong>legal hold no tiene fecha</strong>: se levanta manualmente quitando el tag. Si hay legal hold activo, el dato sigue protegido aunque venza la retención por tiempo.", cat: "WORM" },
+  { q: "¿Cada cuánto se ejecuta el motor de lifecycle management?", a: "<strong>Una vez por día.</strong> No es instantáneo: después de crear o cambiar una policy hay que esperar al ciclo diario para ver el efecto. Aplica a <strong>block blobs</strong> (y append blobs solo para <code>delete</code>).", cat: "Lifecycle" },
+  { q: "¿Qué hay que habilitar en la cuenta para usar <code>daysAfterLastAccessTimeGreaterThan</code> en una regla de lifecycle?", a: "<strong>Last access time tracking</strong> (access time tracking) en la storage account. Sin eso, la condición solo puede basarse en <code>daysAfterModificationGreaterThan</code>.", cat: "Lifecycle" },
+  { q: "Requisitos de object replication en las cuentas origen y destino.", a: "<strong>Change feed: source only.</strong> <strong>Blob versioning: both.</strong> Eso es el mínimo. Es asíncrona, solo <strong>block blobs</strong>, se configura a nivel container con filtros de <strong>prefijo</strong>, y podés cruzar región, suscripción o tenant. No es PITR (ahí también hace falta <strong>soft delete</strong> en la misma cuenta). Cmdlets: <code>Update-AzStorageBlobServiceProperty -IsVersioningEnabled -ChangeFeed</code> / <code>az storage account blob-service-properties update --enable-versioning --enable-change-feed</code>.", cat: "Replicación" },
+  { q: "FileStorage premium. Montar el share directo on-prem por SMB 3.0, mínimo esfuerzo. ¿Qué hacés?", a: "<strong>Abrir TCP 445 saliente</strong> en el firewall on-premises hacia <code>&lt;cuenta&gt;.file.core.windows.net</code>. ExpressRoute funciona pero no es mínimo esfuerzo. File Sync no es montaje directo. El <strong>443 no es SMB</strong> (es REST/HTTPS). Probar: <code>Test-NetConnection cuenta.file.core.windows.net -Port 445</code>.", cat: "Azure Files" },
+  { q: "Mapear Azure Files: Server 2022, 2019, 2016 y 2012 R2. ¿Cuáles soportan mapping y cuál hay que upgradear?", a: "2022 / 2019 / 2016 = <strong>Supports File Mapping</strong> (SMB 3.1.1). <strong>2012 R2 = Requires Upgrading</strong>.", cat: "Azure Files" },
+  { q: "Windows Server: <code>System error 67</code> al mapear un Azure file share. ¿Qué hacés? ¿Y los distractores?", a: "<strong>Unblock TCP 445</strong> (NSG/firewall). Permisos = Error <strong>5</strong> (Access denied). Puerto <strong>2049</strong> = NFS, no SMB. <strong>Enable NTLMv1</strong> es al revés (Azure Files solo NTLMv2; NTLMv1 da Error 53 o 87). Probe: <code>Test-NetConnection cuenta.file.core.windows.net -Port 445</code>.", cat: "Azure Files" },
+  { q: "Share nuevo + montaje persistente en VMs Windows IaaS. Seis acciones en orden.", a: "<code>New-AzStorageAccount</code> → <code>Get-AzStorageAccountKeys</code> → <code>New-AzStorageContext</code> → <code>New-AzStorageShare</code> → <code>CMDKEY</code> (en el Windows) → <code>New-PSDrive</code>. No uses <code>Get-</code>/<code>Set-AzStorageAccount</code> ni <code>Get-PSDrive</code>. Sin CMDKEY el mapeo no sobrevive el reboot.", cat: "Azure Files" },
+  { q: "El montaje del Azure file share funciona en Azure pero falla desde la oficina (el ISP bloquea el 445). ¿Solución?", a: "<strong>VPN Site-to-Site o Point-to-Site, ExpressRoute o Private Endpoint</strong>. Regenerar la key o el SAS no arregla nada. Montar: <code>net use Z:</code> o <code>New-SmbMapping</code> contra <code>\\\\cuenta.file.core.windows.net\\share</code>.", cat: "Azure Files" },
+  { q: "¿Qué protocolo de Azure Files solo está disponible en Premium file shares?", a: "<strong>NFS 4.1</strong> (cuentas FileStorage). Los shares NFS no soportan autenticación por identidad de AD ni access key para el montaje: se protegen por red, con service endpoints o private endpoints. SMB 3.x está en Standard y Premium.", cat: "Azure Files" },
+  { q: "FileStorage premium: usuarios pisan configs y un admin borra el share. Mínimo costo. ¿Qué habilitás?", a: "<strong>Share snapshots</strong> (versiones anteriores de archivos) + <strong>soft delete de file shares</strong> (recuperar el share borrado). Blob versioning, lifecycle y PITR son de Blob, no de Files. Azure Backup cumple pero suma vault y costo. Cmdlets: <code>Update-AzStorageFileServiceProperty -EnableShareDeleteRetentionPolicy</code> · <code>az storage share snapshot</code> · <code>az storage share restore</code>.", cat: "Azure Files" },
+  { q: "Update-AzStorageFileServiceProperty -EnableShareDeleteRetentionPolicy $false. ¿Undeletea? ¿Púrga el share soft-deleted?", a: "<strong>Solo desactiva</strong> soft delete de la cuenta (policy futura). No undeletea y no borra permanente lo ya soft-deleted. Recuperar = <code>az storage share restore</code> / <code>Restore-AzRmStorageShare</code>.", cat: "Azure Files" },
+  { q: "Un usuario tiene el rol <em>Storage File Data SMB Share Contributor</em> y ACL NTFS de Read sobre la carpeta. ¿Puede escribir?", a: "<strong>No.</strong> El permiso efectivo es la <strong>intersección</strong> de RBAC de share y NTFS: gana el más restrictivo. Para modificar las ACL NTFS hace falta <em>Storage File Data SMB Share <strong>Elevated</strong> Contributor</em>.", cat: "Permisos" },
+  { q: "¿Cuántos cloud endpoints puede tener un sync group de Azure File Sync?", a: "<strong>Exactamente uno</strong>, y es un Azure file share. Los <strong>server endpoints</strong> pueden ser varios (rutas en servidores Windows registrados). Si necesitás dos shares distintos, necesitás dos sync groups.", cat: "File Sync" },
+  { q: "¿Qué queda en el disco local del servidor cuando cloud tiering sube un archivo a Azure?", a: "Un <strong>reparse point</strong>: un puntero de pocos KB. El usuario ve el archivo con su tamaño real y al abrirlo se hace <strong>recall</strong> transparente. Políticas: <strong>volume free space</strong> (% libre) y <strong>date</strong> (últimos N días). Requiere volumen <strong>NTFS</strong> en Windows Server.", cat: "File Sync" },
+  { q: "El cliente tiene 400 TB para subir y un enlace lento. ¿Qué herramienta?", a: "<strong>Azure Data Box 525</strong> (~525 TB usable). Data Box Heavy está <strong>retirado</strong>. Regla: \"conexión lenta\" o \"cientos de TB\" → Data Box. \"Nuestros propios discos\" → Import/Export. \"Script recurrente/incremental\" → AzCopy (<code>sync</code> refleja y borra, <code>copy</code> nunca borra). \"Sin CLI\" → Storage Explorer. \"VMs y servidores\" → Azure Migrate.", cat: "Transferencia" },
+  { q: "15 GB a Azure Files Premium. El equipo pide GUI y no usa el portal. ¿Storage Explorer, AzCopy, PowerShell o Data Box?", a: "<strong>Azure Storage Explorer</strong>. AzCopy y PowerShell no son GUI. Data Box es appliance para TB/PB: 15 GB lo descarta.", cat: "Transferencia" },
+  { q: "AzCopy a Blob, policy prohibe SAS. ¿Entra ID, Entra DS, AD DS o anonymous public read?", a: "<strong>Microsoft Entra ID</strong> (<code>azcopy login</code>) + rol de datos (Blob Data Contributor). Anonymous no escribe. Entra DS = managed AD. AD DS = Kerberos de Files, no Blob REST.", cat: "Transferencia" },
+  { q: "Lifecycle PS: Hot→Cool a 30 días, prefix ef,gh. ¿Add-Action, New-Filter, New-Rule, Set-Policy? ¿New-Action? ¿Update-Policy?", a: "<code>Add-AzStorageAccountManagementPolicyAction -BaseBlobAction TierToCool -daysAfterModificationGreaterThan 30</code> → <code>New-…Filter</code> → <code>New-…Rule</code> → <code>Set-AzStorageAccountManagementPolicy</code>. El action es Add-, no New-. Set- en la cuenta, no New-/Update-.", cat: "Lifecycle" },
+  { q: "Policy Deny si allowCrossTenantReplication no es false. Yes/No: ¿bloquea crear? ¿permite cualquier update de una cuenta que lo tiene en true? ¿Hay que borrar las OR policies antes de ponerlo en false?", a: "<strong>Yes / No / Yes</strong>. Deny cubre create y update. “Any changes” mientras siga true = bloqueado. Storage no deja apagar la property con OR policies activas.", cat: "Replicación" },
+  { q: "PS: context, container, upload file01.docx a Cool. ¿New-AzStorageAccount, New-AzStorageContext, New-AzStorageBlob, Set-AzStorageBlobContent?", a: "<code>New-AzStorageContext -UseConnectedAccount</code> → <code>New-AzStorageContainer -Context</code> → <code>Set-AzStorageBlobContent … -StandardBlobTier Cool</code>. New-AzStorageAccount crea la cuenta. New-AzStorageBlob / Upload-AzBlob no existen.", cat: "Blob" },
+  { q: "AVD + FSLogix: perfil temporal; el admin monta el share en el mismo host. ¿Local profiles, firewall, network settings o permisos?", a: "<strong>Faltan permisos</strong> del usuario en el Azure file share (RBAC SMB + NTFS). El admin monta ⇒ red/firewall OK. Temporary ≠ perfil local viejo.", cat: "Permisos" },
+  { q: "share1 (source) y share2 con temporales. Espejo, mín. costo/tiempo. ¿Explorer, share3, copy full, o sync --delete-destination?", a: "<code>azcopy sync</code> share1→share2 <code>--delete-destination=true</code>. Explorer es manual. share3 es overkill. Borrar dest + <code>copy</code> es full, no delta.", cat: "Transferencia" },
+  { q: "Files SMB: identidades híbridas Entra, acceso por internet, sin línea de vista a DCs. ¿Linux Kerberos, Entra Kerberos, Entra DS o AD DS on-prem?", a: "<strong>Kerberos para identidades híbridas</strong> (Entra Kerberos). AD DS y Entra DS piden ver un DC. Linux Kerberos es otro caso.", cat: "Azure Files" },
+  { q: "AzCopy a DevStore. Blob vs Files. ¿Entra+SAS, SAS only, o keys?", a: "<strong>Blob: Entra ID y SAS</strong>. <strong>Files: SAS only</strong>. El examen no da Entra para Files en AzCopy. Tener la key no cambia el combo si las opciones agrupan Entra/SAS.", cat: "Transferencia" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

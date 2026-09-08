@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Virtual Machines</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Virtual Machines</div>
+    <div class="nav-sub">Tamaños, discos, imágenes y extensiones</div>
+    <div class="nav-weight">Dominio 3 · 20–25%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#sec-anatomia"><span class="dot"></span>Anatomía de una VM</a>
+  <a href="#sec-tamanos"><span class="dot"></span>Familias de tamaños y resize</a>
+  <a href="#sec-discos"><span class="dot"></span>Discos gestionados</a>
+  <a href="#sec-caching"><span class="dot"></span>Host caching</a>
+  <a href="#sec-operaciones"><span class="dot"></span>Operaciones sobre discos</a>
+  <a href="#sec-cifrado"><span class="dot"></span>Cifrado de discos</a>
+  <a href="#sec-imagenes"><span class="dot"></span>Imágenes y Compute Gallery</a>
+  <a href="#sec-extensions"><span class="dot"></span>Extensions y cloud-init</a>
+  <a href="#sec-estados"><span class="dot"></span>Estados, facturación y acceso</a>
+  <a href="#mover-vms"><span class="dot"></span>Mover VMs: RG, subscription y región</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen ataca las VMs por el costado del <strong>ciclo de vida</strong> y de los <strong>discos</strong>, no por la teoría. "Apagué la VM y me sigue llegando la factura", "perdí los datos del disco D:", "necesito 60.000 IOPS en un disco de 100 GB", "quiero desplegar 200 VMs iguales en 3 regiones", "no puedo achicar el disco". Casi todas las trampas viven en tres frases: <strong>Stopped ≠ Deallocated</strong>, <strong>el disco temporal es efímero</strong> y <strong>los discos crecen pero nunca se achican</strong>. Sumale el script de adjuntar un data disk: <code>New-AzDiskConfig</code> → <code>New-AzDisk</code> → <code>Get-AzVM</code> → <code>Add-AzVMDataDisk</code> → <code>Update-AzVM</code>, y el de ADE contra el RG de la VM.
+  </div>
+
+  <!-- ══ 1 ══ -->
+  <div class="section" id="sec-anatomia">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🧩</div>
+      <span class="section-title">Anatomía de una VM: qué se crea con ella</span>
+      <span class="section-tag">Fundamentos</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Una VM no es un recurso, son varios</div>
+      <p>Cuando creás una VM desde el portal, Azure te arma un combo de recursos <strong>independientes</strong> que se facturan y se borran por separado:</p>
+      <ul>
+        <li><strong>Virtual machine</strong> — el recurso de cómputo en sí (CPU/RAM).</li>
+        <li><strong>Managed disk (OS disk)</strong> — obligatorio, uno por VM.</li>
+        <li><strong>Network interface (NIC)</strong> — obligatoria, al menos una. La IP privada vive acá.</li>
+        <li><strong>Public IP address</strong> — <em>opcional</em>, recurso aparte. Sin ella la VM no es alcanzable desde Internet de forma entrante.</li>
+        <li><strong>Network Security Group</strong> — el portal crea uno por defecto asociado a la NIC.</li>
+        <li><strong>Virtual network + subnet</strong> — si no elegiste una existente.</li>
+        <li><strong>Data disks</strong> — opcionales, 0..N según el tamaño de VM.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué se borra y qué queda huérfano</div>
+      <p>Históricamente, borrar la VM <strong>solo borraba la VM</strong>: discos, NIC, IP pública y NSG quedaban colgados generando costo. Hoy cada recurso asociable tiene un <code>deleteOption</code> ("Delete with VM") que se define <strong>al crear la VM</strong> o se puede cambiar después sobre la VM existente.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Recurso</th><th>¿Tiene "Delete with VM"?</th><th>Si no lo marcaste</th></tr></thead>
+          <tbody>
+            <tr><td>OS disk</td><td class="yes">Sí (marcado por defecto en el portal)</td><td>Queda como managed disk suelto, se sigue facturando</td></tr>
+            <tr><td>Data disks</td><td class="yes">Sí (desmarcado por defecto)</td><td>Quedan sueltos con los datos intactos</td></tr>
+            <tr><td>NIC</td><td class="yes">Sí</td><td>Queda huérfana, bloquea el borrado de la subnet</td></tr>
+            <tr><td>Public IP</td><td class="yes">Sí</td><td>Queda reservada y facturando (si es Standard/Static)</td></tr>
+            <tr><td>NSG</td><td class="no">No</td><td>Siempre sobrevive a la VM</td></tr>
+            <tr><td>VNet / Subnet</td><td class="no">No</td><td>Siempre sobrevive a la VM</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "borré la VM pero me siguen cobrando". Lo que factura son los <strong>managed disks</strong> huérfanos y la <strong>Public IP estática</strong> reservada, no la VM. Borrar el resource group completo sí se lleva todo; borrar la VM sola, no.</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>No se puede cambiar después de crear la VM:</strong> el <strong>nombre</strong>, la <strong>región</strong>, la <strong>VNet</strong>, la <strong>availability zone</strong> y la pertenencia a un <strong>availability set</strong>. Si te preguntan "cómo muevo una VM a otra zona / a otro availability set", la respuesta es <em>recrearla</em> (snapshot o imagen del disco y desplegar de nuevo). Lo que <em>sí</em> podés cambiar en caliente: tamaño, discos, NIC adicionales, extensiones.</div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Una VM puede tener <strong>varias NICs</strong>, pero la cantidad máxima la define el <strong>tamaño de VM</strong>, y agregar o quitar NICs exige la VM <strong>deallocada</strong>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 2 ══ -->
+  <div class="section" id="sec-tamanos">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">📐</div>
+      <span class="section-title">Familias de tamaños y resize</span>
+      <span class="section-tag">Sizing</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">La letra te dice el escenario</div>
+      <p>El examen no te pide memorizar SKUs; te da un caso ("aplicación de base de datos in-memory", "renderizado 3D") y espera la <strong>letra</strong> correcta.</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Familia</th><th>Tipo</th><th>Cuándo la eligen en el examen</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip chip-green">B</span></td><td>Burstable</td><td>CPU baja en promedio con picos ocasionales. Acumula <strong>créditos de CPU</strong> mientras está por debajo del baseline y los gasta al burstear. Dev/test, servidores web chicos, controladores de dominio pequeños. La más barata.</td></tr>
+          <tr><td><span class="chip chip-blue">D</span></td><td>General purpose</td><td>Relación CPU/memoria balanceada. Default para app servers, web y la mayoría de las cargas.</td></tr>
+          <tr><td><span class="chip chip-purple">E</span></td><td>Memory optimized</td><td>Alta memoria por vCPU. SQL Server, SAP, caches in-memory, analytics relacional.</td></tr>
+          <tr><td><span class="chip chip-yellow">F</span></td><td>Compute optimized</td><td>Alta CPU por unidad de memoria. Batch processing, appliances de red, servidores de juegos, cálculo intensivo.</td></tr>
+          <tr><td><span class="chip chip-green">L</span></td><td>Storage optimized</td><td>Disco local NVMe con throughput y IOPS altísimos. Big data, Cassandra/MongoDB, data warehouses, ETL.</td></tr>
+          <tr><td><span class="chip chip-purple">M</span></td><td>Memoria masiva</td><td>Las de más RAM del catálogo. SAP HANA y bases in-memory gigantes.</td></tr>
+          <tr><td><span class="chip chip-red">N</span></td><td>GPU</td><td><strong>NC</strong> = cómputo/ML/CUDA · <strong>ND</strong> = deep learning/training · <strong>NV</strong> = visualización, VDI, renderizado gráfico.</td></tr>
+          <tr><td><span class="chip chip-blue">H</span></td><td>HPC</td><td>Alta performance con interconexión <strong>RDMA/InfiniBand</strong>. Dinámica de fluidos, modelado molecular, simulaciones MPI.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Sufijos que aparecen en los SKUs</div>
+      <ul>
+        <li><code>s</code> → soporta <strong>Premium Storage</strong> (ej. <code>Standard_D4s_v5</code>). Sin la <code>s</code>, no podés usar Premium SSD.</li>
+        <li><code>d</code> → trae <strong>disco temporal local</strong> (ej. <code>Standard_D4ds_v5</code>). Los tamaños v4/v5 <strong>sin</strong> <code>d</code> vienen <strong>sin disco temporal</strong>.</li>
+        <li><code>a</code> → CPU AMD · <code>m</code> → variante con más memoria · <code>p</code> → CPU ARM (Ampere).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Resize: la regla del cluster</div>
+      <div class="flow">
+        <div class="flow-step">¿El nuevo tamaño está<br><small>en el cluster actual?</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">SÍ<br><small>resize en caliente<br>(la VM reinicia)</small></div>
+        <span class="flow-arrow">|</span>
+        <div class="flow-step">NO<br><small>deallocate → resize → start<br>(la VM cambia de host)</small></div>
+      </div>
+      <ul>
+        <li>El resize <strong>siempre reinicia</strong> la VM, aun cuando no haga falta deallocar.</li>
+        <li>Si el tamaño destino pertenece a otra generación de hardware o a otra familia que no vive en ese cluster, <strong>hay que deallocar sí o sí</strong>.</li>
+        <li>VM dentro de un <strong>availability set</strong>: si el nuevo tamaño no está en el cluster, tenés que <strong>deallocar todas las VMs del availability set</strong> antes de resizear.</li>
+        <li>El nuevo tamaño debe soportar al menos la cantidad de <strong>data disks y NICs</strong> que la VM ya tiene adjuntos.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> resizear o deallocar <strong>borra el contenido del disco temporal</strong>. Si en el escenario hay un pagefile, tempdb o cache apoyado en <code>D:</code> / <code>/mnt</code>, ese dato no sobrevive al cambio de tamaño.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">D4s_v3 → D2s_v3 falla: ¿qué property?</div>
+      <p>Linux, 4 vCPU, Premium, <strong>8 data disks</strong>, PIP Standard. El resize a <code>Standard_D2s_v3</code> no pasa.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Property</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Number of data disks</strong></td><td><span class="yes">Sí</span></td><td>D4s_v3 admite 8; D2s_v3 topea en <strong>4</strong>. Ya hay 8 adjuntos</td></tr>
+            <tr><td>Number of vCPUs</td><td><span class="no">No</span></td><td>Bajar de 4 a 2 vCPU está soportado</td></tr>
+            <tr><td>Storage type (Premium)</td><td><span class="no">No</span></td><td>Ambos tamaños llevan <code>s</code>: Premium SSD OK</td></tr>
+            <tr><td>Public IP Standard</td><td><span class="no">No</span></td><td>La SKU de la PIP no bloquea este resize</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el destino tiene que bancar <strong>al menos</strong> los data disks (y NICs) que ya están. Premium y vCPU menos no son el bloqueo entre D4s y D2s. Desprendé discos o elegí un tamaño con tope ≥ 8.</span>
+    </div>
+  </div>
+
+  <!-- ══ 3 ══ -->
+  <div class="section" id="sec-discos">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">💽</div>
+      <span class="section-title">Discos gestionados: cuál va en cada escenario</span>
+      <span class="section-tag">Storage</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Lo primero: son discos de bloque</div>
+      <p>Un managed disk es <strong>block storage</strong> montado como volumen dentro del SO — no es Blob ni un file share, no se accede por HTTP ni se monta por SMB desde otra máquina. Azure administra la storage account por vos: vos elegís tipo y tamaño, y el resto es transparente.</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Tipo</th><th>Escenario típico</th><th>IOPS / throughput</th><th>Puede ser OS disk</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Standard HDD</strong></td>
+            <td>Backup, archivos fríos, cargas no críticas con acceso poco frecuente. Lo más barato.</td>
+            <td>Escala con el tamaño del disco. El piso del catálogo.</td>
+            <td class="yes">Sí</td>
+          </tr>
+          <tr>
+            <td><strong>Standard SSD</strong></td>
+            <td>Web servers, dev/test, apps ligeras que necesitan latencia más predecible que HDD sin pagar Premium.</td>
+            <td>Escala con el tamaño (tiers E). Mejor consistencia que HDD.</td>
+            <td class="yes">Sí</td>
+          </tr>
+          <tr>
+            <td><strong>Premium SSD</strong></td>
+            <td>Producción, bases de datos, cargas sensibles a latencia. <strong>Requerido para el SLA de VM de instancia única.</strong></td>
+            <td>Escala <strong>por tier</strong> (P10, P30, P50...). Para más IOPS tenés que agrandar el disco.</td>
+            <td class="yes">Sí</td>
+          </tr>
+          <tr>
+            <td><strong>Premium SSD v2</strong></td>
+            <td>Cargas transaccionales que necesitan mucha performance <strong>sin</strong> sobredimensionar el tamaño. Sale más barato que Ultra.</td>
+            <td><strong>IOPS y throughput configurables independientemente del tamaño.</strong> Baseline incluida y ajuste fino desde ahí.</td>
+            <td class="no">No (solo data disk)</td>
+          </tr>
+          <tr>
+            <td><strong>Ultra Disk</strong></td>
+            <td>El techo: SAP HANA, SQL de misión crítica, NoSQL con latencia sub-milisegundo. Solo cuando el escenario dice "máximo IOPS" o "latencia más baja posible".</td>
+            <td><strong>IOPS y throughput configurables independientemente del tamaño y ajustables en caliente.</strong></td>
+            <td class="no">No (solo data disk)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drag-and-drop: SQL en una VM, SLA 99,9%, mínimo costo</div>
+      <p>Instancia única. OS + data. SQL Server 2022.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Campo</th><th>Valor</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Size</td><td><code>Standard_E2bs_v5</code></td><td>Familia E (memoria, SQL) + soporta Premium. El más barato de los que sirven</td></tr>
+            <tr><td>OS disk</td><td><strong>Premium SSD</strong></td><td>SLA 99,9% de instancia única exige Premium (o Ultra / Pv2) en <strong>todos</strong> los discos</td></tr>
+            <tr><td>Data disk</td><td><strong>Premium SSD</strong></td><td>Igual: un Standard SSD/HDD baja el SLA a 99,5% / 95%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Descartá</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>Standard_A4_v2</code> / <code>A8_v2</code></td><td>A-series v2 <strong>no</strong> monta Premium SSD</td></tr>
+            <tr><td><code>Standard_D4_v2</code></td><td>Sin <code>s</code> = sin Premium. Haría falta <code>DS4_v2</code></td></tr>
+            <tr><td><code>Standard_DS4_v2</code></td><td>Sí soporta Premium, pero 4 vCPU: más caro que E2bs_v5</td></tr>
+            <tr><td>Standard SSD / HDD</td><td>No dan 99,9% en VM suelta</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> 99,9% + una VM = <strong>Premium SSD en OS y data</strong> + SKU que acepte Premium (<code>s</code> o series nuevas tipo Ebs). A/D sin <code>s</code> quedan afuera. DS4 cumple el SLA pero no “minimize costs”.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Restricciones de Ultra Disk (esto es lo que preguntan)</div>
+      <ul>
+        <li>La VM tiene que estar en una <strong>Availability Zone</strong> de una región que soporte Ultra, y hay que <strong>habilitar la compatibilidad Ultra en la VM</strong>.</li>
+        <li><span class="no">✗</span> No sirve como <strong>disco de OS</strong>.</li>
+        <li><span class="no">✗</span> No soporta <strong>host caching</strong> (obligatoriamente <code>None</code>).</li>
+        <li><span class="no">✗</span> No es compatible con <strong>availability sets</strong> ni con <strong>Azure Disk Encryption (ADE)</strong>.</li>
+        <li>No todas las features de disco (imágenes, algunas rutas de backup/replicación) están disponibles: si el escenario pide "backup con Azure Backup" o "réplica con Site Recovery", Ultra es sospechoso.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tamaños máximos: OS disk ≠ data disk</div>
+      <ul>
+        <li><strong>OS disk</strong>: hasta <strong>4 TiB</strong> (4.095 GiB). Para superar los <strong>2 TiB</strong> la VM tiene que ser <strong>Generation 2</strong> (UEFI/GPT); una Gen 1 con MBR se queda en 2 TiB.</li>
+        <li><strong>Data disks</strong>: hasta <strong>32 TiB</strong> en Standard HDD / Standard SSD / Premium SSD, y hasta <strong>64 TiB</strong> en Premium SSD v2 y Ultra Disk.</li>
+        <li>La <strong>cantidad</strong> de data disks adjuntables la define el <strong>tamaño de la VM</strong>, no el tipo de disco. Si necesitás más capacidad total y ya llegaste al límite, agrandás la VM o hacés striping (Storage Spaces / LVM / RAID 0) sobre varios discos.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">El disco temporal: la trampa clásica</div>
+      <ul>
+        <li>Windows: se monta como <strong><code>D:</code></strong> · Linux: <strong><code>/dev/sdb</code></strong> montado en <strong><code>/mnt</code></strong>.</li>
+        <li><strong>No es un managed disk.</strong> Es almacenamiento local del host físico, no se factura aparte, no se puede snapshotear ni respaldar.</li>
+        <li>Su contenido se pierde al <strong>deallocar</strong>, al <strong>resizear</strong>, al hacer <strong>mantenimiento del host</strong> o si la VM cae y se recupera en otro host. Un reboot desde adentro del SO normalmente lo conserva; un deallocate, nunca.</li>
+        <li>Uso legítimo: pagefile / swap, <code>tempdb</code>, archivos scratch. Nunca datos que importen.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> no confundas <strong>temporary disk</strong> con <strong>Ephemeral OS disk</strong>. El temp disk es un volumen extra efímero que viene con ciertos tamaños. El Ephemeral OS disk es una <em>opción del disco de sistema</em>: vive en el almacenamiento local del host, es gratis y reimagina rapidísimo, pero <strong>no soporta snapshots ni Azure Backup</strong>, y se pierde entero al deallocar. Un <strong>resize de VM sí está soportado</strong>, pero <strong>borra el contenido del OS disk</strong> y lo reprovisiona. Se elige al crear la VM y no se puede convertir después.</span>
+    </div>
+  </div>
+
+  <!-- ══ 4 ══ -->
+  <div class="section" id="sec-caching">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">⚡</div>
+      <span class="section-title">Host caching: None / ReadOnly / ReadWrite</span>
+      <span class="section-tag">Performance</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué es</div>
+      <p>El <strong>host caching</strong> usa la RAM y el SSD local del host donde corre la VM como caché del managed disk. No lo pagás aparte, pero el techo de "cached IOPS" lo define el <strong>tamaño de la VM</strong>. Elegir mal el modo puede hacer que una base de datos ande <em>peor</em> que sin caché.</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Modo</th><th>Qué cachea</th><th>Cuándo se usa</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip chip-blue">None</span></td><td>Nada. Lecturas y escrituras van directo al disco.</td><td>Cargas de <strong>escritura intensiva</strong>: <strong>log files</strong> de bases de datos, colas, append-only. Obligatorio en <strong>Ultra Disk</strong> y en <strong>shared disks</strong>.</td></tr>
+          <tr><td><span class="chip chip-green">ReadOnly</span></td><td>Solo lecturas. Las escrituras pasan derecho al disco.</td><td><strong>Data files</strong> de bases de datos y cualquier carga read-heavy. Mejora latencia de lectura sin riesgo de consistencia.</td></tr>
+          <tr><td><span class="chip chip-yellow">ReadWrite</span></td><td>Lecturas y escrituras.</td><td><strong>Default del disco de OS.</strong> Para data disks, solo si la app maneja su propio flush de escrituras. <span class="no">✗</span> Nunca para logs de DB.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>La receta que preguntan (SQL Server en una VM):</strong> disco de <strong>OS → ReadWrite</strong> · discos de <strong>datos → ReadOnly</strong> · discos de <strong>log → None</strong>.
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Cambiar el caching de un <strong>data disk</strong> lo desadjunta y readjunta (corte breve de I/O). Cambiar el caching del <strong>OS disk</strong> reinicia la VM. No es un cambio gratis en producción.</span>
+    </div>
+  </div>
+
+  <!-- ══ 5 ══ -->
+  <div class="section" id="sec-operaciones">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">🛠️</div>
+      <span class="section-title">Operaciones sobre discos</span>
+      <span class="section-tag">Día a día</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Expandir un disco</div>
+      <ul>
+        <li><span class="yes">✓</span> Se puede <strong>agrandar</strong> en cualquier momento.</li>
+        <li><span class="no">✗</span> <strong>Nunca se puede achicar.</strong> Si necesitás un disco más chico: creás uno nuevo del tamaño deseado y copiás los datos.</li>
+        <li>Algunas expansiones exigen la VM <strong>deallocada</strong> — típicamente el <strong>disco de OS</strong> y cualquier salto que cruce el umbral de <strong>4 TiB</strong>. Los data disks suelen admitir expansión en caliente.</li>
+        <li>Agrandar el disco <strong>no agranda el volumen</strong>: después hay que extender la partición y el filesystem <em>dentro del SO</em> (Disk Management / <code>diskpart</code> en Windows, <code>growpart</code> + <code>resize2fs</code> o <code>xfs_growfs</code> en Linux).</li>
+        <li>Ojo con el costo: al pasar de tier (ej. P10 → P30) subís de precio aunque uses poco espacio.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "expandí el disco a 1 TB pero Windows sigue mostrando 128 GB". No es un bug: falta <strong>extender el volumen dentro del sistema operativo</strong>. Y si te preguntan cómo achicar un disco, la única respuesta correcta es <strong>migrar los datos a un disco nuevo</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Script del examen: crear y adjuntar un data disk</div>
+      <p>El disco se crea <strong>vacío y aparte</strong> y después se adjunta a la VM. <code>Add-AzVMDataDisk</code> solo muta el objeto en memoria: sin <code>Update-AzVM</code> Azure no se entera.</p>
+<pre><code>$rgName = 'UKRG01'; $vmName = 'HRVM01'; $location = 'UK South'
+$storageType = 'Premium_ZRS'; $dataDiskName = 'HRDisk05'
+
+$diskConfig = New-AzDiskConfig -SkuName $storageType -Location $location `
+  -CreateOption Empty -DiskSizeGB 1024
+$dataDisk1 = New-AzDisk -DiskName $dataDiskName -Disk $diskConfig -ResourceGroupName $rgName
+
+$vm = Get-AzVM -Name $vmName -ResourceGroupName $rgName
+$vm = Add-AzVMDataDisk -VM $vm -Name $dataDiskName -CreateOption Attach `
+  -ManagedDiskId $dataDisk1.Id -Lun 4
+Update-AzVM -VM $vm -ResourceGroupName $rgName</code></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Cmdlet</th><th>Qué hace</th><th>Trampa</th></tr></thead>
+        <tbody>
+          <tr><td><code>New-AzDiskConfig</code></td><td>Objeto en memoria: SKU, región, tamaño, <code>CreateOption Empty</code></td><td>No crea nada en Azure. No es <code>New-AzDiskUpdateConfig</code> (eso es para cambiar un disco ya creado)</td></tr>
+          <tr><td><code>New-AzDisk</code></td><td>Provisiona el managed disk</td><td>Acá sí existe el recurso; todavía <strong>no</strong> está en la VM</td></tr>
+          <tr><td><code>Get-AzVM</code></td><td>Baja el modelo actual de la VM</td><td>Sin esto no hay objeto para mutar</td></tr>
+          <tr><td><code>Add-AzVMDataDisk</code></td><td>Adjunta al objeto local: <code>CreateOption Attach</code>, <code>ManagedDiskId</code>, <code>Lun</code></td><td><code>Empty</code> acá está mal (el disco ya existe). El LUN tiene que estar libre</td></tr>
+          <tr><td><code>Update-AzVM</code></td><td>Empuja el modelo a Azure</td><td>Sin este paso el disco queda huérfano, creado pero no adjunto</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">CreateOption y SKU que hay que reconocer</div>
+      <ul>
+        <li><strong>Al crear el disco:</strong> <code>Empty</code> (en blanco), <code>Copy</code> / <code>Import</code> / <code>FromImage</code> / <code>Restore</code> / <code>Upload</code>.</li>
+        <li><strong>Al adjuntar:</strong> <code>Attach</code> (disco managed ya existente). Si creás el disco <em>junto con la VM</em> en un solo paso, el Add puede ir con <code>Empty</code> y sin <code>ManagedDiskId</code> — no es este escenario.</li>
+        <li>SKU: <code>Premium_LRS</code>, <code>Premium_ZRS</code>, <code>Standard_LRS</code>, <code>StandardSSD_LRS</code>, <code>StandardSSD_ZRS</code>, <code>UltraSSD_LRS</code>, <code>PremiumV2_LRS</code>. El enunciado “Premium ZRS” es <code>Premium_ZRS</code>.</li>
+        <li>El LUN es el número SCSI del data disk (único por VM). El OS disk no usa ese LUN.</li>
+        <li>Después de adjuntar, el disco está <strong>raw</strong>: hay que inicializar, particionar y formatear <em>dentro del SO</em> (<code>Initialize-Disk</code> / Disk Management / <code>parted</code>).</li>
+      </ul>
+<pre><code># CLI equivalente (más corto: create + attach)
+az disk create -g UKRG01 -n HRDisk05 --size-gb 1024 --sku Premium_ZRS --location uksouth
+az vm disk attach -g UKRG01 --vm-name HRVM01 --name HRDisk05 --lun 4
+
+# Desadjuntar (el disco managed sigue existiendo y facturando)
+$vm = Remove-AzVMDataDisk -VM $vm -Name HRDisk05
+Update-AzVM -VM $vm -ResourceGroupName $rgName
+# az vm disk detach -g UKRG01 --vm-name HRVM01 -n HRDisk05</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Yes/No: pasar DataDisk2 de VM1 a VM2 (mínimo downtime)</div>
+      <p>Managed data disk. PowerShell. El disco debe estar el menor tiempo posible sin la app.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Hay que <strong>apagar VM1</strong> para desadjuntar DataDisk2</td><td><span class="no">No</span></td><td>Data disk se <strong>hot-detach</strong> con la VM running (el OS disk no)</td></tr>
+            <tr><td>Podés leer los datos de DataDisk2 <strong>mientras está unattached</strong></td><td><span class="no">No</span></td><td>Sin VM (o snapshot/export) no hay filesystem. El disco existe y factura, pero no se monta</td></tr>
+            <tr><td>Hay que correr <code>Update-AzVM</code> en <strong>VM1 y VM2</strong></td><td><span class="yes">Sí</span></td><td>Remove/Add solo mutan el objeto local. Sin Update no hay cambio en Azure</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>$vm1 = Get-AzVM -Name VM1 -ResourceGroupName RG
+$vm1 = Remove-AzVMDataDisk -VM $vm1 -Name DataDisk2
+Update-AzVM -VM $vm1 -ResourceGroupName RG
+$disk = Get-AzDisk -ResourceGroupName RG -DiskName DataDisk2
+$vm2 = Get-AzVM -Name VM2 -ResourceGroupName RG
+$vm2 = Add-AzVMDataDisk -VM $vm2 -Name DataDisk2 -CreateOption Attach -ManagedDiskId $disk.Id -Lun 1
+Update-AzVM -VM $vm2 -ResourceGroupName RG</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> data disk ≠ OS disk: <strong>no hace falta Stop</strong> para desadjuntar. Unattached ≠ accesible. Y el clásico: <code>Remove-AzVMDataDisk</code> / <code>Add-AzVMDataDisk</code> no viven hasta <code>Update-AzVM</code> <em>en las dos</em> VMs.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen (drop-down disco):</strong> <code>New-AzDiskConfig</code> (Empty) → <code>New-AzDisk</code> → <code>Get-AzVM</code> → <code>Add-AzVMDataDisk</code> (Attach + Lun) → <code>Update-AzVM</code>. Invertir Config/Disk o olvidar el Update deja el disco sin adjuntar. <code>Add-AzVMDataDisk</code> no habla con Azure solo.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Snapshot vs Image vs copia de disco</div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Artefacto</th><th>Alcance</th><th>Para qué sirve</th><th>Detalle de examen</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Snapshot</strong></td>
+            <td><strong>Un solo disco</strong>, point-in-time, solo lectura</td>
+            <td>Rollback rápido, clonar un disco puntual, mover datos entre regiones</td>
+            <td>Los <strong>incrementales</strong> facturan solo el delta contra el snapshot anterior. Un snapshot por disco <strong>no</strong> garantiza consistencia entre varios discos de la misma VM → para eso, <strong>Azure Backup</strong>.</td>
+          </tr>
+          <tr>
+            <td><strong>Image (VM image)</strong></td>
+            <td><strong>Toda la VM</strong>: OS disk + data disks + config</td>
+            <td>Desplegar <em>nuevas</em> VMs iguales, alimentar VM Scale Sets</td>
+            <td>Puede ser <strong>generalized</strong> (pasó por sysprep) o <strong>specialized</strong> (conserva identidad).</td>
+          </tr>
+          <tr>
+            <td><strong>Copia de managed disk</strong></td>
+            <td>Un disco → disco nuevo</td>
+            <td>Duplicar un volumen sin pasar por snapshot</td>
+            <td>El disco nuevo es independiente desde el minuto cero; se puede adjuntar a otra VM.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Shared disks (clusters)</div>
+      <ul>
+        <li>Se habilita con el atributo <strong><code>maxShares</code></strong> del disco: define a cuántas VMs se puede adjuntar <strong>al mismo tiempo</strong>.</li>
+        <li>Casos: Windows Server Failover Clustering, SQL Server Failover Cluster Instance, SAP ASCS/SCS, clusters de Linux con Pacemaker.</li>
+        <li>Necesita un <strong>cluster manager</strong> que coordine el acceso con SCSI Persistent Reservations — Azure <strong>no</strong> serializa las escrituras por vos.</li>
+        <li>Restricciones: <span class="no">✗</span> no sirve como <strong>disco de OS</strong> · <span class="no">✗</span> host caching debe ser <strong>None</strong> · no está disponible en Standard HDD.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">OS disk swap</div>
+      <p>Podés reemplazar el disco de sistema de una VM existente por otro (por ejemplo, uno restaurado de un snapshot) <strong>sin recrear la VM</strong>: conservás nombre, NIC, IP privada, NSG y extensiones. Requisito: la VM tiene que estar <strong>deallocada</strong>, y el disco nuevo debe ser del mismo tipo de SO y estar en la <strong>misma región y suscripción</strong>.</p>
+      <pre><code>az vm stop --resource-group RG --name VM1
+az vm deallocate --resource-group RG --name VM1
+az vm update --resource-group RG --name VM1 --os-disk disco-restaurado</code></pre>
+    </div>
+  </div>
+
+  <!-- ══ 6 ══ -->
+  <div class="section" id="sec-cifrado">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🔐</div>
+      <span class="section-title">Cifrado de discos: SSE, CMK, ADE y encryption at host</span>
+      <span class="section-tag">Seguridad</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Las cuatro capas y qué resuelve cada una</div>
+      <ul>
+        <li><strong>SSE con platform-managed keys (PMK)</strong> — cifrado en reposo de todos los managed disks, snapshots e imágenes. <strong>Siempre activo, no se puede desactivar</strong>, sin costo ni impacto de performance. Azure administra las claves.</li>
+        <li><strong>SSE con customer-managed keys (CMK)</strong> — misma capa, pero la clave la ponés vos vía <strong>Disk Encryption Set (DES)</strong>, que apunta a una clave de <strong>Key Vault</strong>. Respuesta correcta cuando el escenario dice "la organización debe controlar y rotar sus propias claves".</li>
+        <li><strong>Azure Disk Encryption (ADE)</strong> — cifrado <strong>dentro del guest OS</strong> usando <strong>BitLocker</strong> (Windows) o <strong>dm-crypt</strong> (Linux). Se implementa como una <strong>extensión de VM</strong>. En retiro el <strong>15 sep 2028</strong>: para VMs nuevas el outline pide <strong>encryption at host</strong>.</li>
+        <li><strong>Encryption at host</strong> — el host cifra los datos <em>antes</em> de que salgan hacia el storage. Es la única opción que cubre además el <strong>disco temporal</strong> y las <strong>cachés de disco</strong> end-to-end. Hay que habilitar la feature a nivel de <strong>suscripción</strong> y el tamaño de VM tiene que soportarla.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>SSE (PMK / CMK)</th><th>Azure Disk Encryption (ADE)</th><th>Encryption at host</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Dónde cifra</strong></td><td>En la plataforma de storage</td><td>Dentro del sistema operativo</td><td>En el host, antes del storage</td></tr>
+          <tr><td><strong>Tecnología</strong></td><td>AES 256 de Azure Storage</td><td>BitLocker / dm-crypt</td><td>Cifrado del host de Azure</td></tr>
+          <tr><td><strong>Estado</strong></td><td>Siempre activo</td><td>Opt-in, por VM</td><td>Opt-in, feature de suscripción + soporte del tamaño</td></tr>
+          <tr><td><strong>Key Vault</strong></td><td>Solo si usás CMK (vía DES)</td><td><strong>Obligatorio</strong>, con <em>"Enabled for disk encryption"</em></td><td>Solo si sumás CMK</td></tr>
+          <tr><td><strong>Cifra el disco temporal</strong></td><td class="no">No</td><td>Parcial / depende del SO</td><td class="yes">Sí</td></tr>
+          <tr><td><strong>Transparente para el SO</strong></td><td class="yes">Sí</td><td class="no">No (el volumen queda cifrado adentro)</td><td class="yes">Sí</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Requisitos que caen en preguntas</div>
+      <ul>
+        <li><strong>ADE</strong>: el Key Vault tiene que estar en la <strong>misma región y suscripción</strong> que la VM y tener marcada la política <strong>"Enabled for disk encryption"</strong> (<code>EnabledForDiskEncryption</code>). Sin eso, la extensión falla.</li>
+        <li><strong>ADE</strong> no es compatible con Ultra Disk, Premium SSD v2 ni ephemeral OS disks, y no se combina con encryption at host sobre el mismo disco.</li>
+        <li><strong>CMK / DES</strong>: el Key Vault necesita <strong>soft delete</strong> y <strong>purge protection</strong> habilitados, y el DES usa una <strong>managed identity</strong> a la que hay que darle permiso sobre la clave (get / wrap / unwrap). El DES vive en la <strong>misma región</strong> que los discos.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Script ADE del examen (PowerShell drop-down)</div>
+      <p>El vault y la VM suelen estar en <strong>resource groups distintos</strong>. El orden es fijo: traer el vault → extraer URI e ID → instalar la extensión sobre la VM.</p>
+<pre><code>$keyVaultRG = 'myKeyVaultResourceGroup'
+$vmRG       = 'myVirtualMachineResourceGroup'
+$vmName     = 'mySecureVM'
+$keyVaultName = 'mySecureVault'
+
+$keyVault = Get-AzKeyVault -VaultName $keyVaultName -ResourceGroupName $keyVaultRG
+$diskEncryptionKeyVaultUrl = $keyVault.VaultUri
+$keyVaultId = $keyVault.ResourceId
+
+Set-AzVMDiskEncryptionExtension `
+  -ResourceGroupName $vmRG `
+  -VMName $vmName `
+  -DiskEncryptionKeyVaultUrl $diskEncryptionKeyVaultUrl `
+  -DiskEncryptionKeyVaultId $keyVaultId</code></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Hueco del script</th><th>Correcto</th><th>Distractor plantado</th></tr></thead>
+        <tbody>
+          <tr><td>Traer el vault</td><td><code>Get-AzKeyVault</code></td><td><code>Get-AzKeyVaultKey</code> · <code>Get-AzKeyVaultSecret</code> · <code>Get-AzVM</code> · <code>New-AzKeyVault</code></td></tr>
+          <tr><td>URL del vault</td><td><code>$keyVault.VaultUri</code></td><td><code>.Uri</code> · <code>.VaultUrl</code> · <code>.VaultAddress</code></td></tr>
+          <tr><td>ID del vault</td><td><code>$keyVault.ResourceId</code></td><td><code>.Id</code> · <code>.VaultId</code> · <code>.ResourceGroupId</code></td></tr>
+          <tr><td>Cifrar la VM</td><td><code>Set-AzVMDiskEncryptionExtension</code></td><td><code>Enable-AzDiskEncryption</code> · <code>Set-AzDisk</code> · <code>Add-AzVMDataDisk</code></td></tr>
+          <tr><td><code>-ResourceGroupName</code></td><td><code>$vmRG</code> (el de la VM)</td><td><code>$keyVaultRG</code> — el vault puede estar en otro RG</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Comandos ADE que hay que reconocer</div>
+      <div class="tbl-wrap" style="margin:0;border:none">
+      <table>
+        <thead><tr><th>Qué</th><th>PowerShell</th><th>Azure CLI</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Crear vault ya habilitado para ADE</td>
+            <td><code>New-AzKeyVault -EnabledForDiskEncryption</code></td>
+            <td><code>az keyvault create --enabled-for-disk-encryption true</code></td>
+          </tr>
+          <tr>
+            <td>Habilitar ADE en un vault existente</td>
+            <td><code>Set-AzKeyVaultAccessPolicy -EnabledForDiskEncryption</code></td>
+            <td><code>az keyvault update --enabled-for-disk-encryption true</code></td>
+          </tr>
+          <tr>
+            <td>Leer URI e ID del vault</td>
+            <td><code>Get-AzKeyVault</code> → <code>.VaultUri</code> / <code>.ResourceId</code></td>
+            <td><code>az keyvault show --query "{uri:properties.vaultUri, id:id}"</code></td>
+          </tr>
+          <tr>
+            <td>Cifrar discos (instala la extensión)</td>
+            <td><code>Set-AzVMDiskEncryptionExtension</code></td>
+            <td><code>az vm encryption enable --disk-encryption-keyvault KV</code></td>
+          </tr>
+          <tr>
+            <td>Ver estado</td>
+            <td><code>Get-AzVMDiskEncryptionStatus</code></td>
+            <td><code>az vm encryption show</code></td>
+          </tr>
+          <tr>
+            <td>Deshabilitar (antes de mover de subscription)</td>
+            <td><code>Disable-AzVMDiskEncryption</code></td>
+            <td><code>az vm encryption disable --volume-type all</code></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <ul>
+        <li><code>-VolumeType All | OS | Data</code>: Linux suele exigir <code>All</code> o un tipo explícito; Windows cifra OS + data por defecto.</li>
+        <li>Doble cifrado con KEK (opcional): <code>Add-AzKeyVaultKey</code> / <code>Get-AzKeyVaultKey</code> y después <code>-KeyEncryptionKeyUrl</code> + <code>-KeyEncryptionKeyVaultId</code> en el mismo <code>Set-AzVMDiskEncryptionExtension</code>. Si el enunciado no pide KEK, no lo agregues.</li>
+        <li>CLI corto: <code>az vm encryption enable --resource-group $vmRG --name $vmName --disk-encryption-keyvault $keyVaultName</code> — el CLI resuelve URI e ID solo; en PowerShell hay que pasarlos a mano.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down CLI: vault nuevo + ADE en Ubuntu</div>
+      <p>VM <code>vm1</code> Ubuntu, vault nuevo <code>vmKeyVault1</code>, todo en <code>rg1</code>.</p>
+<pre><code>az keyvault create --name vmKeyVault1 -g rg1 -l eastus --enabled-for-disk-encryption
+az vm encryption enable -g rg1 --name vm1 --disk-encryption-keyvault vmKeyVault1</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Hueco</th><th>Correcto</th><th>Distractor</th></tr></thead>
+          <tbody>
+            <tr><td>Crear el vault</td><td><code>az keyvault create</code></td><td><code>az keyvault update</code> (vault ya existente)</td></tr>
+            <tr><td>Flag del vault</td><td><code>--enabled-for-disk-encryption</code></td><td><code>--enabled-for-deployment</code> / <code>--enabled-for-template-deployment</code> (ARM, no ADE)</td></tr>
+            <tr><td>Cifrar la VM</td><td><code>az vm encryption enable</code></td><td><code>az vm encryption show</code> / <code>az disk update</code></td></tr>
+            <tr><td>Parámetro del vault</td><td><code>--disk-encryption-keyvault</code></td><td><code>--keyvault</code> suelto / <code>--secrets</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> vault <em>nuevo</em> = <code>az keyvault create --enabled-for-disk-encryption</code>, no <code>update</code>. <code>--enabled-for-deployment</code> es para que ARM lea secretos, no para BitLocker/dm-crypt.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Yes/No: Set-AzVMDiskEncryptionExtension en Linux running</div>
+<pre><code>Set-AzVMDiskEncryptionExtension -ResourceGroupName $VMRGName -VMName $vmName `
+  -DiskEncryptionKeyVaultUrl $diskEncryptionKeyVaultUrl `
+  -DiskEncryptionKeyVaultId $KeyVaultResourceId `
+  -VolumeType Data -SequenceVersion ([Guid]::NewGuid()) -skipVmBackup</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Hay que <strong>Stop</strong> la VM antes de cifrar, si no hay data loss</td><td><span class="no">No</span></td><td>ADE corre en VMs <strong>running</strong>. Puede reiniciar; no pide Deallocated</td></tr>
+            <tr><td>Solo se cifran los volúmenes de <strong>Data</strong></td><td><span class="yes">Yes</span></td><td><code>-VolumeType Data</code> (no All / OS)</td></tr>
+            <tr><td><code>-SequenceVersion</code> es único por operación</td><td><span class="yes">Yes</span></td><td>Un GUID nuevo dispara un job nuevo. Reusar el mismo puede no re-cifrar</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> ADE no exige Stop. Leé <code>-VolumeType</code>: Data ≠ All. SequenceVersion = GUID por run, no un número de disco.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen (drop-down ADE):</strong> VM en <code>myVirtualMachineResourceGroup</code>, vault en <code>myKeyVaultResourceGroup</code>. <code>Get-AzKeyVault</code> usa el RG del vault; <code>Set-AzVMDiskEncryptionExtension -ResourceGroupName</code> usa el RG de la <strong>VM</strong>. Propiedades: <code>VaultUri</code> (no VaultUrl) y <code>ResourceId</code> (no Id). <code>Get-AzKeyVaultKey</code> es para una KEK, no para arrancar ADE.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "los discos no están cifrados" es <strong>falso por definición</strong> — SSE con platform-managed keys está siempre encendido y no se apaga. Si la pregunta pide cifrado, fijate qué <em>tipo</em>: control de la clave → <strong>CMK + Disk Encryption Set</strong>; requisito de BitLocker/dm-crypt dentro del SO → <strong>ADE</strong>; incluir el disco temporal y las cachés → <strong>encryption at host</strong>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 7 ══ -->
+  <div class="section" id="sec-imagenes">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">🖼️</div>
+      <span class="section-title">Imágenes y despliegue repetible</span>
+      <span class="section-tag">Automatización</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">De dónde sale una VM</div>
+      <ul>
+        <li><strong>Marketplace</strong> — imágenes publicadas por Microsoft y terceros, identificadas por <code>publisher:offer:sku:version</code>. Algunas traen costo de licencia de software además del cómputo.</li>
+        <li><strong>Imagen propia (custom)</strong> — la creás capturando una VM que configuraste vos.</li>
+        <li><strong>Disco / snapshot existente</strong> — creás una VM directamente desde un managed disk.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Generalized vs Specialized</div>
+      <div class="flow">
+        <div class="flow-step">Configurás la VM<br><small>golden image</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Generalize<br><small>Windows: sysprep<br>Linux: waagent</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Deallocate</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Capture</div>
+      </div>
+      <ul>
+        <li><strong>Windows</strong>: <code>sysprep /generalize /oobe /shutdown</code> — borra SID, nombre de máquina y perfiles.</li>
+        <li><strong>Linux</strong>: <code>sudo waagent -deprovision+user</code> — borra usuario, claves SSH y datos del agente.</li>
+        <li>Después: <strong>Stop (deallocate)</strong> desde Azure, marcar la VM como <strong>Generalized</strong> y <strong>Capture</strong>.</li>
+        <li>Una VM desplegada desde imagen <strong>generalized</strong> pide usuario y hostname nuevos al crearse → sirve para desplegar muchas VMs distintas y para <strong>VM Scale Sets</strong>.</li>
+        <li>Una imagen <strong>specialized</strong> <em>no</em> pasa por sysprep: conserva cuentas, hostname y SID. Sirve para lift-and-shift o clonar una máquina puntual, pero desplegar varias te deja hostnames duplicados.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> una vez que corrés <strong>sysprep</strong> o <strong>waagent -deprovision</strong>, esa VM origen <strong>ya no se debe volver a usar</strong> — quedó generalizada y no está soportado seguir operándola. Si vas a mantener la máquina viva, sacá un <strong>snapshot antes</strong> o capturá la imagen como <strong>specialized</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Azure Compute Gallery (ex Shared Image Gallery)</div>
+      <div class="flow">
+        <div class="flow-step">Azure Compute Gallery</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Image Definition<br><small>publisher / offer / SKU<br>OS type · Gen · generalized o specialized</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Image Version<br><small>1.0.0, 1.0.1...</small></div>
+      </div>
+      <ul>
+        <li><strong>Versionado</strong>: mantenés varias versiones de la misma imagen y podés desplegar la última con <code>latest</code> o fijar una concreta.</li>
+        <li><strong>Replicación multi-región</strong>: definís en qué regiones vive cada versión y cuántas <strong>réplicas</strong> hay por región. Regla práctica de Microsoft: <strong>una réplica por cada ~20 despliegues concurrentes</strong>.</li>
+        <li><strong>Zone redundancy</strong>: podés elegir ZRS para el almacenamiento de la versión en regiones que lo soporten.</li>
+        <li><strong>Compartir</strong> por RBAC entre suscripciones y tenants (y con community/direct shared gallery).</li>
+        <li>Podés fijar una versión como <strong>excluida de "latest"</strong> o darle fecha de fin de vida sin borrarla.</li>
+      </ul>
+      <p><strong>Managed image "suelta" vs Gallery:</strong> la managed image es un recurso único, sin versiones, sin replicación y sin control de escala. Si el escenario menciona <em>varias regiones</em>, <em>versionar</em>, <em>rollback a una versión anterior</em> o <em>cientos de VMs en paralelo</em> → <strong>Azure Compute Gallery</strong>.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">20 VMs “como VM1”: ARM vs imagen vs VMSS</div>
+      <p>Si piden automatizar más Linux VMs <strong>basadas en la configuración</strong> de VM1, una propuesta válida es exportar plantilla y desplegar cambiando parámetros. No es el único camino.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Método</th><th>Qué copia</th><th>VM1 queda usable</th></tr></thead>
+          <tbody>
+            <tr><td><strong>ARM / Bicep</strong> (Export template + parámetros)</td><td>Config ARM: SKU, NIC, discos, extensiones. El OS sale de la imagen del template (Marketplace o la que indiques)</td><td><span class="yes">Sí</span></td></tr>
+            <tr><td><strong>Capture / Compute Gallery</strong></td><td>El <strong>disco</strong> (apps y datos del SO). Linux: <code>waagent -deprovision+user</code></td><td><span class="no">No</span> si generalizás</td></tr>
+            <tr><td><strong>VMSS</strong></td><td>Instancias idénticas de un scale set</td><td>N/A — es otro recurso, no 20 VMs sueltas</td></tr>
+            <tr><td><strong>Snapshot</strong></td><td>Un disco puntual</td><td>Sí, pero no despliega 20 VMs solo</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Detalle y el Yes/No del examen: <a href="11-arm-bicep.html">11 · ARM</a> (Export template → <code>az deployment group create</code>).</p>
+    </div>
+  </div>
+
+  <!-- ══ 8 ══ -->
+  <div class="section" id="sec-extensions">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">🧪</div>
+      <span class="section-title">Extensions y configuración post-deploy</span>
+      <span class="section-tag">Config</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Las extensiones que caen en el examen</div>
+      <ul>
+        <li><strong>Custom Script Extension</strong> — baja un script (desde Storage, GitHub o inline) y lo ejecuta en la VM como <strong>SYSTEM / root</strong>. Instalación de software, joins al dominio, configuración post-deploy. Se puede correr <strong>en cualquier momento</strong> del ciclo de vida.</li>
+        <li><strong>PowerShell DSC</strong> — configuración <strong>declarativa</strong> del estado deseado en Windows; corrige drift. Se elige cuando el escenario habla de "mantener la configuración" y no de "correr un script una vez".</li>
+        <li><strong>Azure Monitor Agent (AMA)</strong> — el agente actual de telemetría; reemplazó al Log Analytics agent (MMA/OMS), ya retirado. Qué recolecta se define con <strong>Data Collection Rules (DCR)</strong>, no en el workspace.</li>
+        <li><strong>Dependency agent</strong> — habilita el <strong>mapa de dependencias</strong> de VM Insights (qué procesos hablan con qué). Necesita el agente de monitoreo instalado; solo no sirve.</li>
+        <li><strong>Network Watcher Agent</strong> — requisito para <strong>packet capture</strong> y algunas herramientas de diagnóstico de red.</li>
+        <li><strong>Azure AD / Entra ID login extension</strong> — permite loguearse a la VM con credenciales de Entra ID en lugar de usuario local.</li>
+        <li><strong>Azure Disk Encryption extension</strong> — la instala <code>Set-AzVMDiskEncryptionExtension</code> / <code>az vm encryption enable</code>. No se elige a mano en “Extensions”: es ADE (ver <a href="#sec-cifrado">Cifrado de discos</a>).</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>cloud-init</th><th>Custom Script Extension</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Cuándo corre</strong></td><td><strong>Solo al provisionar</strong>, en el primer boot</td><td><strong>En cualquier momento</strong>: al crear o sobre una VM que ya vive</td></tr>
+          <tr><td><strong>Sistemas</strong></td><td>Solo Linux (distros con soporte cloud-init)</td><td>Windows y Linux</td></tr>
+          <tr><td><strong>Cómo se pasa</strong></td><td>Como <em>custom data / user data</em> en la creación</td><td>Como extensión de VM (portal, CLI, ARM/Bicep)</td></tr>
+          <tr><td><strong>Repetible</strong></td><td class="no">No: si querés cambiar algo, recreás la VM</td><td class="yes">Sí: se actualiza y se vuelve a ejecutar</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Las extensiones las ejecuta el <strong>VM agent</strong> (<code>waagent</code> en Linux, Windows Guest Agent). Si el agente no está instalado, está detenido o la VM no tiene <strong>salida a Internet</strong> para bajar el paquete de la extensión, el deploy se queda en <em>provisioning</em> y termina fallando por timeout. Es la causa número uno de "la extensión falló".</span>
+    </div>
+  </div>
+
+  <!-- ══ 9 ══ -->
+  <div class="section" id="sec-estados">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🔌</div>
+      <span class="section-title">Estados, facturación y acceso</span>
+      <span class="section-tag">Costos</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Estado</th><th>Cómo se llega</th><th>¿Paga cómputo?</th><th>¿Paga discos?</th><th>Temp disk / IP dinámica</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Running</strong></td><td>VM encendida</td>
+            <td class="yes">Sí</td><td class="yes">Sí</td><td>Se conservan</td>
+          </tr>
+          <tr>
+            <td><strong>Stopped (Stopped)</strong></td>
+            <td><code>shutdown</code> desde adentro del SO · <code>az vm stop</code> · <code>Stop-AzVM -StayProvisioned</code></td>
+            <td class="yes">SÍ — sigue facturando</td><td class="yes">Sí</td><td>Se conservan (la VM retiene el host)</td>
+          </tr>
+          <tr>
+            <td><strong>Stopped (Deallocated)</strong></td>
+            <td>Botón <em>Stop</em> del portal · <code>az vm deallocate</code> · <code>Stop-AzVM</code> (default)</td>
+            <td class="no">No</td><td class="yes">Sí</td><td><strong>Temp disk se pierde</strong>; la IP pública <em>dinámica</em> se libera y puede cambiar</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> apagar la VM <strong>desde adentro del sistema operativo</strong> (o con <code>az vm stop</code>) la deja en <strong>Stopped</strong>, no en <strong>Deallocated</strong>: los recursos de cómputo siguen reservados y <strong>se siguen facturando</strong>. Para dejar de pagar cómputo hay que <strong>deallocar</strong> desde el portal, CLI o PowerShell. Y aun deallocada, seguís pagando <strong>discos</strong> e <strong>IPs públicas estáticas</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Boot diagnostics: misma región, no Premium</div>
+      <p>vm1 Ubuntu Central US (rg1). vm2 Win East US (rg2). storage1 Premium LRS Central. storage2 GPv1 Standard LRS East. storage3 GPv2 Standard GRS Central.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>VM</th><th>Cuenta</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>vm1</td><td><strong>storage3 only</strong></td><td>Misma región + Standard. storage1 es Premium (no soportado). storage2 es East US</td></tr>
+            <tr><td>vm2</td><td><strong>storage2 only</strong></td><td>Única Standard en East US. GPv1 sirve. storage1/3 son Central</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> boot diagnostics = cuenta <strong>Standard</strong> (v1 o v2) en la <strong>misma región</strong> que la VM. Premium en la región correcta igual falla. LRS vs GRS no importa. (Hoy existe managed boot diagnostics sin cuenta; si el enunciado lista cuentas, usalas con esas dos reglas.)</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Palanca de ahorro</div>
+      <ul>
+        <li><strong>Auto-shutdown</strong> — propiedad de la VM (heredada de DevTest Labs): programás una hora diaria de apagado con su zona horaria y notificación previa opcional por webhook o mail. <strong>Deallocca</strong> la VM. No existe auto-start equivalente en una VM suelta.</li>
+        <li><strong>Azure Spot VMs</strong> — capacidad sobrante con descuento fuerte, <strong>sin SLA</strong>. Azure puede desalojarlas cuando necesita la capacidad o cuando el precio supera tu <strong>max price</strong> (<code>-1</code> = pagás hasta el precio on-demand y solo te desalojan por capacidad). Aviso de desalojo corto.
+          <ul>
+            <li><strong>Eviction policy = Deallocate</strong>: la VM se deallocca, los discos quedan (y se pagan) y podés reiniciarla cuando haya capacidad.</li>
+            <li><strong>Eviction policy = Delete</strong>: se borra la VM junto con sus discos. Nada que reiniciar.</li>
+          </ul>
+          Solo para cargas interrumpibles (batch, CI, render farms). No se puede convertir una VM normal en Spot ni al revés, y no van en availability sets.
+        </li>
+        <li><strong>Reserved Instances</strong> — te comprometés a <strong>1 o 3 años</strong> de un tamaño en una región a cambio de un descuento grande. Cubre el <strong>cómputo</strong>, no la licencia del SO ni el software. El <strong>scope</strong> puede ser shared, single subscription o single resource group. Se combina con <strong>Azure Hybrid Benefit</strong> (licencias Windows Server / SQL propias) para bajar todavía más.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Acceso administrativo: el orden de preferencia</div>
+      <ul>
+        <li><strong>Azure Bastion</strong> — RDP/SSH desde el browser por <strong>TLS (443)</strong> contra el portal; la VM <strong>no necesita IP pública</strong> y no exponés 3389/22. Requiere una subnet llamada exactamente <strong><code>AzureBastionSubnet</code></strong>, de <strong>/26 o más grande</strong>, en la misma VNet (o peered).</li>
+        <li><strong>Just-in-Time VM access (JIT)</strong> — feature de <strong>Microsoft Defender for Cloud</strong>: los puertos de administración quedan cerrados en el NSG y se abren <strong>bajo pedido</strong>, por una ventana de tiempo y desde una IP origen específica, con auditoría.</li>
+        <li><strong>RDP 3389 / SSH 22 abiertos a Internet</strong> — <span class="no">nunca</span> es la respuesta correcta en un escenario de seguridad.</li>
+        <li>Si perdiste la contraseña o la clave: extensión <strong>VMAccess</strong> ("Reset password" en el portal), que resetea credenciales sin recrear la VM.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span><strong>Regla rápida de escenarios:</strong> "sin IP pública y sin cliente instalado" → <strong>Bastion</strong>. "Necesito RDP puntual pero cerrado el resto del tiempo" → <strong>JIT</strong>. "Quiero que se apague sola todas las noches" → <strong>Auto-shutdown</strong>. "Carga batch que tolera cortes" → <strong>Spot</strong>. "Servidor 24×7 previsible por 3 años" → <strong>Reserved Instance</strong>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 10 ══ -->
+  <div class="section" id="mover-vms">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">🚚</div>
+      <span class="section-title">Mover VMs: resource group, subscription y región</span>
+      <span class="section-tag">Movilidad</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Son tres operaciones distintas, no una</div>
+      <p>El examen mezcla a propósito tres cosas que se parecen en la pregunta pero no comparten ni herramienta ni resultado. Antes de elegir la respuesta, fijate <strong>qué cambia</strong> en cada caso: el resource group, la subscription o la <em>región física</em>.</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Escenario</th><th>Herramienta</th><th>¿Cambia el resource ID?</th><th>¿Downtime?</th><th>Limitaciones clave</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Otro resource group</strong><br><span class="chip chip-blue">misma subscription</span></td>
+            <td>Portal (<em>Move → Move to another resource group</em>) · <code>az resource move</code> · <code>Move-AzResource</code></td>
+            <td class="yes">Sí — cambia el segmento <code>/resourceGroups/</code></td>
+            <td class="no">No — la VM sigue corriendo</td>
+            <td>VM en <strong>availability set</strong> no se mueve sola · VM con <strong>ADE</strong> tiene que estar <strong>deallocada</strong> · hay que borrar las <strong>restore point collections</strong> si tiene backup</td>
+          </tr>
+          <tr>
+            <td><strong>Otra subscription</strong><br><span class="chip chip-purple">mismo tenant</span></td>
+            <td>Lo mismo, agregando <code>--destination-subscription-id</code> / <code>-DestinationSubscriptionId</code></td>
+            <td class="yes">Sí — cambian <code>subscriptionId</code> <em>y</em> resource group</td>
+            <td class="no">No — la VM sigue corriendo</td>
+            <td>Hay que mover la <strong>VNet y todas sus dependencias juntas</strong> · con <strong>ADE</strong> hay que <strong>deshabilitar el cifrado</strong> · imagen de <strong>Marketplace con plan</strong> no se puede · <strong>Public IP Standard</strong> asociada bloquea el move</td>
+          </tr>
+          <tr>
+            <td><strong>Otra región</strong><br><span class="chip chip-yellow">cambio físico</span></td>
+            <td><strong>Azure Resource Mover</strong> · alternativa soportada: <strong>Azure Site Recovery</strong> · manual: snapshot/imagen + redeploy</td>
+            <td class="yes">Sí — se crea un <strong>recurso nuevo</strong> en la región destino</td>
+            <td class="yes">Sí — corte en el <em>initiate move</em> / <em>commit</em></td>
+            <td>La <strong>Public IP no se conserva</strong> (IP nueva) · el recurso original sobrevive hasta que lo borres vos · Spot VMs no soportadas</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>La distinción que define la pregunta:</strong> <code>az resource move</code> <strong>NO cambia la región</strong> del recurso. Mueve la VM de contenedor lógico (resource group / subscription) y nada más: los bits siguen en el mismo datacenter. Si el escenario dice <em>"la VM tiene que quedar en West Europe en vez de East US"</em>, ninguna variante de <code>move</code> sirve → <strong>Azure Resource Mover</strong>.
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "moví la VM al resource group nuevo, ¿ahora está en otra región?" <strong>No.</strong> Mover ≠ migrar. Y en la otra dirección: la <strong>región de una VM no se puede editar</strong> — no hay propiedad para cambiarla. La respuesta a "cambiar de región" siempre es <strong>replicar o recrear</strong> (Resource Mover, Site Recovery, o snapshot → disco en la región destino → VM nueva), nunca un <code>move</code>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué se mueve junto con la VM</div>
+      <p>Una VM no viaja sola: el move falla con <code>MissingMoveDependentResources</code> si dejás alguna dependencia atrás.</p>
+      <ul>
+        <li><strong>Managed disks</strong> (OS y data) — <code>Microsoft.Compute/disks</code>.</li>
+        <li><strong>NIC(s)</strong> — y en un move cross-subscription, <strong>todas las NICs de esa VNet</strong>, no solo la de tu VM.</li>
+        <li><strong>Public IP address</strong> y <strong>Network Security Group</strong>.</li>
+        <li><strong>Virtual network</strong> — para cambiar de subscription, la VNet <strong>y todos sus recursos dependientes</strong> tienen que moverse también.</li>
+        <li><strong>Load balancer</strong> y demás recursos de red asociados.</li>
+        <li>Solo se listan los recursos <strong>padre</strong>: los recursos hijos se mueven solos y no se pueden mover por separado.</li>
+      </ul>
+      <p>Si las dependencias están repartidas en varios resource groups, el patrón de Microsoft es: <strong>1)</strong> consolidarlas primero en un mismo RG, <strong>2)</strong> mover todo junto a la subscription destino, <strong>3)</strong> redistribuirlas en RGs distintos ya del otro lado.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cómo se hace (CLI) y el paso de validación</div>
+      <pre><code># Validar ANTES de mover (misma API que el botón "Validate" del portal)
+az resource invoke-action --action validateMoveResources \
+  --ids "/subscriptions/&lt;sub&gt;/resourceGroups/RG-origen" \
+  --request-body "{ \"resources\": [\"&lt;id-vm&gt;\",\"&lt;id-disco&gt;\",\"&lt;id-nic&gt;\"], \
+                    \"targetResourceGroup\": \"/subscriptions/&lt;sub&gt;/resourceGroups/RG-destino\" }"
+
+# Mover a otro resource group
+az resource move --destination-group RG-destino --ids $vm $disco $nic $pip $nsg
+
+# Mover a otra subscription
+az resource move --destination-group RG-destino \
+  --destination-subscription-id &lt;sub-destino&gt; --ids $vm $disco $nic $pip $nsg</code></pre>
+      <p>Equivalente en PowerShell: <code>Move-AzResource -DestinationResourceGroupName RG-destino -ResourceId $ids</code>, con <code>-DestinationSubscriptionId</code> para cruzar suscripción.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Checklist previo (lo que valida el portal antes de dejarte mover)</div>
+      <ul>
+        <li>Ambas subscriptions <strong>activas</strong> y en el <strong>mismo Microsoft Entra tenant</strong>. Si están en tenants distintos, primero hay que transferir la subscription al tenant correcto.</li>
+        <li>El <strong>resource provider</strong> del recurso tiene que estar <strong>registrado en la subscription destino</strong> (<code>az provider register --namespace Microsoft.Compute</code>).</li>
+        <li><strong>Cuota</strong> suficiente en el destino (vCPUs, IPs públicas, etc.).</li>
+        <li>Permisos: <code>Microsoft.Resources/subscriptions/resourceGroups/moveResources/action</code> en el <strong>origen</strong> y <code>.../resourceGroups/write</code> en el <strong>destino</strong>.</li>
+        <li><strong>Read-only locks</strong> en el RG o la subscription (origen o destino) <strong>bloquean el move</strong>: sacalos antes.</li>
+        <li>Ningún recurso ni dependencia en estado <em>failed</em> (<code>MoveCannotProceedWithResourcesNotInSucceededState</code>) y ninguna <strong>Azure Policy</strong> que impida crear el recurso en el destino (<code>RequestDisallowedByPolicy</code>).</li>
+        <li>Máximo <strong>800 recursos</strong> por operación de move.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> durante el move, el resource group <strong>origen y el destino quedan bloqueados hasta 4 horas</strong> — no se puede crear, borrar ni modificar propiedades de nada ahí adentro. Los recursos <strong>siguen funcionando</strong> (no hay downtime), pero cualquier pipeline de deploy que apunte a esos RGs falla mientras dure la operación.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Como el <strong>resource ID cambia</strong>, todo lo que lo referencie por ID queda roto: scripts, plantillas ARM/Bicep, dashboards, alertas y automatizaciones. Además, las <strong>asignaciones RBAC</strong> heredadas del scope viejo no viajan con el recurso — hay que rehacerlas en el destino.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué NO se puede mover (respuestas "ninguna de las anteriores")</div>
+      <ul>
+        <li><span class="no">✗</span> Una VM que está en un <strong>availability set</strong>, <em>individualmente</em>: se mueve el availability set completo con sus VMs.</li>
+        <li><span class="no">✗</span> <strong>Spot / low-priority VMs</strong> y scale sets low-priority: ni entre resource groups ni entre subscriptions.</li>
+        <li><span class="no">✗</span> VMs con <strong>scheduled patching</strong> configurado.</li>
+        <li><span class="no">✗</span> VMs creadas desde una imagen de <strong>Marketplace con plan</strong> adjunto, <em>cross-subscription</em> (workaround: clonar el OS disk, aceptar los términos del Marketplace en la subscription destino y recrear la VM con la info del plan).</li>
+        <li><span class="no">✗</span> Cualquier recurso asociado a una <strong>Public IP Standard SKU</strong>, cross-subscription: hay que <strong>desasociar la IP</strong> primero.</li>
+        <li><span class="no">✗</span> <strong>Snapshots incrementales</strong> (solo se mueven los full), <strong>restore point collections</strong> y <strong>dedicated hosts / host groups</strong>.</li>
+        <li>Una <strong>VNet con peering</strong> se mueve, pero hay que <strong>deshabilitar el peering antes</strong> y rehacerlo después.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Casos especiales de VM: cifrado y backup</div>
+      <ul>
+        <li><strong>Azure Disk Encryption + Key Vault</strong> → a otro <strong>resource group</strong> se puede, pero con la VM <strong>deallocada</strong>. A otra <strong>subscription</strong> hay que <strong>deshabilitar el cifrado</strong> primero: <code>az vm encryption disable --resource-group RG --name VM1 --volume-type all</code>.</li>
+        <li><strong>Azure Backup</strong> → hay que <strong>borrar las restore point collections</strong> (los snapshots que el vault deja en <code>AzureBackupRG_*</code>) antes de mover, y reconfigurar el backup después. Si el vault tiene <strong>soft delete</strong> activo y hay restore points retenidos, o lo deshabilitás o esperás <strong>14 días</strong> desde que los borraste.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cambio de región: Azure Resource Mover</div>
+      <p>Es el servicio dedicado a mover recursos <strong>entre regiones</strong>, con detección automática de dependencias. Soporta VMs y sus discos (no Spot), <strong>VMs cifradas</strong>, NICs, availability sets, VNets, NSGs, Public IPs, load balancers internos y públicos, y Azure SQL databases / elastic pools. También permite aterrizar las VMs en <strong>availability zones</strong> de la región destino. El servicio <strong>no tiene costo propio</strong>; pagás lo de abajo (replicación tipo Site Recovery, storage de las réplicas y transferencia de datos).</p>
+      <div class="flow">
+        <div class="flow-step">Add resources<br><small>+ dependencias</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Prepare<br><small>arranca la replicación</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Initiate move<br><small>crea los recursos<br>en la región destino</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Commit<br><small>o Discard</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Delete source<br><small>opcional</small></div>
+      </div>
+      <ul>
+        <li><strong>Discard</strong> deshace el <em>initiate move</em> y borra lo creado en destino, pero <strong>la replicación sigue</strong> → sirve para probar el movimiento antes de comprometerse.</li>
+        <li><strong>Commit</strong> confirma el movimiento; a partir de ahí los recursos origen quedan inaccesibles como servicio, aunque siguen existiendo (y facturando) hasta que los borres.</li>
+        <li>Los recursos <strong>origen no se borran solos</strong>: si te olvidás, pagás las dos regiones.</li>
+        <li>La <strong>Public IP no cruza regiones</strong>: la VM llega con una IP nueva → hay que actualizar DNS, firewalls y allowlists.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span><strong>Regla rápida de escenarios:</strong> "reorganizar recursos por proyecto / por equipo" → <strong>move a otro resource group</strong>. "Pasar la carga a la subscription de producción" → <strong>move cross-subscription</strong> (mismo tenant, todas las dependencias juntas). "Acercar la VM a los usuarios de otra región" o "requisito de residencia de datos" → <strong>Azure Resource Mover</strong>. "Ya tengo replicación con Site Recovery armada" → <strong>ASR</strong> como alternativa soportada. "Una sola VM, sin apuro y sin herramientas" → <strong>snapshot del disco → copiarlo a la región destino → crear la VM nueva</strong>.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "Apagás una VM Windows con <code>shutdown</code> desde adentro del SO. ¿Seguís pagando cómputo?", a: "<strong>Sí.</strong> Queda en <strong>Stopped (Stopped)</strong>: retiene los recursos del host y factura cómputo. Solo <strong>Stopped (Deallocated)</strong> corta el cargo de cómputo, y se llega con el botón Stop del portal, <code>az vm deallocate</code> o <code>Stop-AzVM</code>. Ojo: <code>az vm stop</code> <em>no</em> deallocca.", cat: "Facturación" },
+  { q: "¿Qué pasa con el contenido del disco temporal (<code>D:</code> / <code>/mnt</code>) al deallocar o resizear la VM?", a: "<strong>Se pierde.</strong> El temp disk es almacenamiento local del host, efímero: se vacía al deallocar, al resizear y ante mantenimiento o cambio de host. Solo para pagefile, tempdb y archivos scratch — nunca datos que importen.", cat: "Discos" },
+  { q: "¿Qué recursos quedan huérfanos al borrar una VM si no marcaste 'delete with VM'?", a: "<strong>Managed disks (OS y data), NIC y Public IP.</strong> El <strong>NSG</strong> y la <strong>VNet/subnet</strong> nunca se borran con la VM. Los discos y la IP pública estática siguen facturando.", cat: "Ciclo de vida" },
+  { q: "Familias: memory optimized, compute optimized, storage optimized y burstable.", a: "<strong>E</strong> = memory optimized (SQL, SAP, in-memory) · <strong>F</strong> = compute optimized (batch, appliances de red) · <strong>L</strong> = storage optimized (NVMe local, big data, NoSQL) · <strong>B</strong> = burstable con <strong>créditos de CPU</strong> (dev/test). Además: <strong>D</strong> general purpose, <strong>M</strong> memoria masiva (HANA), <strong>N</strong> GPU, <strong>H</strong> HPC con RDMA/InfiniBand.", cat: "Tamaños" },
+  { q: "Querés resizear una VM y el tamaño destino no aparece disponible. ¿Qué hacés?", a: "El tamaño no existe en el <strong>cluster de hardware actual</strong>: hay que <strong>deallocar</strong> la VM y recién ahí resizear (se realoja en otro cluster). Si la VM está en un <strong>availability set</strong>, tenés que deallocar <strong>todas las VMs del set</strong>. Cualquier resize, además, <strong>reinicia</strong> la VM.", cat: "Tamaños" },
+  { q: "¿Qué tipos de disco permiten configurar IOPS y throughput independientemente del tamaño?", a: "<strong>Ultra Disk</strong> y <strong>Premium SSD v2</strong>. En Standard HDD/SSD y <strong>Premium SSD (v1)</strong> la performance viene atada al <strong>tier de tamaño</strong> (P10, P30...): para más IOPS tenés que agrandar el disco.", cat: "Discos" },
+  { q: "SQL en una VM, SLA 99,9%, mínimo costo. ¿Size? ¿OS y data disk?", a: "<code>Standard_E2bs_v5</code> + <strong>Premium SSD</strong> en OS y data. A-series y D4_v2 no montan Premium. DS4_v2 sí pero es más caro. Standard SSD/HDD bajan el SLA (99,5% / 95%).", cat: "Discos" },
+  { q: "Tres restricciones de Ultra Disk que caen en el examen.", a: "1) La VM debe estar en una <strong>Availability Zone</strong> soportada y con la compatibilidad Ultra habilitada. 2) <strong>No sirve como disco de OS</strong>, solo data disk. 3) <strong>No soporta host caching</strong> (siempre <code>None</code>) ni availability sets ni ADE.", cat: "Discos" },
+  { q: "Caching recomendado para una VM con SQL Server: OS, data files y log files.", a: "OS disk → <strong>ReadWrite</strong> · data files → <strong>ReadOnly</strong> · log files → <strong>None</strong>. Nunca ReadWrite en discos de escritura intensiva como los logs.", cat: "Caching" },
+  { q: "¿Se puede achicar un managed disk? ¿Y qué falta después de expandirlo?", a: "<strong>Achicar: no, nunca.</strong> La única salida es crear un disco más chico y migrar los datos. Después de <strong>expandir</strong>, el volumen no crece solo: hay que <strong>extender la partición y el filesystem dentro del SO</strong> (<code>diskpart</code> / <code>growpart</code> + <code>resize2fs</code>).", cat: "Discos" },
+  { q: "Drop-down: data disk Premium ZRS de 1 TB y adjuntarlo a una VM existente. ¿Cinco cmdlets, en orden?", a: "<code>New-AzDiskConfig</code> (<code>Empty</code>, <code>Premium_ZRS</code>, 1024 GB) → <code>New-AzDisk</code> → <code>Get-AzVM</code> → <code>Add-AzVMDataDisk</code> (<code>Attach</code> + <code>ManagedDiskId</code> + <code>Lun</code>) → <code>Update-AzVM</code>. El Add solo muta el objeto local. CLI: <code>az disk create</code> + <code>az vm disk attach</code>.", cat: "Discos" },
+  { q: "Pasar DataDisk2 de VM1 a VM2, mínimo downtime. ¿Hay que Stop VM1? ¿Se lee unattached? ¿Update-AzVM en las dos?", a: "<strong>No / No / Yes</strong>. Data disk se hot-detach (OS disk no). Unattached no se monta. Remove/Add son locales: <code>Update-AzVM</code> en VM1 y VM2. CLI: <code>az vm disk detach</code> + <code>az vm disk attach</code>.", cat: "Discos" },
+  { q: "Diferencia entre SSE y Azure Disk Encryption (ADE).", a: "<strong>SSE</strong>: cifrado <strong>en la plataforma de storage</strong>, siempre activo, no se puede desactivar, transparente; opcionalmente con <strong>CMK</strong> vía <strong>Disk Encryption Set</strong>. <strong>ADE</strong>: cifrado <strong>dentro del guest OS</strong> con <strong>BitLocker</strong> (Windows) o <strong>dm-crypt</strong> (Linux), se aplica como extensión y <strong>requiere un Key Vault</strong> en la misma región y suscripción con <em>'Enabled for disk encryption'</em>.", cat: "Cifrado" },
+  { q: "VM y Key Vault en RGs distintos. Completar el script ADE: Get-? · $kv.? · $kv.? · Set-? -ResourceGroupName ?", a: "<strong>Get-AzKeyVault</strong> → <code>$keyVault.VaultUri</code> y <code>$keyVault.ResourceId</code> → <strong>Set-AzVMDiskEncryptionExtension</strong> con <code>-ResourceGroupName $vmRG</code> (RG de la VM, no del vault). Distractors: <code>VaultUrl</code>, <code>.Id</code>, <code>Get-AzKeyVaultKey</code>, el RG del Key Vault.", cat: "Cifrado" },
+  { q: "Comandos ADE: habilitar el vault, cifrar, verificar y deshabilitar (PowerShell y CLI).", a: "Habilitar: <code>Set-AzKeyVaultAccessPolicy -EnabledForDiskEncryption</code> o <code>az keyvault update --enabled-for-disk-encryption true</code>. Cifrar: <code>Set-AzVMDiskEncryptionExtension</code> / <code>az vm encryption enable --disk-encryption-keyvault</code>. Estado: <code>Get-AzVMDiskEncryptionStatus</code> / <code>az vm encryption show</code>. Quitar: <code>Disable-AzVMDiskEncryption</code> / <code>az vm encryption disable --volume-type all</code>.", cat: "Cifrado" },
+  { q: "Ubuntu vm1, vault nuevo vmKeyVault1 en rg1. ¿create o update? ¿enabled-for-disk-encryption o enabled-for-deployment? ¿Qué cmdlet cifra?", a: "<code>az keyvault create ... --enabled-for-disk-encryption</code> (vault nuevo, no update). <code>--enabled-for-deployment</code> es ARM, no ADE. Después <code>az vm encryption enable --disk-encryption-keyvault vmKeyVault1</code>.", cat: "Cifrado" },
+  { q: "Set-AzVMDiskEncryptionExtension -VolumeType Data en Linux running. ¿Hay que Stop? ¿Solo Data? ¿SequenceVersion único?", a: "<strong>No / Yes / Yes</strong>. ADE no exige Deallocated. <code>-VolumeType Data</code> deja el OS afuera. SequenceVersion = GUID nuevo por operación.", cat: "Cifrado" },
+  { q: "¿Qué opción de cifrado cubre también el disco temporal y las cachés de disco?", a: "<strong>Encryption at host</strong>: el host cifra los datos antes de mandarlos al storage, incluidos <strong>temp disk</strong> y <strong>disk caches</strong>. Hay que habilitar la feature a nivel de <strong>suscripción</strong> y el tamaño de VM debe soportarla.", cat: "Cifrado" },
+  { q: "Pasos para crear una imagen generalizada de una VM Windows y de una Linux.", a: "Windows: <code>sysprep /generalize /oobe /shutdown</code>. Linux: <code>sudo waagent -deprovision+user</code>. Después: <strong>Stop (deallocate)</strong> desde Azure → marcar la VM como <strong>Generalized</strong> → <strong>Capture</strong>. <strong>La VM origen queda inutilizable</strong> después de generalizarla.", cat: "Imágenes" },
+  { q: "Imagen generalized vs specialized.", a: "<strong>Generalized</strong>: pasó por sysprep/waagent, se borró SID, hostname y cuentas; al desplegar te pide usuario y nombre nuevos. Sirve para muchas VMs y para VM Scale Sets. <strong>Specialized</strong>: <strong>no</strong> requiere sysprep, conserva identidad, hostname y cuentas — es un clon exacto, ideal para lift-and-shift.", cat: "Imágenes" },
+  { q: "¿En qué se diferencian <code>cloud-init</code> y la Custom Script Extension?", a: "<strong>cloud-init</strong> corre <strong>solo al provisionar</strong> (primer boot), solo en Linux, y se pasa como <em>custom data</em> al crear la VM. La <strong>Custom Script Extension</strong> corre <strong>en cualquier momento</strong>, en Windows y Linux, se puede actualizar y volver a ejecutar sobre una VM ya existente.", cat: "Extensions" },
+  { q: "Movés una VM de East US al resource group <code>RG-prod</code> con <code>az resource move</code>. ¿En qué región queda?", a: "<strong>Sigue en East US.</strong> <code>az resource move</code> cambia el contenedor lógico (resource group y/o subscription) y por lo tanto el <strong>resource ID</strong>, pero <strong>nunca la región</strong>. Para cambiar de región se usa <strong>Azure Resource Mover</strong> (o Azure Site Recovery, o snapshot → disco en la región destino → VM nueva).", cat: "Mover VMs" },
+  { q: "¿Qué recursos tenés que mover junto con una VM y qué pasa con los resource groups durante la operación?", a: "Van juntos <strong>discos, NIC(s), Public IP, NSG</strong> y —cross-subscription— la <strong>VNet con todas sus dependencias</strong>; si falta alguno da <code>MissingMoveDependentResources</code>. Durante el move, el RG <strong>origen y destino quedan bloqueados hasta 4 horas</strong> (no se crea, borra ni modifica nada), aunque los recursos siguen funcionando: <strong>no hay downtime</strong>.", cat: "Mover VMs" },
+  { q: "Tres cosas que impiden mover una VM a otra subscription.", a: "1) Está en un <strong>availability set</strong> (no se mueve individualmente). 2) Tiene <strong>Azure Disk Encryption</strong> con Key Vault → hay que <strong>deshabilitar el cifrado</strong> (para mover solo de resource group alcanza con dejarla <strong>deallocada</strong>). 3) Está asociada a una <strong>Public IP Standard SKU</strong> → desasociarla primero. Suman: <strong>Spot/low-priority</strong>, <strong>scheduled patching</strong>, imagen de <strong>Marketplace con plan</strong>, y backup con <strong>restore point collections</strong> sin borrar.", cat: "Mover VMs" },
+  { q: "Boot diagnostics: vm1 Central, vm2 East. storage1 Premium Central, storage2 GPv1 East, storage3 GPv2 Central. ¿Cada VM?", a: "vm1 → <strong>storage3 only</strong> (Premium no sirve; storage2 es otra región). vm2 → <strong>storage2 only</strong> (GPv1 Standard sí; las otras son Central). Misma región + Standard.", cat: "Diagnóstico" },
+  { q: "Resize D4s_v3 (4 vCPU, Premium, 8 data disks, PIP Standard) a D2s_v3 falla. ¿vCPU, storage type, PIP o data disks?", a: "<strong>Number of data disks</strong>. D2s_v3 topea en 4 discos; ya hay 8. Bajar vCPU está OK. Ambos tamaños son Premium (<code>s</code>). La PIP Standard no bloquea este resize.", cat: "Tamaños" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Backup y Site Recovery</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Backup y Site Recovery</div>
+    <div class="nav-sub">Vaults, políticas, restauración y failover</div>
+    <div class="nav-weight">Dominio 5 · 10–15%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#sec-backup-vs-dr"><span class="dot"></span>Backup vs DR (RPO/RTO)</a>
+  <a href="#sec-vault"><span class="dot"></span>Recovery Services Vault</a>
+  <a href="#sec-workloads"><span class="dot"></span>Qué se puede respaldar</a>
+  <a href="#sec-policies"><span class="dot"></span>Backup policies y GFS</a>
+  <a href="#sec-restore"><span class="dot"></span>Restauración de VMs</a>
+  <a href="#sec-seguridad"><span class="dot"></span>Seguridad y monitoreo</a>
+  <a href="#sec-asr"><span class="dot"></span>Azure Site Recovery</a>
+  <a href="#sec-failover"><span class="dot"></span>Tipos de failover</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen te da un escenario y te obliga a elegir <strong>la herramienta correcta</strong> (Azure Backup vs Site Recovery), <strong>el vault correcto</strong> (RSV vs Backup vault), <strong>cuántos vaults</strong> (uno por región, no por OS), <strong>la opción de restore correcta</strong> (VM nueva, discos, reemplazar o un solo archivo) y <strong>el tipo de failover correcto</strong> (test, planned, unplanned). Restore a otra región con Backup = <strong>paired secondary</strong> (CRR), no cualquier US. App multi-capa con IP pública: <strong>recovery plan → adjuntar Public IP → NSG en el target → Traffic Manager Priority</strong>. File recovery de un archivo suelto: <strong>elegir RP → script → copiar → unmount</strong>. Reportes de backup = Diagnostic Settings del vault → Log Analytics, no el Activity Log.
+  </div>
+
+  <!-- ══ 1 ══ -->
+  <div class="section" id="sec-backup-vs-dr">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🛟</div>
+      <span class="section-title">Backup vs Disaster Recovery: no son lo mismo</span>
+      <span class="section-tag">Fundamentos</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">La distinción que decide la respuesta</div>
+      <ul>
+        <li><strong>Azure Backup</strong> te protege contra <strong>pérdida o corrupción de datos</strong>: alguien borró una carpeta, un ransomware encriptó archivos, un update rompió el servidor. Recuperás <strong>datos de un punto en el tiempo</strong>, y podés bajar desde un archivo suelto hasta la VM entera.</li>
+        <li><strong>Azure Site Recovery (ASR)</strong> te protege contra la <strong>caída de una región o de un sitio completo</strong>. No recuperás archivos: <strong>prendés la carga de trabajo en otra región</strong> y seguís operando. Es continuidad de negocio, no historial.</li>
+        <li>Se complementan: la práctica recomendada es <strong>replicar con ASR y respaldar con Backup</strong>. ASR no te salva de un borrado lógico (la corrupción se replica), y Backup no te devuelve el servicio en minutos.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">RPO y RTO: los dos números del examen</div>
+      <div class="flow">
+        <div class="flow-step highlight">RPO<br><small>cuánto dato perdés</small></div>
+        <span class="flow-arrow">←</span>
+        <div class="flow-step">💥 Incidente</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">RTO<br><small>cuánto tardás en volver</small></div>
+      </div>
+      <ul>
+        <li><strong>RPO (Recovery Point Objective)</strong>: mira <strong>hacia atrás</strong>. Es la ventana de datos que estás dispuesto a perder. Lo determina la <strong>frecuencia</strong> de backup o de replicación. Backup diario → RPO de hasta 24 h.</li>
+        <li><strong>RTO (Recovery Time Objective)</strong>: mira <strong>hacia adelante</strong>. Es cuánto tiempo tolerás estar caído. Lo determina el <strong>mecanismo de recuperación</strong>: restaurar una VM grande desde el vault es lento; hacer failover con ASR es rápido.</li>
+        <li>Regla de lectura: si el enunciado dice <em>"no podemos perder más de X minutos de transacciones"</em> → habla de <strong>RPO</strong>. Si dice <em>"el servicio debe volver en X minutos"</em> → habla de <strong>RTO</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Criterio</th><th>Azure Backup</th><th>Azure Site Recovery</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Protege contra</strong></td><td>Borrado, corrupción, ransomware, error humano</td><td>Caída de región / datacenter / sitio on-prem</td></tr>
+          <tr><td><strong>RPO típico</strong></td><td>Horas a días (según la frecuencia de la policy)</td><td>Segundos a minutos (replicación continua en Azure a Azure)</td></tr>
+          <tr><td><strong>RTO típico</strong></td><td>Alto: hay que restaurar los datos</td><td>Bajo: las VMs se levantan en la región secundaria</td></tr>
+          <tr><td><strong>Qué recuperás</strong></td><td>Archivos, carpetas, discos, VM completa, bases de datos</td><td>La carga de trabajo corriendo en otra región</td></tr>
+          <tr><td><strong>Historial</strong></td><td>Muchos puntos, retención de años (GFS)</td><td>Ventana corta de recovery points</td></tr>
+          <tr><td><strong>Costo en reposo</strong></td><td>Storage del vault + instancias protegidas</td><td>Storage de replicación + instancia protegida (no pagás el cómputo del destino hasta el failover)</td></tr>
+          <tr><td><strong>Contenedor</strong></td><td>Recovery Services vault o Backup vault</td><td>Recovery Services vault (en la región <strong>target</strong>)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "un usuario borró por error archivos críticos y hay que recuperarlos" <strong>no</strong> se resuelve con Site Recovery — la replicación copia el borrado casi al instante. Es Azure Backup. Y al revés: "la región primaria se cayó y necesitamos el servicio arriba en minutos" no es Backup, es ASR. La palabra clave del enunciado (pérdida de datos vs caída regional) define la herramienta.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Ni Backup ni ASR reemplazan la <strong>redundancia de storage</strong> (LRS/ZRS/GRS). La redundancia te cubre fallas de hardware o de datacenter de forma transparente, pero replica también los borrados: no es un backup.</span>
+    </div>
+  </div>
+
+  <!-- ══ 2 ══ -->
+  <div class="section" id="sec-vault">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">🏦</div>
+      <span class="section-title">Recovery Services Vault: el contenedor</span>
+      <span class="section-tag">Alta frecuencia</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué es y qué reglas trae</div>
+      <ul>
+        <li>Es el recurso que <strong>guarda los recovery points</strong> y centraliza políticas, items protegidos, jobs y alertas. Sirve tanto para <strong>Azure Backup</strong> como para <strong>Site Recovery</strong>.</li>
+        <li>Resource type: <code>Microsoft.RecoveryServices/vaults</code>. Se crea <strong>vacío</strong>; la redundancia (LRS/GRS/ZRS) se fija <strong>antes del primer backup</strong>.</li>
+        <li><strong>Regla de región</strong>: el vault y el recurso protegido tienen que estar en la <strong>misma región</strong>. Si tenés VMs en West Europe y en East US, necesitás <strong>un vault por región</strong>. No se respalda una VM de West US en un vault de East US — ni aunque sean <strong>paired regions</strong> (eso es GRS/CRR al <em>restaurar</em>, no al proteger).</li>
+        <li>Para ASR la lógica se invierte: el vault vive en la <strong>región de destino</strong> (ver sección de Site Recovery).</li>
+        <li>Un vault puede proteger varios tipos de carga a la vez y contener múltiples backup policies. <strong>Windows y Linux conviven</strong> en el mismo vault; la versión de OS (2012 R2 vs 2016, RHEL vs Ubuntu) <strong>no</strong> pide vault extra.</li>
+      </ul>
+<pre><code>az backup vault create -g RG -n Rsv1 -l eastus
+az backup vault backup-properties set --name Rsv1 -g RG \
+  --backup-storage-redundancy GeoRedundant
+
+New-AzRecoveryServicesVault -Name Rsv1 -ResourceGroupName RG -Location eastus
+$vault = Get-AzRecoveryServicesVault -Name Rsv1 -ResourceGroupName RG
+Set-AzRecoveryServicesBackupProperty -Vault $vault -BackupStorageRedundancy GeoRedundant</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Crear el vault: 14 días de protección y mínimo costo</div>
+      <p>VMs y otras cargas. Elegí dos.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Elegir <strong>LRS o GRS</strong> (redundancia del vault)</td><td><span class="yes">Sí</span></td><td>Se fija al crear, antes del primer backup. LRS = más barato; GRS = región secundaria. ZRS existe, el examen pone LRS/GRS</td></tr>
+            <tr><td><strong>Enable soft delete</strong></td><td><span class="yes">Sí</span></td><td>14 días extra si borran el backup, sin costo de storage. Default on</td></tr>
+            <tr><td>Asignar la policy al crear el vault</td><td><span class="no">No</span></td><td>La policy se aplica al proteger el item, no “en el create”</td></tr>
+            <tr><td>Un vault para varias subscriptions</td><td><span class="no">No</span></td><td>El vault vive en una sub/región. No resuelve 14 días ni el costo</td></tr>
+            <tr><td>Limitar el vault solo a Azure VMs</td><td><span class="no">No</span></td><td>El enunciado pide VMs <em>y otras cargas</em></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “14 days accidental deletion” = <strong>soft delete</strong>, no la retención daily de 30 de la policy. LRS/GRS es la redundancia del vault, no “asignar policy al create”.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Exhibit: mínimo de vaults (5 VMs, 2 regiones)</div>
+      <p>Una subscription, hay que proteger todas. El OS es carnada. Contá <strong>regiones distintas</strong>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>VM</th><th>OS</th><th>Región</th><th>Vault</th></tr></thead>
+          <tbody>
+            <tr><td>VM1</td><td>Windows Server 2012 R2</td><td>East US</td><td rowspan="3">Rsv-East</td></tr>
+            <tr><td>VM2</td><td>Windows Server 2016</td><td>East US</td></tr>
+            <tr><td>VM3</td><td>Red Hat Linux</td><td>East US</td></tr>
+            <tr><td>VM4</td><td>Windows Server 2016</td><td>West US</td><td rowspan="2">Rsv-West</td></tr>
+            <tr><td>VM5</td><td>Ubuntu Linux</td><td>West US</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Mínimo = <strong>2</strong>.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>2</strong></td><td><span class="yes">Yes</span></td><td>Una región = un vault. East US + West US</td></tr>
+            <tr><td>1</td><td><span class="no">No</span></td><td>East/West son paired, pero <strong>backup no cruza región</strong></td></tr>
+            <tr><td>3</td><td><span class="no">No</span></td><td>No es “un vault por familia de OS” (Windows / RHEL / Ubuntu)</td></tr>
+            <tr><td>4 o 5</td><td><span class="no">No</span></td><td>Ni por versión de Windows ni uno por VM</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>az backup vault create -g RG -n Rsv-East -l eastus
+az backup vault create -g RG -n Rsv-West -l westus
+az backup protection enable-for-vm --vault-name Rsv-East -g RG --vm VM1 --policy-name DefaultPolicy</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el exhibit mete Windows 2012 R2, 2016, RHEL y Ubuntu para que cuentes OS. <strong>No.</strong> Mínimo de RSV = regiones. East US + West US = 2, aunque sean paired (pairing sirve a GRS/CRR al restaurar). Un vault de East US <strong>no</strong> respalda VMs de West US.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Redundancia del storage del vault</div>
+      <ul>
+        <li><strong>LRS</strong>: tres copias dentro de un único datacenter de la región. Más barato, sin protección regional.</li>
+        <li><strong>GRS</strong> (default): replica a la <strong>región emparejada</strong>. Es el requisito para <strong>Cross Region Restore</strong>.</li>
+        <li><strong>ZRS</strong>: copias distribuidas entre <strong>availability zones</strong> de la misma región. Protege contra la caída de una zona y sirve cuando los datos <strong>no pueden salir de la región</strong> por residencia de datos.</li>
+        <li><strong>Cross Region Restore (CRR)</strong>: te deja restaurar en la región secundaria <strong>cuando vos querés</strong>, sin esperar que Microsoft declare un desastre. Requiere vault <strong>GRS</strong> y hay que <strong>habilitarlo explícitamente</strong> — no viene prendido. El destino <strong>no es cualquier región</strong>: solo la <strong>región emparejada</strong> (paired region) de la región del vault. East US → su par (West US); no Central US, no “cualquier US”, no otra geografía.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">CRR: ¿a qué región restauro?</div>
+      <p>El vault está en la misma región que la VM (East US). GRS copia a la paired secondary. CRR expone esos recovery points para restaurar <strong>solo ahí</strong>.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Opción del examen</th><th>¿Válida?</th></tr></thead>
+        <tbody>
+          <tr><td><strong>East US paired secondary region</strong></td><td><span class="yes">Sí</span> — único destino de CRR</td></tr>
+          <tr><td>Central US</td><td><span class="no">No</span> — es el par de <em>East US 2</em>, no de East US</td></tr>
+          <tr><td>Any US non-government region</td><td><span class="no">No</span> — CRR no es “cualquier región de US”</td></tr>
+          <tr><td>Any region outside the US</td><td><span class="no">No</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>az backup vault backup-properties set --name Rsv1 -g RG \
+  --backup-storage-redundancy GeoRedundant --cross-region-restore-flag true
+
+$vault = Get-AzRecoveryServicesVault -ResourceGroupName RG -Name Rsv1
+Set-AzRecoveryServicesBackupProperty -Vault $vault -EnableCrossRegionRestore</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “VM respaldada en East US, restaurar en <em>otra región</em>”. Destino = <strong>East US paired secondary region</strong>, no Central US ni cualquier US. Eso es <strong>Cross Region Restore</strong> (vault GRS + CRR on). ASR replica a la región que vos elijas; Backup CRR no. LRS/ZRS no tienen esta opción.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> la <strong>redundancia del vault se define antes del primer backup y después queda bloqueada</strong>. En cuanto hay un item protegido, la opción de storage replication queda deshabilitada. Si el escenario dice "el vault ya tiene VMs respaldadas y ahora necesitamos GRS", la respuesta correcta es <strong>crear un vault nuevo</strong> con la redundancia correcta y reconfigurar la protección — no "cambiar la propiedad del vault existente". Excepción: el backup por <strong>snapshots de Azure Files</strong> no usa el storage del vault, así que esa redundancia no le aplica.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Soft delete</div>
+      <ul>
+        <li>Cuando alguien detiene la protección y elimina los datos de backup, estos <strong>no se borran de inmediato</strong>: quedan en estado <strong>soft-deleted</strong> durante <strong>14 días adicionales por defecto</strong>, <strong>sin costo de storage</strong>. Se puede subir hasta <strong>180 días</strong>. Con <strong>always-on soft delete</strong> ya no se puede apagar.</li>
+        <li>Durante esa ventana los datos son recuperables: hay que hacer <strong>undelete</strong> y el item vuelve al estado "stop protection with retain data".</li>
+        <li>Para eliminarlos definitivamente antes de tiempo tenés que <strong>hacer undelete y recién ahí borrarlos</strong> (o esperar a que expire la ventana). El soft delete clásico se puede deshabilitar; el always-on, no.</li>
+        <li>Consecuencia directa: <strong>no podés borrar un Recovery Services vault que todavía tenga items protegidos o soft-deleted</strong>. El orden es: stop protection + delete backup data → undelete o esperar que expire el soft delete → desregistrar servidores/containers → borrar el vault.</li>
+        <li><strong>Immutable vault</strong>: una vez habilitado (con o sin período de lock), los recovery points <strong>no se pueden borrar antes de que expire la retención</strong>, ni siquiera por un Contributor. No se deshabilita. Distinto de soft delete: el immutable <em>impide</em> el delete; el soft delete lo <em>retrasa</em>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "intento borrar el vault y falla" → casi siempre es <strong>soft delete</strong> con items pendientes o backup items todavía registrados. La respuesta no es "forzar el borrado": es <strong>hacer undelete de los items soft-deleted, eliminar la data de backup y después sí borrar el vault</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Borrar Vault1: tres acciones (VM1 y VM2 protegidas)</div>
+      <p>Misma policy. Hay más VMs y vaults en la org. Hay que eliminar <strong>el vault</strong>, no las VMs.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Stop backup de VM1 y VM2</td><td><span class="yes">Sí</span></td><td>Items registrados bloquean el delete</td></tr>
+            <tr><td>Disable soft delete y borrar la data</td><td><span class="yes">Sí</span></td><td>Sin esto los recovery points quedan 14 días</td></tr>
+            <tr><td>Purge permanente de lo que esté soft-deleted</td><td><span class="yes">Sí</span></td><td>El vault no se borra con items en soft delete</td></tr>
+            <tr><td>Borrar VM1 y VM2</td><td><span class="no">No</span></td><td>El origen no tiene que desaparecer</td></tr>
+            <tr><td>Borrar la backup policy</td><td><span class="no">No</span></td><td>La policy no es el bloqueo; primero los items</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> borrar el vault ≠ borrar las VMs. La policy se puede quedar; el bloqueo son items + soft delete. Always-on soft delete ya no se apaga: ahí esperás la ventana o usás el flujo de purge documentado.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">VM y restore points borrados: ¿cuántos días quedan?</div>
+      <p>VM10 respaldada en un Recovery Services vault. Borran la VM <em>y</em> todos los restore points. Los backups no desaparecen: pasan a <strong>soft-deleted</strong>. Default = <strong>14 días</strong>, sin cargo extra. Undelete y después Restore.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Opción</th><th></th><th>De dónde sale el número (cebo)</th></tr></thead>
+        <tbody>
+          <tr><td><strong>14 days</strong></td><td><span class="yes">Sí</span></td><td>Soft delete de Azure Backup (default). Configurable hasta 180</td></tr>
+          <tr><td>30 days</td><td><span class="no">No</span></td><td>Retención default de Log Analytics / Entra deleted users</td></tr>
+          <tr><td>90 days</td><td><span class="no">No</span></td><td>Activity Log en Azure</td></tr>
+          <tr><td>365 days</td><td><span class="no">No</span></td><td>Tope típico de blob/container soft delete</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>az backup item undelete --vault-name Rsv1 -g RG --container-name VM10 --name VM10 \
+  --backup-management-type AzureIaasVM
+Undo-AzRecoveryServicesBackupItemDeletion -Item $item</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “VM + restore points deleted by mistake, how many days?” = <strong>14</strong>, no 90 (Activity Log), no 30 (LAW), no 365 (blob). Es el soft delete del <em>vault</em>, no la retención de la backup policy.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Recovery Services vault vs Backup vault</div>
+      <p>Azure Backup usa <strong>dos recursos distintos</strong>. El outline de AZ-104 pide crear los dos. No son intercambiables: el workload decide.</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Aspecto</th><th>Recovery Services vault</th><th>Backup vault</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Resource type</strong></td><td><code>Microsoft.RecoveryServices/vaults</code></td><td><code>Microsoft.DataProtection/backupVaults</code></td></tr>
+          <tr><td><strong>CLI / PS</strong></td><td><code>az backup vault create</code> · <code>New-AzRecoveryServicesVault</code></td><td><code>az dataprotection backup-vault create</code> · <code>New-AzDataProtectionBackupVault</code></td></tr>
+          <tr><td><strong>Cargas</strong></td><td>Azure VMs, Azure Files (snapshot), SQL en VM, SAP HANA en VM, MARS, MABS/DPM</td><td>Managed Disks, Blobs, PostgreSQL, AKS, Azure Files <em>vaulted</em></td></tr>
+          <tr><td><strong>Site Recovery</strong></td><td><span class="yes">Sí</span> — el único</td><td><span class="no">No</span></td></tr>
+          <tr><td><strong>Dónde vive el dato</strong></td><td>Vault store (Microsoft-managed) + Instant Restore (snapshots 1–5 días en tu sub)</td><td><strong>OperationalStore</strong> = snapshots en tu suscripción (Disks, Blob operational). <strong>VaultStore</strong> = copia aislada (PostgreSQL, Files vaulted)</td></tr>
+          <tr><td><strong>Identidad</strong></td><td>No hace falta MI para VMs clásicas</td><td>Usa <strong>managed identity</strong> + RBAC sobre el datasource (Disk Backup Reader, etc.)</td></tr>
+        </tbody>
+      </table>
+    </div>
+<pre><code># Backup vault (disks / blobs / PostgreSQL / AKS)
+az dataprotection backup-vault create -g RG --vault-name Bv1 -l eastus \
+  --storage-settings datastore-type="VaultStore" type="GeoRedundant"
+
+New-AzDataProtectionBackupVault -ResourceGroupName RG -VaultName Bv1 -Location eastus \
+  -StorageSetting (New-AzDataProtectionBackupVaultStorageSettingObject `
+    -DatastoreType VaultStore -Type GeoRedundant)</code></pre>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “proteger un <em>managed disk</em>” o “blobs / PostgreSQL / AKS” → <strong>Backup vault</strong>. “Proteger una <em>VM</em>” (aunque tenga discos) → <strong>Recovery Services vault</strong>: el backup de VM ya cubre los OS/data disks. ASR nunca va a un Backup vault. No mezcles <code>az backup vault</code> con <code>az dataprotection backup-vault</code>.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Atajo: <strong>Blobs, Disks, PostgreSQL, Kubernetes</strong> → Backup vault. <strong>VMs, file shares (snapshot), SQL en VM, on-prem, replicación/failover</strong> → Recovery Services vault.</span>
+    </div>
+  </div>
+
+  <!-- ══ 3 ══ -->
+  <div class="section" id="sec-workloads">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">📦</div>
+      <span class="section-title">Qué se puede respaldar y con qué</span>
+      <span class="section-tag">Decisión</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Carga de trabajo</th><th>Mecanismo</th><th>Detalle que se pregunta</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Azure VM</strong></td>
+            <td><strong>Extensión</strong> de backup instalada por el servicio + snapshot</td>
+            <td>No instalás nada a mano: el servicio despliega la extensión en la VM. En Windows el snapshot es <strong>application-consistent</strong> vía VSS; en Linux es <strong>file-system consistent</strong> salvo que uses <strong>pre/post scripts</strong> para lograr consistencia de aplicación.</td>
+          </tr>
+          <tr>
+            <td><strong>Azure Files (file share)</strong></td>
+            <td><strong>Snapshots</strong> del share, orquestados por el vault</td>
+            <td><strong>No requiere ningún agente.</strong> El vault y la storage account van en la misma región. Restaurás el share completo o archivos y carpetas individuales.</td>
+          </tr>
+          <tr>
+            <td><strong>SQL Server en Azure VM</strong></td>
+            <td>Extensión de workload dentro de la VM</td>
+            <td>Backups a nivel base de datos: full, differential y <strong>transaction log</strong> → habilita <strong>point-in-time restore</strong> con RPO de minutos. Es distinto de respaldar la VM entera.</td>
+          </tr>
+          <tr>
+            <td><strong>SAP HANA en Azure VM</strong></td>
+            <td>Extensión de workload</td>
+            <td>Backup consistente a nivel base de datos, no a nivel VM.</td>
+          </tr>
+          <tr>
+            <td><strong>Servidor físico / on-prem</strong></td>
+            <td>Agente <strong>MARS</strong> (Microsoft Azure Recovery Services)</td>
+            <td><strong>Solo archivos, carpetas y system state.</strong> <span class="no">No</span> respalda la máquina completa. Envía los datos <strong>directo a Azure</strong>, sin servidor intermedio ni copia local. La <strong>passphrase</strong> se genera al instalar: si la perdés, <strong>no restaurás</strong>. Guardala (Key Vault); no hay reset.</td>
+          </tr>
+          <tr>
+            <td><strong>Hyper-V / VMware on-prem, apps con retención local</strong></td>
+            <td><strong>MABS</strong> (Azure Backup Server) o <strong>System Center DPM</strong></td>
+            <td>Respalda <strong>máquinas virtuales completas</strong> y aplicaciones (SQL, SharePoint, Exchange). Mantiene una <strong>copia local en disco</strong> para restore rápido y envía al vault para retención larga. MABS <strong>no requiere licencia de System Center</strong>.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Backup Pre-Check: Passed / Warning / Critical</div>
+      <p>Primera corrida de backup de una Azure VM. El Pre-Check puede devolver tres estados. El examen pregunta qué causa <strong>Warning</strong>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Estado</th><th>Causa típica</th><th>¿El backup corre?</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Passed</strong></td><td>Agente al día, red OK</td><td>Debería completar</td></tr>
+            <tr><td><strong>Warning</strong></td><td>El <strong>VM agent no es la versión más reciente</strong></td><td>Puede correr, pero hay riesgo de fallo</td></tr>
+            <tr><td><strong>Critical</strong></td><td>La VM <strong>no habla con el servicio Azure Backup</strong> (red / agente ausente)</td><td>Va a fallar</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción del exhibit</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>No está el VM agent más reciente</td><td><span class="yes">Warning</span></td><td>La respuesta del drop-down</td></tr>
+            <tr><td>VM1 no puede comunicarse con Azure Backup</td><td><span class="no">Critical</span></td><td>Eso no es Warning</td></tr>
+            <tr><td>VM no administrada cifrada con BEKs</td><td><span class="no">No</span></td><td>SSE con BEK está soportado; no dispara Warning</td></tr>
+            <tr><td>Storage account no Premium</td><td><span class="no">No</span></td><td>El backup de VM no exige Premium</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Pre-Check <strong>Warning</strong> = agente de VM <strong>desactualizado</strong>. “No puede comunicarse con Azure Backup” es <strong>Critical</strong>, no Warning. Cifrado BEK y “no Premium” son carnada.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">La regla de decisión on-premises</div>
+      <div class="rule-box">
+        <strong>MARS</strong> → "necesito respaldar <strong>archivos y carpetas</strong> (o system state) de un servidor on-premises <strong>directo a Azure</strong>, sin infraestructura adicional".
+      </div>
+      <div class="rule-box">
+        <strong>MABS / DPM</strong> → "necesito respaldar <strong>VMs de Hyper-V o VMware</strong>, o <strong>aplicaciones</strong> como SQL/Exchange/SharePoint on-prem, y/o quiero <strong>retención local en disco</strong> para restaurar rápido".
+      </div>
+      <div class="rule-box">
+        <strong>Azure Site Recovery</strong> → "necesito que ese servidor on-prem <strong>siga corriendo en Azure</strong> si el datacenter se cae". Eso ya no es backup.
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> respaldar un servidor on-prem <strong>completo</strong> (la máquina entera, no archivos sueltos) <strong>no</strong> se hace con MARS. MARS solo cubre archivos, carpetas y system state. La respuesta es <strong>MABS/DPM</strong> — o ASR si lo que piden es continuidad y no backup. El distractor clásico es ofrecer MARS para todo lo que sea on-premises. Variante: “se perdió la passphrase del agente MARS” → no hay restore, hay que reinstalar y empezar de cero (la data vieja queda irrecuperable).</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>Cuando el escenario pide proteger un <strong>Azure file share</strong> sin instalar nada en ninguna VM, la respuesta es <strong>Azure Backup para Azure Files</strong> (snapshots). Nada de MARS, nada de agentes dentro de VMs.</span>
+    </div>
+  </div>
+
+  <!-- ══ 4 ══ -->
+  <div class="section" id="sec-policies">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🗓️</div>
+      <span class="section-title">Backup policies: frecuencia y retención GFS</span>
+      <span class="section-tag">Configuración</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Anatomía de una policy</div>
+      <ul>
+        <li><strong>Frecuencia y hora</strong>: diaria o semanal, con la hora y la <strong>zona horaria</strong> del schedule definidas en la propia policy. Cuidado con enunciados que mezclan husos.</li>
+        <li><strong>Enhanced policy</strong> (Azure VM): permite <strong>varios backups por día</strong> en intervalos configurables, para bajar el RPO por debajo de las 24 horas. Requiere VMs con <strong>managed disks</strong>.</li>
+        <li><strong>Retención GFS</strong> (Grandfather-Father-Son): puntos <strong>daily / weekly / monthly / yearly</strong>, cada nivel con su propia duración. El monthly y el yearly se anclan a un backup concreto (por ejemplo "el primer domingo del mes").</li>
+        <li><strong>Instant Restore (snapshot tier)</strong>: los snapshots quedan <strong>en la propia suscripción</strong>, junto a los discos, antes de transferirse al vault. Retención configurable entre <strong>1 y 5 días</strong>. Restaurar desde ahí es <strong>mucho más rápido</strong> que desde el vault tier.</li>
+        <li><strong>Backup on-demand</strong>: podés disparar un backup manual en cualquier momento y lleva su <strong>propia retención</strong>, independiente de la de la policy.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Default policy de Azure VM: retención diaria</div>
+      <p>Vault nuevo, backups periódicos con la <strong>default backup policy</strong>. ¿Cuánto duran los diarios?</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>30 días</strong></td><td><span class="yes">Sí</span></td><td>Default policy: daily retention = 30</td></tr>
+            <tr><td>9.999 días</td><td><span class="no">No</span></td><td>Tope configurable, no el default</td></tr>
+            <tr><td>14 días</td><td><span class="no">No</span></td><td>Soft delete del vault, no la policy</td></tr>
+            <tr><td>7 días</td><td><span class="no">No</span></td><td>Carnada de “una semana”</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> default daily = <strong>30 días</strong>. 14 es soft delete (VM/restore points borrados). 9.999 es el máximo que <em>podés</em> poner. Instant Restore del snapshot son 1–5 días, otro número.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">myBackupPolicy: retención máxima y RPO</div>
+      <p>Daily 10:30 UTC. Instant Restore 2 días. Daily 60 días. Weekly 24 semanas (domingos). Monthly week-based, primer domingo, <strong>24 meses</strong>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Pregunta</th><th>Valor</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Maximum retention</td><td><strong>24 months</strong></td><td>El punto que más dura: monthly. 60 días y 24 semanas son más cortos</td></tr>
+            <tr><td>RPO</td><td><strong>1 day</strong></td><td>Frecuencia del schedule = daily. Perdés como máximo un día de datos</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> max retention ≠ Instant Restore (2 días) ≠ daily 60 ≠ weekly 24 weeks. Es el <strong>más largo</strong> (monthly 24 months). RPO ≠ retención: RPO = <strong>frecuencia</strong> (1 día).</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tres cmdlets: primer backup de VM1, policy default</div>
+      <p>No usabas Backup. Recurrente (no un ad-hoc). Orden:</p>
+      <ol>
+        <li><code>Register-AzResourceProvider</code> — namespace <code>Microsoft.RecoveryServices</code></li>
+        <li><code>New-AzRecoveryServicesVault</code></li>
+        <li><code>Enable-AzRecoveryServicesBackupProtection</code> — asocia la VM a la default policy</li>
+      </ol>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Cmdlet</th><th></th><th>Por qué no</th></tr></thead>
+          <tbody>
+            <tr><td><code>Backup-AzRecoveryServicesBackupItem</code></td><td><span class="no">No</span></td><td>Backup <strong>on-demand</strong> ahora. No configura lo recurrente</td></tr>
+            <tr><td><code>Enable-AzRecoveryServicesBackupAutoProtection</code></td><td><span class="no">No</span></td><td>SQL / SAP HANA: auto-proteger DBs nuevas. No es el backup de la VM</td></tr>
+            <tr><td><code>Set-AzRecoveryServicesBackupProperty</code></td><td><span class="no">No</span></td><td>Propiedades del vault (LRS/GRS, soft delete). No habilita la VM</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “configure recurring / default policy” = <code>Enable-AzRecoveryServicesBackupProtection</code>, no <code>Backup-…BackupItem</code> (ad-hoc). AutoProtection = SQL dentro de la VM. Set-…Property = redundancia del vault. El Register va primero si Backup nunca se usó.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Nivel GFS</th><th>Qué guarda</th><th>Escenario típico</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Daily</strong></td><td>El backup de cada día</td><td>Recuperación operativa de corto plazo</td></tr>
+          <tr><td><strong>Weekly</strong></td><td>El backup del día elegido de la semana</td><td>Retención de semanas/meses sin inflar el storage</td></tr>
+          <tr><td><strong>Monthly</strong></td><td>El backup del día elegido del mes</td><td>Cierres mensuales</td></tr>
+          <tr><td><strong>Yearly</strong></td><td>El backup del mes/día elegido del año</td><td><strong>Compliance</strong> y retención legal de años</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cómo se lee un requisito de retención</div>
+      <p>Enunciado típico: <em>"conservar backups diarios por 30 días, mensuales por 12 meses y anuales por 7 años"</em>. Eso <strong>no</strong> son tres políticas ni tres vaults: es <strong>una sola policy</strong> con daily = 30 días, monthly = 12 meses y yearly = 7 años. El error clásico del distractor es proponer varias policies o varios vaults.</p>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si <strong>modificás una policy</strong>, el cambio se aplica a <strong>todos los backup items asociados</strong> a esa policy, incluida la retención. Si querés cambiar la retención de una sola VM, <strong>creá una policy nueva y asignásela a esa VM</strong> — no edites la compartida. Y una policy <strong>no se puede borrar mientras tenga items asociados</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Frecuencia: lo que conviene tener presente</div>
+      <ul>
+        <li>Con la policy <strong>estándar</strong> de Azure VM el schedule es de <strong>un backup por día</strong> (o semanal). Para bajar el RPO se usa la <strong>enhanced policy</strong>.</li>
+        <li>Hay un <strong>límite de backups por día</strong> por item: los on-demand se suman a los programados, no podés dispararlos sin freno.</li>
+        <li>El agente <strong>MARS</strong> permite <strong>varios backups por día</strong> de archivos y carpetas, con schedule propio, independiente del de Azure VM.</li>
+        <li>Si piden <strong>RPO de minutos</strong> sobre una base de datos, la respuesta es backup de <strong>SQL en VM con transaction log backups</strong>, no aumentar la frecuencia del backup de la VM.</li>
+        <li>Cambiar el <strong>Instant Restore retention</strong> afecta cuánto tiempo tenés disponible el restore rápido, y también el costo de los snapshots en tu suscripción.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══ 5 ══ -->
+  <div class="section" id="sec-restore">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">♻️</div>
+      <span class="section-title">Restauración de VMs: las cuatro opciones</span>
+      <span class="section-tag">Muy preguntado</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Opción</th><th>Qué hace</th><th>Cuándo la elegís</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Create new VM</strong></td>
+            <td>Crea una <strong>VM nueva completa</strong> a partir del recovery point, con el nombre, la VNet y el resource group que le indiques.</td>
+            <td>La VM original ya no existe, o querés levantar una copia en paralelo sin tocar la productiva. Es el camino más directo de punta a punta.</td>
+          </tr>
+          <tr>
+            <td><strong>Restore disks</strong></td>
+            <td>Restaura los <strong>discos</strong> al resource group/storage que indiques y genera un <strong>template de deployment</strong> para que armes la VM vos.</td>
+            <td>Necesitás <strong>control sobre la configuración final</strong> (tamaño, NICs, availability set, zona, extensiones), o querés adjuntar el disco a otra VM para inspeccionarlo.</td>
+          </tr>
+          <tr>
+            <td><strong>Replace existing</strong></td>
+            <td>Reemplaza los <strong>discos de la VM original</strong> por los del recovery point, conservando la identidad de la VM (nombre, NIC, IP, pertenencias).</td>
+            <td>La VM <strong>tiene que existir</strong> y usar <strong>managed disks</strong>. Sirve para revertir un cambio manteniendo todo lo demás igual. Requiere una <strong>staging location</strong>. No aplica a VMs sin managed disks ni a ciertos escenarios de discos encriptados.</td>
+          </tr>
+          <tr>
+            <td><strong>File recovery<br>(item-level recovery)</strong></td>
+            <td>Genera un <strong>script</strong> que <strong>monta el recovery point como unidades</strong> en un servidor, para que copies archivos sueltos. Al terminar se hace <strong>unmount</strong>.</td>
+            <td><strong>Necesitás uno o pocos archivos.</strong> No se restaura nada más: es la opción de menor impacto y menor tiempo.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Yes/No: Create a new VM desde el portal</div>
+      <p>VM1 con policy custom (2 backups/día). Restore type = <strong>Create a new VM</strong>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Podés ponerla en el <strong>mismo RG o en otro</strong></td><td><span class="yes">Yes</span></td><td>El wizard pide resource group destino</td></tr>
+            <tr><td>Podés crear la VM en <strong>otra región</strong></td><td><span class="no">No</span></td><td>Restore estándar = <strong>misma región que el vault</strong>. Otra región = CRR (feature aparte)</td></tr>
+            <tr><td>Podés elegir la <strong>VNet destino</strong></td><td><span class="yes">Yes</span></td><td>Subnet/VNet son parte de la config de la VM nueva</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Create a new VM = RG sí, VNet sí, <strong>región no</strong>. Cruzar región es <strong>Cross Region Restore</strong> (GRS+CRR), no este wizard.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Detalles de file recovery que caen en preguntas</div>
+      <ul>
+        <li>El script se ejecuta en una máquina con un <strong>OS compatible</strong> con el de la VM respaldada (script de Windows para VM Windows, de Linux para VM Linux) y con <strong>conectividad</strong> al servicio.</li>
+        <li>El recovery point se expone como volúmenes montados (iSCSI); copiás lo que necesitás con el explorador o <code>Copy-Item</code> / <code>cp</code>.</li>
+        <li>La sesión de montaje es <strong>temporal</strong>: al terminar hay que <strong>desmontar</strong>. Si no lo hacés, el recovery point queda ocupado hasta que la sesión expire.</li>
+        <li>En VMs con <strong>discos encriptados</strong> el item-level file recovery no está disponible: ahí vas por restore de discos o VM nueva.</li>
+        <li>El mismo mecanismo existe para <strong>Azure Files</strong> y para backups del agente <strong>MARS</strong>, donde recuperar archivos individuales es la operación normal.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drag-and-drop del examen: un archivo de hace 6 días</div>
+      <p>Enunciado típico: VM Windows respaldada a diario, hay que recuperar <strong>un archivo de configuración de hace N días, lo más rápido posible y sin tocar el resto del sistema</strong>. No se restaura el disco ni se crea una VM nueva.</p>
+      <div class="flow">
+        <div class="flow-step highlight">1. File recovery<br><small>elegí el RP de hace 6 días</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">2. Descargá y ejecutá<br><small>el script de PowerShell</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">3. Copiá el archivo<br><small>del volumen montado</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">4. Unmount<br><small>los volúmenes</small></div>
+      </div>
+      <ul>
+        <li><strong>Descartá:</strong> Restore disks y Create new VM — restauran de más, tardan más y pueden afectar otros archivos.</li>
+        <li>Windows: script <code>.ps1</code> (correr como admin). Linux: script Python. El OS del script tiene que coincidir con el de la VM.</li>
+        <li>Seis días atrás puede estar fuera de Instant Restore (1–5 días): igual es File recovery; solo cambia si el RP viene del snapshot o del vault.</li>
+      </ul>
+<pre><code># Listar recovery points
+$vault = Get-AzRecoveryServicesVault -Name RSV -ResourceGroupName RG
+Set-AzRecoveryServicesVaultContext -Vault $vault
+$item = Get-AzRecoveryServicesBackupItem -BackupManagementType AzureVM -WorkloadType AzureVM -Name VM1
+Get-AzRecoveryServicesBackupRecoveryPoint -Item $item
+
+# Bajar el script de montaje (equivalente al botón del portal)
+Get-AzRecoveryServicesBackupRPMountScript -RecoveryPoint $rp -Path C:\ilr
+# Ejecutás el .ps1 → monta los volúmenes por iSCSI
+Copy-Item E:\path\config.xml C:\restore\config.xml
+
+# Al terminar: desmontar (portal → Unmount Disks, o)
+Disable-AzRecoveryServicesBackupRPMountScript -RecoveryPoint $rp
+
+# CLI
+az backup recoverypoint list --vault-name RSV -g RG \
+  --container-name VM1 --item-name VM1 --backup-management-type AzureIaasVM
+az backup restore files mount-rp --vault-name RSV -g RG \
+  --container-name VM1 --item-name VM1 --rp-name $rp
+az backup restore files unmount-rp --vault-name RSV -g RG \
+  --container-name VM1 --item-name VM1 --rp-name $rp</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen (orden):</strong> File recovery → script → copiar → unmount. El unmount va <strong>al final</strong>, no antes de copiar. Restore disk / Create new VM son distractores: el enunciado pide un archivo suelto, rápido y sin afectar el resto del sistema.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el escenario dice "un usuario borró <strong>un archivo</strong> y hay que recuperarlo con el <strong>mínimo esfuerzo administrativo y sin downtime</strong>". La respuesta es <strong>File recovery / item-level recovery</strong>, no "Create new VM y copiar el archivo", y mucho menos <strong>Replace existing</strong> — que además revertiría todos los demás cambios de la VM.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Restaurar desde el <strong>snapshot tier (Instant Restore)</strong> es notablemente más rápido que desde el vault tier, porque el snapshot vive en tu propia suscripción y no hay que traer los datos de vuelta. Si la pregunta pide "el restore más rápido", fijate si el recovery point sigue dentro de la ventana de instant restore.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>Restaurar <strong>en otra región</strong> sin que Microsoft declare un desastre solo es posible con <strong>Cross Region Restore</strong>, que exige vault <strong>GRS</strong> con CRR habilitado. El destino es <strong>únicamente la paired region</strong> (East US → West US), no Central US ni cualquier US. Con LRS o ZRS esa opción no aparece.</span>
+    </div>
+  </div>
+
+  <!-- ══ 6 ══ -->
+  <div class="section" id="sec-seguridad">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(165,180,252,.15)">🔐</div>
+      <span class="section-title">Seguridad y monitoreo del backup</span>
+      <span class="section-tag">Gobierno</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Defensa contra ransomware y borrado malicioso</div>
+      <ul>
+        <li><strong>Soft delete</strong>: retiene los backups eliminados durante la ventana adicional de retención. Es la primera red de contención.</li>
+        <li><strong>Multi-User Authorization (MUA)</strong>: agrega un <strong>Resource Guard</strong> como recurso aparte. Las operaciones críticas (deshabilitar soft delete, detener protección eliminando datos, reducir retención, modificar MUA) exigen que el operador tenga permisos <strong>sobre el Resource Guard</strong>, no solo sobre el vault.</li>
+        <li>El Resource Guard debe vivir en una <strong>suscripción distinta</strong> (idealmente administrada por otra persona o tenant): ese es el punto del control, <strong>separación de deberes</strong>. Si el mismo admin controla vault y Resource Guard, MUA no aporta nada.</li>
+        <li><strong>Alertas</strong>: Azure Backup genera alertas ante operaciones destructivas y ante jobs fallidos; se integran con <strong>Azure Monitor</strong> y action groups para notificar por mail o webhook.</li>
+        <li><strong>Encriptación en reposo</strong> por defecto con claves de Microsoft, con opción de <strong>customer-managed keys</strong> en Key Vault.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Monitoreo, reportes y alertas</div>
+      <p>El outline pide <em>configure and interpret reports and alerts</em>. Son tres capas distintas; el examen mezcla los nombres.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Capa</th><th>Para qué</th><th>Qué hay que configurar</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Backup jobs / alerts del vault</strong></td><td>Job fallido, completed with warnings, restore fallido, delete backup data</td><td>Built-in de escenarios <em>críticos</em> → Azure Monitor. Notificar = <strong>action group</strong> + alert processing rule. No es “on para todos los workloads”</td></tr>
+          <tr><td><strong>Backup Center</strong> (Resiliency)</td><td>Vista <strong>unificada</strong> de vaults, suscripciones y regiones. “Estado de backup de toda la org”</td><td>Portal; no reemplaza a los reportes históricos</td></tr>
+          <tr><td><strong>Backup Reports</strong></td><td>Histórico: storage, jobs, compliance de policies, costo</td><td><strong>Diagnostic Settings</strong> del vault → <strong>Log Analytics</strong>. Sin eso el workbook está vacío. Tarda ~1–2 días en llenarse</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code># Reportes: mandar logs del vault al workspace
+az monitor diagnostic-settings create -n bak-logs \
+  --resource /subscriptions/$sub/resourceGroups/RG/providers/Microsoft.RecoveryServices/vaults/Rsv1 \
+  --workspace /subscriptions/$sub/resourceGroups/RG/providers/Microsoft.OperationalInsights/workspaces/law1 \
+  --logs '[{"categoryGroup":"allLogs","enabled":true}]'
+
+# Alertas: action group (igual que el resto de Azure Monitor)
+az monitor action-group create -g RG -n bak-ops --short-name bakops \
+  --email-receiver ops ops@contoso.com</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí 4: salud de backup (VMs, SQL, Azure Files)</div>
+      <p>Hay que revisar health y que las alertas estén bien. Cuatro afirmaciones son ciertas; dos son carnada.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Backup Center da vista centralizada de jobs, alerts y policy status <strong>across vaults</strong></td><td><span class="yes">Yes</span></td><td>Esa es su razón de ser (hoy Resiliency)</td></tr>
+            <tr><td>Las alertas pueden notificar job <strong>failed</strong> o <strong>completed with warnings</strong></td><td><span class="yes">Yes</span></td><td>Esos son los estados que dispara Backup</td></tr>
+            <tr><td>Backup Reports muestran tendencias de <strong>storage</strong> y <strong>policy compliance</strong></td><td><span class="yes">Yes</span></td><td>Histórico; no es el dashboard del día</td></tr>
+            <tr><td>Backup Reports usan datos de un <strong>Log Analytics workspace</strong></td><td><span class="yes">Yes</span></td><td>Diagnostic Settings del vault → LAW</td></tr>
+            <tr><td>Las alertas se habilitan <strong>automáticamente para todos los workloads</strong></td><td><span class="no">No</span></td><td>Built-in = escenarios críticos (y no todos los tipos). Mail no sale solo: action group. Job-fail se puede apagar</td></tr>
+            <tr><td>Las alertas <strong>no se pueden customizar</strong></td><td><span class="no">No</span></td><td>Action groups, processing rules, métricas, KQL/ARG. Elegís escenario y canal</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “ver reportes de backup de los últimos 30 días / cumplimiento de policies” → Diagnostic Settings del <strong>vault</strong> a un LAW, después Backup Reports. El Activity Log no alcanza (es plano de control). Backup Center muestra el estado actual, no el histórico. El Power BI template viejo (storage account) está en retiro.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Backup Reports: ¿a dónde mandás el diagnóstico del vault?</div>
+      <p>Forecast de storage y audit de restores. Diagnostic settings de cada RSV.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Destino</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Log Analytics</strong></td><td><span class="yes">Sí</span></td><td>El workbook de Backup Reports consulta el LAW</td></tr>
+            <tr><td>Archive a blob storage</td><td><span class="no">No</span></td><td>Retención cruda; no alimenta el reporte</td></tr>
+            <tr><td>Stream a Event Hub</td><td><span class="no">No</span></td><td>SIEM externo, no el workbook de Azure</td></tr>
+            <tr><td>Archive a file storage</td><td><span class="no">No</span></td><td>Ni siquiera es un destino válido de diagnostic settings</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “Azure Backup reports” = destino <strong>Log Analytics</strong>. Blob/Event Hub son destinos reales de diag settings, pero no prenden el workbook. File storage no existe como target.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> en “elegí 4” de Backup health, las dos falsas son <em>alerts on para todos los workloads</em> y <em>alerts no se customizan</em>. Built-in cubre fail/warnings/seguridad, no cada workload. Customizar = Azure Monitor (action group). Reports ≠ Backup Center: reports = LAW.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Rol RBAC</th><th>Puede</th><th>No puede</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Backup Contributor</strong></td>
+            <td>Todas las operaciones de gestión de backup: crear y editar policies, detener protección, eliminar datos de backup, restaurar.</td>
+            <td>Borrar el Recovery Services vault ni <strong>dar acceso</strong> a otros usuarios (eso es del Owner / User Access Administrator).</td>
+          </tr>
+          <tr>
+            <td><strong>Backup Operator</strong></td>
+            <td><strong>Disparar backups on-demand y restauraciones</strong>, y monitorear jobs.</td>
+            <td><strong>Eliminar la protección o borrar datos de backup</strong>, ni <strong>crear o modificar backup policies</strong>.</td>
+          </tr>
+          <tr>
+            <td><strong>Backup Reader</strong></td>
+            <td>Ver estado, jobs e items. Monitoreo de solo lectura.</td>
+            <td>Cualquier operación de backup o de restore.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "el equipo de operaciones debe poder <strong>ejecutar backups y restauraciones</strong>, pero <strong>no</strong> eliminar backups ni cambiar políticas, aplicando el <strong>principio de menor privilegio</strong>" → <strong>Backup Operator</strong>. El distractor es Backup Contributor (que sí puede borrar datos y tocar policies), y Backup Reader queda corto porque no puede restaurar.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Si el requisito es "que <strong>ni siquiera un administrador comprometido</strong> pueda destruir los backups", la respuesta va más allá del RBAC: es <strong>soft delete + Multi-User Authorization con Resource Guard</strong> en otra suscripción.</span>
+    </div>
+  </div>
+
+  <!-- ══ 7 ══ -->
+  <div class="section" id="sec-asr">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(45,212,191,.15)">🌐</div>
+      <span class="section-title">Azure Site Recovery: replicación y componentes</span>
+      <span class="section-tag">DR</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Escenarios soportados</div>
+      <ul>
+        <li><strong>Azure a Azure (A2A)</strong>: replicación de VMs de Azure entre <strong>dos regiones</strong>. No hay nada que instalar en on-prem; el servicio despliega el agente de Mobility en la VM.</li>
+        <li><strong>VMware o servidor físico a Azure</strong>: replicación desde el datacenter hacia Azure, con el appliance / servidor de configuración en el sitio origen.</li>
+        <li><strong>Hyper-V a Azure</strong>: con o sin System Center VMM, usando el Azure Site Recovery provider en los hosts.</li>
+        <li>Lo que ASR <strong>no</strong> hace: no es un backup con historial largo y no te protege de corrupción lógica — lo corrupto se replica igual.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">High Churn: qué storage usa el cache/log</div>
+      <p>SQL de alto cambio, RPO más chico. ASR High Churn (hasta ~100 MB/s por VM).</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Storage del cache</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Premium block blob</strong></td><td><span class="yes">Sí</span></td><td>El log/cache de High Churn. Cuenta BlockBlobStorage Premium en la región origen</td></tr>
+            <tr><td>Standard GPv2</td><td><span class="no">No</span></td><td>Es el cache default de ASR “normal”; no da el throughput de High Churn</td></tr>
+            <tr><td>Azure Files</td><td><span class="no">No</span></td><td>No es el log de replicación de bloques</td></tr>
+            <tr><td>Azure Elastic SAN</td><td><span class="no">No</span></td><td>SAN de bloques para apps, no el cache de ASR</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> High Churn ≠ Premium SSD del disco de la VM. Es la <strong>cuenta de cache</strong> = <strong>Premium block blobs</strong>. GPv2 Standard es el default barato que viola el RPO.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Componentes de una configuración Azure a Azure</div>
+      <div class="flow">
+        <div class="flow-step">VM origen<br><small>región A</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Cache storage account<br><small>región A</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Réplica<br><small>región B</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Recovery points<br><small>región B</small></div>
+      </div>
+      <ul>
+        <li><strong>Recovery Services vault en la región TARGET</strong>: el vault se crea en la región <strong>de destino</strong>. Si la región origen se cae, el vault tiene que seguir siendo accesible para orquestar el failover.</li>
+        <li><strong>Cache storage account</strong>: vive en la <strong>región origen</strong>. Los cambios de los discos se escriben ahí primero y desde ahí viajan a la región target, para que la replicación no golpee la performance de la aplicación.</li>
+        <li><strong>Target resources</strong>: resource group, VNet y subnet de destino, discos, y opcionalmente la <strong>IP de destino</strong> de cada NIC. Se configuran <strong>antes</strong> del failover.</li>
+        <li><strong>Replication policy</strong>: define la <strong>retención de recovery points</strong> y la <strong>frecuencia de app-consistent snapshots</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Elemento de la replication policy</th><th>Qué controla</th><th>Impacto</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Recovery point retention</strong></td><td>Cuánto hacia atrás podés elegir un punto de recuperación al hacer failover</td><td>Ventana de rollback si el problema no se detectó al instante</td></tr>
+          <tr><td><strong>App-consistent snapshot frequency</strong></td><td>Cada cuánto se toma un snapshot consistente a nivel aplicación (VSS en Windows)</td><td>Más frecuencia = mejor consistencia de las apps, pero <strong>más impacto en la performance</strong> de la VM origen</td></tr>
+          <tr><td><strong>Crash-consistent points</strong></td><td>Se generan de forma continua y automática</td><td>Son los que sostienen el <strong>RPO bajo</strong> (segundos/minutos)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Recovery Plans</div>
+      <ul>
+        <li>Un <strong>recovery plan</strong> agrupa máquinas y define el <strong>orden</strong> del failover mediante <strong>grupos</strong> que se ejecutan secuencialmente (típico: grupo 1 base de datos, grupo 2 aplicación, grupo 3 web).</li>
+        <li>Podés insertar <strong>scripts</strong> (runbooks de <strong>Azure Automation</strong>) antes o después de cada grupo: cambiar DNS, reconfigurar la app, adjuntar un load balancer, asignar IPs públicas.</li>
+        <li>También podés insertar <strong>acciones manuales</strong>: el plan se pausa y espera confirmación humana antes de seguir. Más automatización = <strong>menor RTO</strong>.</li>
+        <li>Un mismo recovery plan sirve para <strong>test failover</strong> y para failover real, y es la forma de garantizar que una aplicación multi-tier levante en el orden correcto.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drag-and-drop: app de 3 capas + IP pública, minimizar RTO</div>
+      <p>La replicación ASR ya está. Hay 9 VMs (3 por capa) y los clientes entran por una <strong>Public IP</strong>. Hay que dejar el DR listo para que el failover sea automático y corto.</p>
+      <div class="flow">
+        <div class="flow-step highlight">1. Recovery plan<br><small>3 grupos: DB → app → web</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">2. Paso de IP pública<br><small>script / acción en el plan</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">3. NSGs en el TARGET<br><small>mismas reglas que prod</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">4. Traffic Manager<br><small>Priority activo/pasivo</small></div>
+      </div>
+      <ul>
+        <li><strong>1 · Recovery plan:</strong> las 9 VMs no se fallovean a mano. Cada capa es un grupo; el orden evita que el front arranque sin base de datos.</li>
+        <li><strong>2 · Adjuntar la Public IP:</strong> en el failover A2A las NIC del destino nacen <strong>sin</strong> la IP pública de origen. Un script (Automation) o un paso manual en el plan la asocia apenas levantan las VMs web.</li>
+        <li><strong>3 · NSGs en la región destino:</strong> las reglas del origen no viajan solas. Sin NSG en el target, o las VMs quedan abiertas de más o el probe/HTTP no entra. El origen ya está configurado: no se toca.</li>
+        <li><strong>4 · Traffic Manager (Priority):</strong> el DNS de los clientes apunta al perfil; el endpoint primario es la IP de origen, el secundario la del target. Al fallar el probe, TM manda tráfico a DR <strong>sin que alguien edite un A record</strong> — eso es lo que baja el RTO.</li>
+      </ul>
+<pre><code># Adjuntar Public IP a la NIC (runbook del recovery plan)
+$nic = Get-AzNetworkInterface -Name web-nic -ResourceGroupName rg-dr
+$pip = Get-AzPublicIpAddress -Name web-pip-dr -ResourceGroupName rg-dr
+$nic.IpConfigurations[0].PublicIpAddress = $pip
+Set-AzNetworkInterface -NetworkInterface $nic
+
+# Traffic Manager activo/pasivo (Priority)
+New-AzTrafficManagerProfile -Name app-tm -ResourceGroupName rg-net `
+  -TrafficRoutingMethod Priority -RelativeDnsName miapp -Ttl 30
+# Endpoint 1 = Public IP origen (Priority 1), endpoint 2 = Public IP destino (Priority 2)
+
+# CLI
+az network traffic-manager profile create -g rg-net -n app-tm \
+  --routing-method Priority --unique-dns-name miapp --ttl 30</code></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Opción del examen</th><th>¿Va?</th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td>Create a recovery plan</td><td><span class="yes">Sí · 1</span></td><td>Orquesta las 3 capas</td></tr>
+          <tr><td>Customize the plan… attach the public IP</td><td><span class="yes">Sí · 2</span></td><td>Sin esto los clientes no llegan al front en DR</td></tr>
+          <tr><td>Configure NSGs in the <strong>target</strong> region</td><td><span class="yes">Sí · 3</span></td><td>El destino necesita las mismas reglas antes de recibir tráfico</td></tr>
+          <tr><td>Create a Traffic Manager profile</td><td><span class="yes">Sí · 4</span></td><td>Cambia el tráfico de clientes con el mínimo RTO</td></tr>
+          <tr><td>NSGs in the <strong>source</strong> region</td><td><span class="no">No</span></td><td>Ya están; el hueco es el destino</td></tr>
+          <tr><td>ExpressRoute private / public peering</td><td><span class="no">No</span></td><td>La app es pública por Public IP, no es un circuito híbrido</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen (orden BCDR):</strong> recovery plan → paso de Public IP en el plan → NSG en el <em>target</em> → Traffic Manager. ExpressRoute y NSG del origen son distractores. Traffic Manager va al final del <em>armado</em> (ya hay IP y red en DR para apuntar el endpoint). Método <strong>Priority</strong>, no Performance: es activo/pasivo, no “el más cercano”.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el vault de <strong>Site Recovery va en la región de destino</strong> — exactamente al revés de la regla de backup, donde el vault debe estar en la misma región que el recurso protegido. Si una opción dice "crear el vault en la región primaria, junto a las VMs a replicar", está mal.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Cuando la aplicación tiene varias VMs con dependencias entre sí, la respuesta correcta casi siempre incluye un <strong>recovery plan</strong>. "Hacer failover de las VMs una por una" es el distractor: no garantiza el orden ni ejecuta la automatización asociada.</span>
+    </div>
+  </div>
+
+  <!-- ══ 8 ══ -->
+  <div class="section" id="sec-failover">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(244,114,182,.15)">🔀</div>
+      <span class="section-title">Tipos de failover, commit y failback</span>
+      <span class="section-tag">Top del dominio</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Tipo</th><th>Qué hace</th><th>Impacto en producción</th><th>Pérdida de datos</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Test failover</strong></td>
+            <td>Crea las VMs en la región target dentro de una <strong>VNet aislada</strong> para <strong>validar el plan de DR</strong>. La replicación sigue corriendo normalmente.</td>
+            <td><span class="chip chip-green">Ninguno</span> la VM origen sigue operando</td>
+            <td>No aplica — es un simulacro</td>
+          </tr>
+          <tr>
+            <td><strong>Planned failover</strong></td>
+            <td><strong>Apaga la máquina origen</strong> y sincroniza los cambios pendientes antes de levantar en destino. Para <strong>mantenimiento planificado</strong> o desastres anunciados.</td>
+            <td><span class="chip chip-yellow">Downtime controlado</span></td>
+            <td><strong>Cero</strong> — por eso apaga y sincroniza primero</td>
+          </tr>
+          <tr>
+            <td><strong>Failover</strong><br>(unplanned)</td>
+            <td>Levanta en destino <strong>sin depender del origen</strong>. Es el de un <strong>desastre real</strong>. Elegís el recovery point: latest, latest processed, latest app-consistent o custom.</td>
+            <td><span class="chip chip-red">Origen caído o inalcanzable</span></td>
+            <td><strong>Posible</strong>, según el recovery point elegido</td>
+          </tr>
+          <tr>
+            <td><strong>Failback</strong><br>(precedido de reprotect)</td>
+            <td>Volver a la región o sitio original. Primero <strong>reprotect</strong> para <strong>invertir la dirección de la replicación</strong>, después failover hacia el origen.</td>
+            <td><span class="chip chip-yellow">Downtime del failover de vuelta</span></td>
+            <td>Mínima si la replicación inversa está sincronizada</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">El ciclo completo, en orden</div>
+      <div class="flow">
+        <div class="flow-step">Habilitar<br><small>replicación</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Test failover<br><small>+ cleanup</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Failover<br><small>real</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Commit</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Reprotect</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Failback</div>
+      </div>
+      <ul>
+        <li><strong>Test failover</strong>: siempre a una <strong>VNet separada de producción</strong>, para que la VM de prueba no choque con la real (mismo hostname, misma IP, mismo dominio). Al terminar se ejecuta <strong>Cleanup test failover</strong>, que <strong>elimina las VMs de prueba</strong> y cierra el escenario. Sin cleanup no podés correr otro test.</li>
+        <li><strong>Failover</strong>: al completarse, la máquina queda en estado <strong>"failover committed pending"</strong>. Todavía podés elegir otro recovery point o cancelar.</li>
+        <li><strong>Commit</strong>: confirma el failover, <strong>descarta los demás recovery points</strong> y fija el estado actual. Después del commit ya no podés cambiar de punto de recuperación.</li>
+        <li><strong>Reprotect</strong>: invierte la replicación (destino → origen). Es un paso <strong>obligatorio antes del failback</strong>.</li>
+        <li><strong>Failback</strong>: failover de vuelta hacia la región o el sitio original, una vez sincronizada la replicación inversa.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el <strong>test failover no es un failover</strong>. No interrumpe la replicación, no toca la VM de producción y <strong>no cambia el estado de protección</strong>. Si la pregunta pide "validar el plan de DR <strong>sin afectar el entorno productivo ni la replicación en curso</strong>", la respuesta es <strong>test failover en una VNet aislada</strong>, seguido de <strong>cleanup</strong>. Cualquier opción que diga "failover" a secas está mal.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> no podés hacer <strong>failback</strong> directo después de un failover. El orden obligatorio es <strong>commit → reprotect → failover de vuelta</strong>. Saltearse el <strong>reprotect</strong> es el distractor de siempre: sin reprotect la replicación sigue apuntando en el sentido original y no hay nada sincronizado para traer de vuelta.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>En replicación <strong>Azure a Azure</strong>, si el escenario es <strong>mantenimiento anunciado + cero data loss</strong>, es <strong>planned failover</strong>: apagás el origen, ASR sincroniza el delta y recién ahí conmuta. El unplanned es cuando la región primaria ya no responde.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí 3: failover planeado UK South → UK West</div>
+      <p>Mantenimiento aprobado. Cero pérdida de datos, mínima interrupción.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Test failover</strong> a una VM aislada en el target</td><td><span class="yes">Sí</span></td><td>Validás sin tocar prod ni la replicación</td></tr>
+            <tr><td><strong>Apagar origen + planned failover</strong></td><td><span class="yes">Sí</span></td><td>Sincroniza el delta → RPO 0</td></tr>
+            <tr><td><strong>Commit</strong> cuando termina</td><td><span class="yes">Sí</span></td><td>Cierra el failover; sin commit queda “pending”</td></tr>
+            <tr><td>Failover solo cuando el origen ya está offline</td><td><span class="no">No</span></td><td>Eso es desastre. Acá el origen todavía vive</td></tr>
+            <tr><td>Unplanned failover</td><td><span class="no">No</span></td><td>Puede perder datos. Contradice “zero data loss”</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> planned ≠ unplanned. Mantenimiento + RPO 0 = <strong>apagar + planned + commit</strong> (y test failover antes). “Esperar a que UK South muera” es el unplanned.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>Cómo elegir el recovery point en un failover real: <strong>Latest</strong> = mínima pérdida de datos, pero hay que procesar los datos pendientes (tarda más); <strong>Latest processed</strong> = el más rápido de levantar, mejor RTO; <strong>Latest app-consistent</strong> = el más seguro para bases de datos, aunque sea un punto más viejo.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Cuándo usás Azure Backup y cuándo Azure Site Recovery?", a: "<strong>Backup</strong> = pérdida o corrupción de datos (borrado, ransomware), RPO en horas/días, recuperás archivos o la VM.<br><strong>Site Recovery</strong> = caída de una región o sitio completo, RPO de segundos/minutos, hacés <strong>failover</strong> a otra región. ASR replica también los borrados: no reemplaza al backup.", cat: "Backup vs DR" },
+  { q: "¿Qué mide el RPO y qué mide el RTO?", a: "<strong>RPO</strong> = cuánto <strong>dato</strong> podés perder (mira hacia atrás, lo define la frecuencia de backup/replicación).<br><strong>RTO</strong> = cuánto <strong>tiempo</strong> tardás en volver a operar (mira hacia adelante, lo define el mecanismo de recuperación).", cat: "Backup vs DR" },
+  { q: "¿Se puede cambiar la redundancia (LRS/GRS/ZRS) de un Recovery Services vault después de configurar el primer backup?", a: "<strong>No.</strong> La storage replication se define <strong>antes del primer backup</strong> y después queda <strong>bloqueada</strong>. Si necesitás otra redundancia, hay que <strong>crear un vault nuevo</strong> y reconfigurar la protección. Crear: <code>az backup vault create</code> / <code>New-AzRecoveryServicesVault</code>, después <code>az backup vault backup-properties set --backup-storage-redundancy GeoRedundant</code>.", cat: "Vault" },
+  { q: "5 VMs: East US (Win 2012 R2, Win 2016, RHEL) + West US (Win 2016, Ubuntu). ¿Mínimo de Recovery Services vaults? ¿1 porque son paired?", a: "<strong>2</strong>. Un vault por región. Windows y Linux (y la versión de OS) <strong>no</strong> piden vault extra. East US / West US son paired para GRS/CRR al <em>restaurar</em>, no para respaldar las dos regiones en un solo vault. <code>az backup vault create -l eastus</code> y otro <code>-l westus</code>. Enable: <code>az backup protection enable-for-vm</code>.", cat: "Vault" },
+  { q: "VM vs managed disk vs blobs: ¿qué vault creás? ¿Qué cmdlet?", a: "<strong>VM / Azure Files snapshot / SQL en VM / MARS / ASR</strong> → Recovery Services vault (<code>az backup vault create</code> / <code>New-AzRecoveryServicesVault</code>, type <code>Microsoft.RecoveryServices/vaults</code>).<br><strong>Managed Disk, Blob, PostgreSQL, AKS</strong> → Backup vault (<code>az dataprotection backup-vault create</code> / <code>New-AzDataProtectionBackupVault</code>, type <code>Microsoft.DataProtection/backupVaults</code>). El backup de la VM ya cubre sus discos: no uses Backup vault “porque tiene un disk”.", cat: "Vault" },
+  { q: "¿Cómo habilitás Backup Reports? ¿Backup Center alcanza?", a: "Diagnostic Settings del vault → <strong>Log Analytics</strong> (<code>az monitor diagnostic-settings create</code> al resource del RSV). Recién ahí el workbook de Backup Reports tiene datos (~1–2 días). <strong>Backup Center</strong> es la vista unificada del estado actual, no el histórico. El Activity Log no sirve para compliance de policies. Alertas de jobs van a Azure Monitor + action group.", cat: "Monitoreo" },
+  { q: "Backup health: 4 correctas. ¿Center across vaults? ¿Alertas de fail/warnings? ¿Reports = storage + compliance vía LAW? ¿Alerts on para todos los workloads? ¿Alerts no customizables?", a: "Las cuatro primeras <strong>sí</strong>. Las dos últimas <strong>no</strong>: built-in no cubre todos los workloads (y el mail no sale sin action group); las alertas <strong>sí se customizan</strong> (Azure Monitor: processing rules, métricas, KQL). Reports ≠ Center. CLI: <code>az monitor diagnostic-settings create</code> + <code>az monitor action-group create</code>.", cat: "Monitoreo" },
+  { q: "¿Qué requiere Cross Region Restore?", a: "Vault con redundancia <strong>GRS</strong> y la opción de <strong>Cross Region Restore habilitada explícitamente</strong>. Te deja restaurar en la región secundaria cuando vos querés, sin esperar que Microsoft declare un desastre. Con LRS o ZRS no está disponible.", cat: "Vault" },
+  { q: "VM1 respaldada en East US. Restore a otra región. ¿A cuál?", a: "La <strong>paired secondary region</strong> de East US (West US), no Central US ni cualquier US. Eso es CRR. Cmdlets: <code>az backup vault backup-properties set --cross-region-restore-flag true</code> / <code>Set-AzRecoveryServicesBackupProperty -EnableCrossRegionRestore</code>. ASR sí elige región; Backup CRR no.", cat: "Restore" },
+  { q: "¿Por qué falla el borrado de un Recovery Services vault y cómo se resuelve?", a: "Porque todavía tiene <strong>items protegidos o soft-deleted</strong>. El soft delete retiene los backups eliminados <strong>14 días adicionales por defecto</strong> (configurable hasta 180; always-on no se apaga). Hay que hacer <strong>undelete</strong>, eliminar la data de backup, desregistrar servidores y recién ahí borrar el vault.", cat: "Vault" },
+  { q: "VM respaldada. Borran la VM y todos los restore points. ¿Cuántos días queda recuperable?", a: "<strong>14 días</strong> (soft delete de Azure Backup, default, sin costo). No 90 (Activity Log), no 30 (LAW), no 365 (blob soft delete). Se puede subir a 180. Undelete: <code>az backup item undelete</code> / <code>Undo-AzRecoveryServicesBackupItemDeletion</code>.", cat: "Vault" },
+  { q: "¿Qué puede respaldar el agente MARS y qué NO?", a: "MARS respalda <strong>solo archivos, carpetas y system state</strong>, directo a Azure y sin servidor intermedio. <strong>No</strong> respalda una máquina completa: para VMs de Hyper-V/VMware o aplicaciones on-prem con retención local se usa <strong>MABS o System Center DPM</strong>. La <strong>passphrase</strong> del agente no se recupera: si se pierde, esos backups no se restauran.", cat: "Workloads" },
+  { q: "¿Qué es la retención GFS en una backup policy?", a: "Grandfather-Father-Son: puntos de retención <strong>daily / weekly / monthly / yearly</strong> configurables de forma independiente en <strong>una sola policy</strong>. \"Diarios 30 días, mensuales 12 meses, anuales 7 años\" es una policy, no tres.", cat: "Policies" },
+  { q: "Default backup policy de Azure VM. ¿Cuánto se retienen los diarios? ¿30, 14, 7 o 9.999?", a: "<strong>30 días</strong>. 14 = soft delete. 9.999 = tope configurable. 7 = carnada. Instant Restore del snapshot es 1–5 días, otro número.", cat: "Policies" },
+  { q: "Necesitás recuperar UN archivo de una VM respaldada, sin downtime. ¿Qué opción de restore usás?", a: "<strong>File recovery / item-level recovery</strong>: descargás un script que <strong>monta el recovery point como unidades</strong> en un servidor, copiás el archivo y después <strong>desmontás</strong>. Nada de Create new VM ni Replace existing.", cat: "Restore" },
+  { q: "Create a new VM desde Backup. ¿Otro RG? ¿Otra región? ¿Elegís VNet?", a: "<strong>Yes / No / Yes</strong>. RG destino sí. Región = la del vault (otra región es CRR). VNet/subnet se eligen en el wizard.", cat: "Restore" },
+  { q: "Orden de file recovery: un archivo de hace 6 días, lo más rápido y sin tocar el resto del sistema.", a: "1) <strong>Start file recovery</strong> y elegí el RP · 2) <strong>Descargá y ejecutá el script</strong> de PowerShell (Windows) · 3) <strong>Copiá</strong> el archivo del volumen montado · 4) <strong>Unmount</strong>. Cmdlets: <code>Get-AzRecoveryServicesBackupRPMountScript</code> y <code>Disable-AzRecoveryServicesBackupRPMountScript</code> (CLI: <code>az backup restore files mount-rp</code> / <code>unmount-rp</code>). Restore disks y Create new VM se descartan.", cat: "Restore" },
+  { q: "¿Qué rol RBAC de backup puede ejecutar backups y restores pero NO borrar backups ni cambiar policies?", a: "<strong>Backup Operator</strong>. El <strong>Backup Contributor</strong> sí puede eliminar datos de backup y modificar policies; el <strong>Backup Reader</strong> solo monitorea y no puede restaurar.", cat: "Seguridad" },
+  { q: "¿En qué región se crea el Recovery Services vault para Site Recovery?", a: "En la <strong>región TARGET</strong> (destino), no en la de origen — así sigue accesible si la región primaria se cae. Es lo opuesto a la regla de Azure Backup, donde el vault va en la <strong>misma región</strong> que el recurso protegido. La <strong>cache storage account</strong>, en cambio, va en la región origen.", cat: "ASR" },
+  { q: "App de 3 capas (9 VMs) con Public IP, ASR ya replica. Minimizar RTO: ¿cuatro acciones, en orden?", a: "1) <strong>Create a recovery plan</strong> (grupos DB → app → web) · 2) <strong>Paso en el plan para adjuntar la Public IP</strong> · 3) <strong>NSGs en la región TARGET</strong> · 4) <strong>Traffic Manager Priority</strong> (activo/pasivo). Se descartan ExpressRoute y NSGs del origen. Cmdlet típico del paso 2: <code>Set-AzNetworkInterface</code> con la PIP; del 4: <code>New-AzTrafficManagerProfile -TrafficRoutingMethod Priority</code>.", cat: "ASR" },
+  { q: "¿Qué hace un test failover y qué hay que hacer al terminar?", a: "Crea las VMs en la región target dentro de una <strong>VNet aislada</strong> para validar el DR. <strong>No interrumpe la replicación, no toca producción y no cambia el estado de protección</strong> — no es un failover real. Al terminar hay que ejecutar <strong>Cleanup test failover</strong>, que elimina las VMs de prueba.", cat: "Failover" },
+  { q: "Orden correcto para volver a la región original después de un failover.", a: "<strong>Commit</strong> (confirma el failover y descarta los otros recovery points) → <strong>Reprotect</strong> (invierte la dirección de la replicación) → <strong>Failback</strong> (failover de vuelta al origen). Sin reprotect no hay failback posible.", cat: "Failover" },
+  { q: "Diferencia entre planned failover y unplanned failover.", a: "<strong>Planned</strong>: apaga la máquina origen y <strong>sincroniza los cambios pendientes</strong> → <strong>cero pérdida de datos</strong>; se usa para mantenimiento o desastres anunciados.<br><strong>Unplanned</strong>: levanta en destino sin depender del origen (desastre real) → <strong>posible pérdida de datos</strong> según el recovery point elegido.", cat: "Failover" },
+  { q: "ASR Azure-to-Azure, mantenimiento, RPO 0. Elegí 3: ¿test failover, planned+shutdown, commit, unplanned, esperar origen offline?", a: "<strong>Test failover</strong> (VNet aislada) + <strong>apagar origen y planned failover</strong> + <strong>Commit</strong>. Unplanned puede perder datos. Esperar a que el origen muera es el desastre, no el maintenance window.", cat: "Failover" },
+  { q: "Backup Pre-Check de una Azure VM en Warning. ¿Agente desactualizado, no habla con Backup, BEK o storage no Premium?", a: "<strong>El VM agent no es la versión más reciente</strong> = Warning. No comunicarse con Azure Backup = <strong>Critical</strong>. VM no administrada con BEKs está soportada. El backup de VM no exige storage Premium.", cat: "Azure VM" },
+  { q: "Primer backup de VM1, default policy, tres cmdlets en orden. ¿Backup-…Item, AutoProtection, Set-…Property?", a: "<code>Register-AzResourceProvider</code> (<code>Microsoft.RecoveryServices</code>) → <code>New-AzRecoveryServicesVault</code> → <code>Enable-AzRecoveryServicesBackupProtection</code>. Backup-…Item = ad-hoc. AutoProtection = SQL/SAP. Set-…Property = LRS/GRS del vault.", cat: "Azure VM" },
+  { q: "Borrar Vault1 con VM1 y VM2 protegidas. Elegí 3: ¿stop backup, disable soft delete + borrar data, purge soft-deleted, borrar las VMs, borrar la policy?", a: "<strong>Stop backup + disable soft delete y borrar data + purge de soft-deleted</strong>. No hace falta borrar las VMs. La policy no es el bloqueo.", cat: "Vault" },
+  { q: "Crear RSV: 14 días vs borrado + mínimo costo. Elegí 2: ¿policy al create, vault multi-sub, solo VMs, LRS o GRS, enable soft delete?", a: "<strong>LRS o GRS</strong> (redundancia del vault) + <strong>soft delete</strong> (14 días, default on). Policy se asigna al proteger. Un vault no es “todas las subs”. “Solo VMs” contradice otras cargas.", cat: "Vault" },
+  { q: "ASR High Churn, RPO chico, SQL. ¿Elastic SAN, GPv2 Standard, Azure Files o Premium block blob?", a: "<strong>Premium block blob</strong> (cuenta de cache/log en la región origen). GPv2 es el cache default, no da el throughput. Files y Elastic SAN no son el log de ASR.", cat: "ASR" },
+  { q: "Mover Vault1 (Backup on) de Sub1 a Sub2, mín. downtime. ¿Export-AzResourceGroup, Move-AzResource, Set- o New-AzResource?", a: "<code>Move-AzResource</code>. Export- saca un template, no mueve recovery points. Set- no cambia de sub. New- crea vacío (data loss). CLI: <code>az resource move</code>.", cat: "Vault" },
+  { q: "Policy daily 10:30, Instant Restore 2 d, daily 60 d, weekly 24 w, monthly 24 months. ¿Max retention? ¿RPO?", a: "<strong>24 months</strong> (el más largo: monthly) y <strong>RPO = 1 day</strong> (frecuencia daily). 2 días es Instant Restore. 60 días / 24 semanas no son el máximo. RPO ≠ retención.", cat: "Policies" },
+  { q: "Backup Reports (forecast storage + audit restores). ¿LAW, blob archive, Event Hub o file storage?", a: "<strong>Send to Log Analytics</strong>. El workbook lee el LAW. Blob = archivo crudo. Event Hub = SIEM. File storage no es destino de diagnostic settings.", cat: "Monitoreo" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

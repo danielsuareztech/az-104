@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Índice</title>
+<style>
+  :root {
+    --bg: #0d0f18; --surface: #131620; --surface2: #1c2035; --border: #272c45;
+    --accent: #5b8dee; --accent2: #8b5cf6; --text: #dde1f0; --muted: #6b7194;
+    --core: #34d399; --mix: #fbbf24; --ctx: #6b7194;
+    --d1: #8b5cf6; --d2: #34d399; --d3: #fbbf24; --d4: #5b8dee; --d5: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.6; padding: 40px 20px 80px;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; }
+
+  header { margin-bottom: 28px; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+  }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 8px; }
+  .lede { color: var(--muted); font-size: 14.5px; max-width: 680px; }
+
+  /* aviso de prioridades */
+  .notice {
+    margin: 26px 0; background: rgba(251,191,36,.07); border: 1px solid rgba(251,191,36,.28);
+    border-radius: 10px; padding: 16px 20px; font-size: 13.5px;
+  }
+  .notice h2 { font-size: 14px; margin-bottom: 8px; color: var(--mix); }
+  .notice p { color: #cfd5ea; margin-bottom: 8px; }
+  .notice p:last-child { margin-bottom: 0; }
+  .notice a { color: var(--accent); }
+
+  /* leyenda de prioridad */
+  .prio-legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 8px; }
+  .prio-card {
+    flex: 1; min-width: 210px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 13px 16px; border-left: 3px solid var(--border);
+  }
+  .prio-name { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; margin-bottom: 5px; }
+  .prio-desc { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* barra de pesos */
+  .weights { margin: 30px 0 12px; }
+  .weight-bar { display: flex; height: 34px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+  .weight-seg { display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; font-weight: 700; color: #0d0f18; }
+  .weight-legend { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+  .weight-legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* dominios */
+  .domain { margin-top: 42px; }
+  .domain-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+  .domain-num { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 5px; letter-spacing: .06em; color: #0d0f18; }
+  .domain-title { font-size: 17px; font-weight: 700; }
+  .domain-pct { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-left: auto; }
+  .domain-rule { height: 1px; background: var(--border); margin: 12px 0 16px; }
+
+  /* tarjetas de tema */
+  .topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(285px, 1fr)); gap: 12px; }
+  .topic {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 15px 17px; border-left: 3px solid var(--border); transition: transform .15s;
+    display: flex; flex-direction: column;
+  }
+  .topic:hover { transform: translateY(-2px); }
+
+  a.topic { text-decoration: none; color: inherit; cursor: pointer; }
+  a.topic:hover { transform: translateY(-2px); border-color: #3a4268; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .jump {
+    display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 0;
+    position: sticky; top: 0; z-index: 5; padding: 10px 0 12px;
+    background: linear-gradient(var(--bg) 70%, transparent);
+  }
+  .jump a {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    text-decoration: none; padding: 5px 10px; border: 1px solid var(--border);
+    border-radius: 20px; background: var(--surface);
+  }
+  .jump a:hover { color: var(--text); border-color: var(--accent); }
+
+  .topic-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .topic-file { font-family: var(--mono); font-size: 10.5px; color: var(--muted); letter-spacing: .03em; }
+  .badge {
+    font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: .07em;
+    text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-left: auto; white-space: nowrap;
+  }
+  .b-core { background: rgba(52,211,153,.15); color: var(--core); }
+  .b-mix  { background: rgba(251,191,36,.15); color: var(--mix); }
+  .b-ctx  { background: rgba(107,113,148,.18); color: #99a0bd; }
+  .topic-name { font-size: 14px; font-weight: 700; margin-bottom: 7px; color: #fff; }
+  .topic-desc { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+  .topic-note {
+    font-size: 12px; color: var(--mix); background: rgba(251,191,36,.07);
+    border-radius: 6px; padding: 7px 10px; margin-top: 9px; line-height: 1.45;
+  }
+  .topic-note.ctx { color: #99a0bd; background: rgba(107,113,148,.1); }
+  .topic-meta {
+    margin-top: auto; padding-top: 9px; border-top: 1px solid var(--border);
+    font-family: var(--mono); font-size: 10.5px; color: var(--muted);
+    display: flex; gap: 12px;
+  }
+
+  /* orden sugerido */
+  .order { margin-top: 52px; }
+  .order h2 { font-size: 17px; margin-bottom: 6px; }
+  .order .sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .phase {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 15px 18px; margin-bottom: 10px; border-left: 3px solid var(--accent);
+  }
+  .phase-name { font-size: 13.5px; font-weight: 700; margin-bottom: 4px; }
+  .phase-list { font-family: var(--mono); font-size: 11.5px; color: var(--accent); margin-bottom: 5px; }
+  .phase-why { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* cómo usarlo */
+  .howto {
+    margin-top: 40px; background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0; padding: 20px 24px;
+  }
+  .howto h2 { font-size: 15px; margin-bottom: 12px; }
+  .howto ol { padding-left: 20px; }
+  .howto li { font-size: 13.5px; margin-bottom: 8px; color: var(--muted); }
+  .howto li strong { color: var(--text); }
+
+  .totals { margin-top: 28px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; flex: 1; min-width: 130px; }
+  .stat-num { font-family: var(--mono); font-size: 24px; font-weight: 700; color: var(--accent); }
+  .stat-lbl { font-size: 12px; color: var(--muted); }
+
+  footer { margin-top: 44px; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .08em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Microsoft Azure Administrator</div>
+  <h1>AZ-104 · Índice</h1>
+  <p class="lede">Home de todo el material. Los 17 módulos de repaso, la práctica con soluciones, los anexos y un extra de AKS operativo (fuera de examen), agrupados por dominio oficial. Tocá una tarjeta para abrirla.</p>
+</header>
+
+<nav class="jump">
+  <a href="#d1">1 · Identidad</a>
+  <a href="#d2">2 · Storage</a>
+  <a href="#d3">3 · Compute</a>
+  <a href="#d4">4 · Redes</a>
+  <a href="#d5">5 · Monitor</a>
+  <a href="#practica">Práctica</a>
+  <a href="#anexos">Anexos</a>
+  <a href="#extra">Complementarios</a>
+</nav>
+
+<div class="notice">
+  <h2>⚠️ Por qué hay prioridades marcadas</h2>
+  <p>Este set se contrastó bullet por bullet contra el <a href="https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104">skills outline oficial</a>. Varios servicios que históricamente se estudiaban para el AZ-104 <strong>ya no figuran entre los skills measured</strong>: AKS, Application Gateway, WAF, Front Door, Traffic Manager, VPN Gateway, ExpressRoute, Virtual WAN y Azure Firewall.</p>
+  <p>El material sigue acá porque una pregunta de escenario los puede nombrar como distractores y conviene reconocerlos — pero es tiempo de estudio con menor retorno. Priorizá lo marcado como <strong>núcleo</strong>.</p>
+</div>
+
+<div class="prio-legend">
+  <div class="prio-card" style="border-left-color:var(--core)">
+    <div class="prio-name" style="color:var(--core)">■ Núcleo</div>
+    <div class="prio-desc">Todo el módulo mapea a bullets del outline vigente. Acá se juega el examen.</div>
+  </div>
+  <div class="prio-card" style="border-left-color:var(--mix)">
+    <div class="prio-name" style="color:var(--mix)">■ Mixto</div>
+    <div class="prio-desc">Parte del módulo es núcleo y parte quedó fuera del outline. La nota amarilla te dice qué es cada cosa.</div>
+  </div>
+  <div class="prio-card" style="border-left-color:var(--ctx)">
+    <div class="prio-name" style="color:#99a0bd">■ Contexto</div>
+    <div class="prio-desc">Ningún bullet del outline lo pide. Lectura de reconocimiento, al final y sin memorizar.</div>
+  </div>
+</div>
+
+<div class="weights">
+  <div class="weight-bar">
+    <div class="weight-seg" style="background:var(--d1); flex:22.5">22%</div>
+    <div class="weight-seg" style="background:var(--d2); flex:17.5">17%</div>
+    <div class="weight-seg" style="background:var(--d3); flex:22.5">22%</div>
+    <div class="weight-seg" style="background:var(--d4); flex:17.5">17%</div>
+    <div class="weight-seg" style="background:var(--d5); flex:12.5">12%</div>
+  </div>
+  <div class="weight-legend">
+    <span><i class="swatch" style="background:var(--d1)"></i>Identidad y gobernanza · 20–25%</span>
+    <span><i class="swatch" style="background:var(--d2)"></i>Almacenamiento · 15–20%</span>
+    <span><i class="swatch" style="background:var(--d3)"></i>Compute · 20–25%</span>
+    <span><i class="swatch" style="background:var(--d4)"></i>Redes · 15–20%</span>
+    <span><i class="swatch" style="background:var(--d5)"></i>Monitoreo y backup · 10–15%</span>
+  </div>
+</div>
+
+<div class="totals">
+  <div class="stat"><div class="stat-num">17</div><div class="stat-lbl">módulos de repaso</div></div>
+  <div class="stat"><div class="stat-num">427</div><div class="stat-lbl">flashcards</div></div>
+  <div class="stat"><div class="stat-num">324</div><div class="stat-lbl">tablas comparativas</div></div>
+  <div class="stat"><div class="stat-num">305</div><div class="stat-lbl">trampas de examen</div></div>
+</div>
+
+<!-- DOMINIO 1 -->
+<div class="domain" id="d1">
+  <div class="domain-head">
+    <span class="domain-num" style="background:var(--d1)">DOMINIO 1</span>
+    <span class="domain-title">Identidades y gobernanza</span>
+    <span class="domain-pct">20–25%</span>
+  </div>
+  <div class="domain-rule"></div>
+  <div class="topics">
+    <a class="topic" href="01-entra-id.html" style="border-left-color:var(--core)">
+      <div class="topic-top"><span class="topic-file">01-entra-id.html</span><span class="badge b-core">Núcleo</span></div>
+      <div class="topic-name">Entra ID · Identidades y grupos</div>
+      <div class="topic-desc">Tenant vs subscription, usuarios member/guest, grupos dinámicos, licenciamiento por grupo, B2B, AU, dispositivos, SSPR (writeback = P1 + Entra Connect, no MFA; híbrido All Users + tickets = writeback off, no el grupo ni la licencia; Business Standard no alcanza) y Entitlement Management.</div>
+      <div class="topic-meta"><span>10 secciones</span><span>23 flashcards</span></div>
+    </a>
+    <a class="topic" href="02-rbac.html" style="border-left-color:var(--core)">
+      <div class="topic-top"><span class="topic-file">02-rbac.html</span><span class="badge b-core">Núcleo</span></div>
+      <div class="topic-name">Azure RBAC</div>
+      <div class="topic-desc">Los tres componentes de una asignación, jerarquía de scopes, roles built-in (Contributor RG1 + Reader RG2; Owner asigna roles; scope subscription se come RG3; VM Contributor = VM no VNet/storage; ObjectType ServicePrincipal ≠ user), control plane vs data plane, roles custom, deny assignments, <code>az role assignment list --include-groups</code> y RBAC vs roles de Entra.</div>
+      <div class="topic-meta"><span>9 secciones</span><span>18 flashcards</span></div>
+    </a>
+    <a class="topic" href="03-governance-costos.html" style="border-left-color:var(--core)">
+      <div class="topic-top"><span class="topic-file">03-governance-costos.html</span><span class="badge b-core">Núcleo</span></div>
+      <div class="topic-name">Governance y costos</div>
+      <div class="topic-desc">Management groups (hierarchy protection = <code>managementGroups/write</code>; mover sub = Remove- + New-AzManagementGroupSubscription), resource groups y move (Vault1 cross-sub = <code>Move-AzResource</code>, no Export-/New-; managed SSL se borra; Standard LB no cruza sub; peering se saca; VNet RG→RG sí; cross-sub: RBAC del recurso orphaned), locks (CanNotDelete en el RG, no en un recurso ni ReadOnly ni en la sub si el enunciado lo prohíbe), tags (vacío = <code>New-AzTag</code>; existentes = <code>Update-AzTag -Operation Merge</code>, no Replace), Azure Policy (<code>mode: Indexed</code> + <code>tags['Environment']</code> <code>notIn</code> + <code>deny</code>; VMs solo en regiones = Allowed locations / Deny; CLI en sub nueva = registrar <code>Microsoft.PolicyInsights</code>, no el CLI ni GA), Cost Management.</div>
+      <div class="topic-meta"><span>8 secciones</span><span>37 flashcards</span></div>
+    </a>
+  </div>
+</div>
+
+<!-- DOMINIO 2 -->
+<div class="domain" id="d2">
+  <div class="domain-head">
+    <span class="domain-num" style="background:var(--d2)">DOMINIO 2</span>
+    <span class="domain-title">Almacenamiento</span>
+    <span class="domain-pct">15–20%</span>
+  </div>
+  <div class="domain-rule"></div>
+  <div class="topics">
+    <a class="topic" href="04-storage-accounts.html" style="border-left-color:var(--core)">
+      <div class="topic-top"><span class="topic-file">04-storage-accounts.html</span><span class="badge b-core">Núcleo</span></div>
+      <div class="topic-name">Storage Accounts</div>
+      <div class="topic-desc">Tipos de cuenta, Standard vs Premium (FileStorage se crea, no se convierte desde GPv1/GPv2; solo una región = ZRS, no GRS/GZRS), CLI create = <code>StorageV2</code> + <code>Standard_GRS</code> (tiers+lifecycle+geo, no RA-GRS/GZRS), access tiers (30/90/180; sin Cold en el drop-down + inmediato = Cool, no Archive), redundancia (Files NFSv4.1 LRS→ZRS = migración manual), failover y endpoints.</div>
+      <div class="topic-meta"><span>9 secciones</span><span>20 flashcards</span></div>
+    </a>
+    <a class="topic" href="05-storage-seguridad.html" style="border-left-color:var(--core)">
+      <div class="topic-top"><span class="topic-file">05-storage-seguridad.html</span><span class="badge b-core">Núcleo</span></div>
+      <div class="topic-name">Storage · Seguridad y acceso</div>
+      <div class="topic-desc">Los tres tipos de SAS (ad hoc = Explorer → container → upload → SAS en el token, no stored policy ni RG; start time ≠ now por clock skew; Yes/No/Yes/Yes), stored access policies, access keys (CLI: <code>[1].value</code> → renew primary → <code>[0].value</code> → renew secondary), CMK, RBAC de plano de datos, Storage Explorer (List/Get SAs = Reader en la sub), firewall (endpoint <code>Microsoft.Storage</code> + <code>Add-AzStorageAccountNetworkRule</code> + <code>-Bypass AzureServices</code> para vault/Event Hub), endpoints y cifrado.</div>
+      <div class="topic-meta"><span>8 secciones</span><span>23 flashcards</span></div>
+    </a>
+    <a class="topic" href="06-blob-files-datos.html" style="border-left-color:var(--core)">
+      <div class="topic-top"><span class="topic-file">06-blob-files-datos.html</span><span class="badge b-core">Núcleo</span></div>
+      <div class="topic-name">Blob, Files y movimiento de datos</div>
+      <div class="topic-desc">Soft delete vs versioning vs snapshots, lifecycle (<code>Add-…Action</code> → Filter → Rule → <code>Set-…Policy</code>), upload Cool = <code>Set-AzStorageBlobContent -StandardBlobTier</code>, object replication, Azure Files (FSLogix temp = faltan permisos SMB/NTFS; híbrido + internet + sin DC = Entra Kerberos, no AD DS ni Entra DS), File Sync, AzCopy (Blob = Entra + SAS; Files = SAS only; <code>sync --delete-destination</code> = espejo) vs Storage Explorer vs Data Box.</div>
+      <div class="topic-meta"><span>9 secciones</span><span>30 flashcards</span></div>
+    </a>
+  </div>
+</div>
+
+<!-- DOMINIO 3 -->
+<div class="domain" id="d3">
+  <div class="domain-head">
+    <span class="domain-num" style="background:var(--d3)">DOMINIO 3</span>
+    <span class="domain-title">Recursos de compute</span>
+    <span class="domain-pct">20–25%</span>
+  </div>
+  <div class="domain-rule"></div>
+  <div class="topics">
+    <a class="topic" href="07-virtualmachines.html" style="border-left-color:var(--core)">
+      <div class="topic-top"><span class="topic-file">07-virtualmachines.html</span><span class="badge b-core">Núcleo</span></div>
+      <div class="topic-name">Virtual Machines</div>
+      <div class="topic-desc">Familias de tamaños, resize (D4s→D2s falla por tope de data disks, no por vCPU/Premium/PIP), tipos de disco (SLA 99,9% instancia única = Premium SSD OS+data + SKU con Premium; A/D sin s no), adjuntar/mover data disk (hot-detach; Update-AzVM en origen y destino), host caching, ADE (CLI create --enabled-for-disk-encryption; VolumeType Data; no hace falta Stop; SequenceVersion = GUID), boot diagnostics (misma región + Standard; Premium no), Compute Gallery vs ARM, extensions, mover VMs y estados de facturación.</div>
+      <div class="topic-meta"><span>10 secciones</span><span>26 flashcards</span></div>
+    </a>
+    <a class="topic" href="08-alta-disponibilidad-vmss.html" style="border-left-color:var(--core)">
+      <div class="topic-top"><span class="topic-file">08-alta-disponibilidad-vmss.html</span><span class="badge b-core">Núcleo</span></div>
+      <div class="topic-name">Alta disponibilidad y escalado</div>
+      <div class="topic-desc">Fault y update domains (round-robin: FDs de más quedan vacíos; el AS vive en un solo DC), Availability Zones, SLA, region pair (Brazil South ↔ South Central US; ≥ 300 millas no 300 km), VMSS Uniform vs Flexible, autoscale (schedule de count fijo pisa métricas: 4 / 6 / 2), upgrade policy (Rolling ≠ Set-AzVmssVM para disk profile). AS de una VM existente = redeploy desde recovery point (Assign/zona/región no).</div>
+      <div class="topic-meta"><span>9 secciones</span><span>25 flashcards</span></div>
+    </a>
+    <a class="topic" href="09-containers.html" style="border-left-color:var(--mix)">
+      <div class="topic-top"><span class="topic-file">09-containers.html</span><span class="badge b-mix">Mixto</span></div>
+      <div class="topic-name">Contenedores</div>
+      <div class="topic-desc">Escalera App Service → ACI → Container Apps → AKS, ACR (SKUs, auth, pull no-cuarentenada = AcrPull + AcrPush + Owner; AcrPush incluye pull; Signer/Delete no), ACI, Container Apps (revisions, KEDA Service Bus Yes/Yes/No: poll 30 s, umbral messageCount, sin TriggerAuthentication) y escalado. Portal + CLI.</div>
+      <div class="topic-note">Núcleo: ACR, ACI, Container Apps y escalado. <strong>Fuera del outline: las secciones de AKS</strong> (arquitectura, escalado, red e identidad). Operar el cluster con kubectl está en <strong>23 · complementario</strong>, no en el examen.</div>
+      <div class="topic-meta"><span>12 secciones</span><span>25 flashcards</span></div>
+    </a>
+    <a class="topic" href="10-app-service.html" style="border-left-color:var(--core)">
+      <div class="topic-top"><span class="topic-file">10-app-service.html</span><span class="badge b-core">Núcleo</span></div>
+      <div class="topic-name">App Service</div>
+      <div class="topic-desc">Tiers del plan (10 instancias + dedicated = Standard; autoscale + 20 = Premium, no Standard; S2 con 3 instancias + 2ª app = las mismas 3; ASP.NET 4.8 = Windows only, .NET Core = Win+Linux, misma región), autoscale (cooldown + segundo scale-in a T=35 = 3, no 4), slots (RG → plan → web app → slot; Publish- no es preparar el ambiente), WebJobs (continuous en todas las instancias; Basic ya alcanza, no Standard; linked to web project), DNS (<code>www</code> = CNAME a <code>*.azurewebsites.net</code> o A a la inbound IP; NS/PTR no), VNet Integration, access restrictions, TLS, logs, backup (35 GB de media = Blob + operational backup; snapshot/on-prem no), Deployment Center (CodeCommit no es nativo) y contenedores.</div>
+      <div class="topic-meta"><span>9 secciones</span><span>32 flashcards</span></div>
+    </a>
+    <a class="topic" href="11-arm-bicep.html" style="border-left-color:var(--core)">
+      <div class="topic-top"><span class="topic-file">11-arm-bicep.html</span><span class="badge b-core">Núcleo</span></div>
+      <div class="topic-name">ARM Templates y Bicep</div>
+      <div class="topic-desc">Anatomía de una plantilla, Incremental vs Complete (<code>-Mode</code> en el cmdlet, no en el JSON), 15 VMs = JSON+PS (no XML ni copy×14), scopes, Bicep, what-if, Export-AzResourceGroup (no Save- ni New-…Deployment), reusar export = <code>[resourceGroup().location]</code> en el <em>template</em> (no en el parameters file; crear el RG no pisa un eastus hardcodeado), password no en claro = Key Vault + access policy primero, y template specs.</div>
+      <div class="topic-meta"><span>8 secciones</span><span>25 flashcards</span></div>
+    </a>
+  </div>
+</div>
+
+<!-- DOMINIO 4 -->
+<div class="domain" id="d4">
+  <div class="domain-head">
+    <span class="domain-num" style="background:var(--d4)">DOMINIO 4</span>
+    <span class="domain-title">Redes virtuales</span>
+    <span class="domain-pct">15–20%</span>
+  </div>
+  <div class="domain-rule"></div>
+  <div class="topics">
+    <a class="topic" href="12-vnets-dns.html" style="border-left-color:var(--core)">
+      <div class="topic-top"><span class="topic-file">12-vnets-dns.html</span><span class="badge b-core">Núcleo</span></div>
+      <div class="topic-name">VNets, IPs y DNS</div>
+      <div class="topic-desc">Las 5 IPs reservadas, Public IP (HTTP 80 + dash en NIC Public IP = primero asociar PIP a ipconfig1, no JIT/NSG/accelerated), address space (172.16→192.168 sin VMs = borrar y recrear; add no saca el rango viejo), peering (no transitivo; Use remote en la spoke + peering para usar el ER del hub, no gateway extra; si el enunciado lista un solo lado no asumas el recíproco: vnet1→vnet2 only, vnet2→vnet3 only), endpoints (PLS = <code>privateLinkServiceNetworkPolicies</code> Disabled: Yes/Yes/No, el No es ACL), DNS (A alias sigue el ciclo de vida de otro A; CNAME/A común no).</div>
+      <div class="topic-meta"><span>8 secciones</span><span>32 flashcards</span></div>
+    </a>
+    <a class="topic" href="13-seguridad-de-red.html" style="border-left-color:var(--mix)">
+      <div class="topic-top"><span class="topic-file">13-seguridad-de-red.html</span><span class="badge b-mix">Mixto</span></div>
+      <div class="topic-name">Seguridad de red</div>
+      <div class="topic-desc">Prioridades y reglas por defecto de NSG (restricción de una VM = NIC, no subnet; tres CIDR exactos = una regla con lista separada por comas, no supernet /22 ni VirtualNetwork ni tres reglas), ASG, Bastion (policy sin 22/3389 = Bastion, no S2S/P2S ni NSG Allow RDP; orden = <code>AzureBastionSubnet</code> /26 → crear Bastion → portal, no PIP en la VM ni BastionSubnet), UDR (NVA = route table + bind a subnets de workload, no NIC/ILB/NSG) y forced tunneling.</div>
+      <div class="topic-note">Núcleo: NSG, ASG, effective rules, Bastion y rutas. <strong>Fuera del outline: Azure Firewall, JIT y DDoS Protection.</strong></div>
+      <div class="topic-meta"><span>9 secciones</span><span>24 flashcards</span></div>
+    </a>
+    <a class="topic" href="14-balanceo-de-carga.html" style="border-left-color:var(--mix)">
+      <div class="topic-top"><span class="topic-file">14-balanceo-de-carga.html</span><span class="badge b-mix">Mixto</span></div>
+      <div class="topic-name">Balanceo de carga</div>
+      <div class="topic-desc">La matriz L4/L7, Load Balancer (SKU IP = SKU LB; Standard deny inbound; no elegís la IP; IMDS 404 = Basic o VM fuera del pool; 4 VMs = PIP en el LB + NAT, no PIP por NIC/JIT/VPN; outbound No/Yes/No: ILPIP gana, multi-frontend SNAT sí, UDP sin rule no; hairpin ILB = proxy/Nginx o App Gateway, no NSG ni pools separados), probes, Front Door y capa 7.</div>
+      <div class="topic-note">Núcleo: <strong>solo Load Balancer</strong> (interno/público y troubleshooting). Fuera del outline: Application Gateway, WAF, Front Door y Traffic Manager.</div>
+      <div class="topic-meta"><span>8 secciones</span><span>21 flashcards</span></div>
+    </a>
+    <a class="topic" href="15-conectividad-hibrida.html" style="border-left-color:var(--ctx)">
+      <div class="topic-top"><span class="topic-file">15-conectividad-hibrida.html</span><span class="badge b-ctx">Contexto</span></div>
+      <div class="topic-name">Conectividad híbrida</div>
+      <div class="topic-desc">GatewaySubnet, route-based vs policy-based, Local Network Gateway, Point-to-Site, BGP, peerings de ExpressRoute y Virtual WAN.</div>
+      <div class="topic-note ctx">Ningún bullet del outline vigente cubre VPN Gateway, ExpressRoute ni Virtual WAN. Lectura de reconocimiento al final, sin memorizar SKUs.</div>
+      <div class="topic-meta"><span>8 secciones</span><span>13 flashcards</span></div>
+    </a>
+  </div>
+</div>
+
+<!-- DOMINIO 5 -->
+<div class="domain" id="d5">
+  <div class="domain-head">
+    <span class="domain-num" style="background:var(--d5)">DOMINIO 5</span>
+    <span class="domain-title">Monitoreo y mantenimiento</span>
+    <span class="domain-pct">10–15%</span>
+  </div>
+  <div class="domain-rule"></div>
+  <div class="topics">
+    <a class="topic" href="16-azure-monitor.html" style="border-left-color:var(--core)">
+      <div class="topic-top"><span class="topic-file">16-azure-monitor.html</span><span class="badge b-core">Núcleo</span></div>
+      <div class="topic-name">Azure Monitor</div>
+      <div class="topic-desc">Metrics vs Logs vs Insights (Storage Insights: sort Transactions = unused; Overview <strong>no</strong> es 500, es 200; coloring de Availability sí), Diagnostic Settings (query universal = <strong>LAW primero</strong>, no NW/MMA/diag settings; IoT Hub telemetry + alertas = resource logs del hub, no App Insights/Resource Health/Activity Log), AMA y DCR, guest OS = <code>Set-AzVMDiagnosticsExtension -DiagnosticsConfigurationPath</code> (no BootDiagnostics), LAW, KQL, pin a dashboard = 30 días (no 4×7 ni solo line/column), alertas (<code>az monitor metrics alert create --condition --window-size --action</code>), <code>metrics:getBatch</code> (un POST evita throttling; host regional = no varias regiones; <code>metricNamespace</code> = mismo tipo), Network Watcher (HTTPS peering = Connection Troubleshoot TCP primero, no agente en origen/NPM/ping; packet capture 2 h = NW, no Monitor/PerfMon/NPM; Topology, IP Flow, probes, Flow logs).</div>
+      <div class="topic-meta"><span>9 secciones</span><span>37 flashcards</span></div>
+    </a>
+    <a class="topic" href="17-backup-site-recovery.html" style="border-left-color:var(--core)">
+      <div class="topic-top"><span class="topic-file">17-backup-site-recovery.html</span><span class="badge b-core">Núcleo</span></div>
+      <div class="topic-name">Backup y Site Recovery</div>
+      <div class="topic-desc">RPO vs RTO, RSV vs Backup vault, <strong>mínimo de vaults = regiones (no OS)</strong>, redundancia LRS/GRS al crear + soft delete 14 días (no “solo VMs”, no un vault cross-sub), mover vault = <code>Move-AzResource</code> (no Export-/New-), borrar vault = stop backup + disable soft delete + purge (no borrar las VMs ni la policy), CRR paired region, default daily = <strong>30 días</strong>, policy exhibit = max retention el más largo (monthly 24 months) y RPO = frecuencia (1 day, no Instant Restore), primer backup = Register → New vault → Enable-…Protection (no Backup-Item ni AutoProtection), MARS vs MABS, GFS, restore/ILR, Pre-Check Warning = VM agent viejo, reportes (diag del vault → <strong>LAW</strong>, no blob/Event Hub/files), ASR (High Churn cache = Premium block blob, no GPv2/Files/Elastic SAN; planned failover = test + shutdown + commit; unplanned = RPO).</div>
+      <div class="topic-meta"><span>8 secciones</span><span>32 flashcards</span></div>
+    </a>
+  </div>
+</div>
+
+<!-- PRÁCTICA -->
+<div class="domain" id="practica">
+  <div class="domain-head">
+    <span class="domain-num" style="background:var(--accent)">PRÁCTICA</span>
+    <span class="domain-title">Antes del examen</span>
+    <span class="domain-pct">Lab + escenarios</span>
+  </div>
+  <div class="domain-rule"></div>
+  <div class="topics">
+    <a class="topic" href="18-ejercicios.html" style="border-left-color:var(--accent)">
+      <div class="topic-top"><span class="topic-file">18-ejercicios.html</span><span class="badge b-core">Hacé primero</span></div>
+      <div class="topic-name">Escenarios de examen</div>
+      <div class="topic-desc">260 escenarios, uno por trampa del material. Leés el enunciado, resolvés vos, y recién después abrís la solución. Progreso guardado en el navegador.</div>
+      <div class="topic-meta"><span>260 ejercicios</span><span>Solución colapsable</span></div>
+    </a>
+    <a class="topic" href="19-labs-portal.html" style="border-left-color:var(--mix)">
+      <div class="topic-top"><span class="topic-file">19-labs-portal.html</span><span class="badge b-mix">Portal</span></div>
+      <div class="topic-name">Labs en la suscripción</div>
+      <div class="topic-desc">134 tareas para hacer en el portal, ordenadas por frecuencia de examen. Checklist de “lo hice”, sin solución teórica — es para clicar Azure de verdad.</div>
+      <div class="topic-meta"><span>134 labs</span><span>Por frecuencia</span></div>
+    </a>
+  </div>
+</div>
+
+<!-- ANEXOS -->
+<div class="domain" id="anexos">
+  <div class="domain-head">
+    <span class="domain-num" style="background:var(--ctx)">ANEXOS</span>
+    <span class="domain-title">Mapas, tablas y plan</span>
+    <span class="domain-pct">Consulta</span>
+  </div>
+  <div class="domain-rule"></div>
+  <div class="topics">
+    <a class="topic" href="20-monitor-mapa.html" style="border-left-color:var(--d5)">
+      <div class="topic-top"><span class="topic-file">20-monitor-mapa.html</span><span class="badge b-core">Visual</span></div>
+      <div class="topic-name">Mapa de señales de Monitor</div>
+      <div class="topic-desc">Metrics vs Logs vs Insights en una sola vista. Complemento de 16.</div>
+      <div class="topic-meta"><span>Anexo de 16</span></div>
+    </a>
+    <a class="topic" href="21-comparacion-lb.html" style="border-left-color:var(--d4)">
+      <div class="topic-top"><span class="topic-file">21-comparacion-lb.html</span><span class="badge b-mix">Visual</span></div>
+      <div class="topic-name">LB vs App Gateway vs WAF vs Front Door vs TM</div>
+      <div class="topic-desc">Tabla de decisión L4/L7 y regional/global. Complemento de 14.</div>
+      <div class="topic-meta"><span>Anexo de 14</span></div>
+    </a>
+    <a class="topic" href="22-plan-18-dias.html" style="border-left-color:var(--accent)">
+      <div class="topic-top"><span class="topic-file">22-plan-18-dias.html</span><span class="badge b-core">Plan</span></div>
+      <div class="topic-name">Plan de 18 días</div>
+      <div class="topic-desc">Calendario de estudio con fecha de examen. Encaja con el orden de las fases de abajo.</div>
+      <div class="topic-meta"><span>Agenda</span></div>
+    </a>
+    <a class="topic" href="24-geografia-visual.html" style="border-left-color:var(--d3)">
+      <div class="topic-top"><span class="topic-file">24-geografia-visual.html</span><span class="badge b-ctx">Opcional</span></div>
+      <div class="topic-name">Geografía · AZ vs Availability Set</div>
+      <div class="topic-desc">Diagrama Geography → Region → AZ vs AS en un solo DC. Complemento de 08.</div>
+      <div class="topic-note ctx">Anexo visual. No agrega bullets del outline. El region pair y FD/UD se estudian en 08 (300 millas, Brazil South ↔ South Central US).</div>
+      <div class="topic-meta"><span>Anexo de 08</span></div>
+    </a>
+    <a class="topic" href="25-policy-visual.html" style="border-left-color:var(--d1)">
+      <div class="topic-top"><span class="topic-file">25-policy-visual.html</span><span class="badge b-ctx">Opcional</span></div>
+      <div class="topic-name">Azure Policy · mapa visual</div>
+      <div class="topic-desc">Flujo Definition → Initiative → Assignment → Compliance → Remediation. Complemento de 03.</div>
+      <div class="topic-note ctx">Anexo visual. Effects, Indexed, 30 min y remediation están en 03.</div>
+      <div class="topic-meta"><span>Anexo de 03</span></div>
+    </a>
+    <a class="topic" href="26-storage-redundancy-visual.html" style="border-left-color:var(--d2)">
+      <div class="topic-top"><span class="topic-file">26-storage-redundancy-visual.html</span><span class="badge b-ctx">Opcional</span></div>
+      <div class="topic-name">Storage · redundancia visual</div>
+      <div class="topic-desc">LRS → RA-GZRS con copias y regiones. Complemento de 04.</div>
+      <div class="topic-note ctx">Anexo visual. Failover, Last Sync Time y conversiones LRS↔ZRS están en 04.</div>
+      <div class="topic-meta"><span>Anexo de 04</span></div>
+    </a>
+  </div>
+</div>
+
+<!-- COMPLEMENTARIOS -->
+<div class="domain" id="extra">
+  <div class="domain-head">
+    <span class="domain-num" style="background:var(--mix)">EXTRA</span>
+    <span class="domain-title">Módulos complementarios</span>
+    <span class="domain-pct">No entra en el examen</span>
+  </div>
+  <div class="domain-rule"></div>
+  <div class="topics">
+    <a class="topic" href="23-aks-fundamentos.html" style="border-left-color:var(--mix)">
+      <div class="topic-top"><span class="topic-file">23-aks-fundamentos.html</span><span class="badge b-ctx">Fuera de scope</span></div>
+      <div class="topic-name">AKS · fundamentos operativos</div>
+      <div class="topic-desc">Operar un cluster con comprensión real: kubeconfig, Pod → ReplicaSet → Deployment → Service, ConfigMap/Secret, rollouts, Endpoints, Ingress vs LoadBalancer, y el mapa a Kubernetes sobre VMs. Incluye lab en la suscripción sponsored.</div>
+      <div class="topic-note ctx">Complementario. No está en el skills measured. El AZ-104 de contenedores se rinde con el módulo 09 (ACR, ACI, Container Apps). Este archivo es para no administrar AKS a ciegas.</div>
+      <div class="topic-meta"><span>9 secciones</span><span>10 flashcards</span></div>
+    </a>
+  </div>
+</div>
+
+<!-- ORDEN SUGERIDO -->
+<div class="order">
+  <h2>Orden sugerido de estudio</h2>
+  <p class="sub">Ordenado por retorno de examen, no por número de archivo.</p>
+
+  <div class="phase">
+    <div class="phase-name">Fase 1 — Los dominios de mayor peso</div>
+    <div class="phase-list">01 · 02 · 03 · 07 · 08 · 10 · 11</div>
+    <div class="phase-why">Identidad/gobernanza y compute suman entre 40% y 50% del examen y son todo núcleo. Si te queda poco tiempo, esto es lo único que no podés saltear.</div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-name">Fase 2 — Storage completo</div>
+    <div class="phase-list">04 · 05 · 06</div>
+    <div class="phase-why">15–20% del examen y el dominio con la cobertura más literal del outline: cada bullet tiene su sección. Es el bloque con mejor relación esfuerzo/puntaje.</div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-name">Fase 3 — Redes y monitoreo, salteando lo que está fuera de scope</div>
+    <div class="phase-list">12 · 13 (sin Firewall/JIT/DDoS) · 14 (solo Load Balancer) · 16 · 17</div>
+    <div class="phase-why">Acá es donde las prioridades te ahorran tiempo real: en 13 y 14 leés menos de la mitad del archivo. Sumale la sección de Container Apps y escalado de 09.</div>
+  </div>
+
+  <div class="phase" style="border-left-color:var(--accent)">
+    <div class="phase-name">Fase 5 — Llevarlo a la práctica</div>
+    <div class="phase-list">18 (escenarios, solución colapsable) · 19 (labs en el portal)</div>
+    <div class="phase-why">18 cubre las trampas del material sin gastar la suscripción. 19 es para clicar Azure de verdad. No mezcles: primero el escenario, después el lab del mismo tema.</div>
+  </div>
+</div>
+
+<div class="howto">
+  <h2>Cómo usar cada módulo</h2>
+  <ol>
+    <li><strong>Primera pasada — leer.</strong> Recorré el módulo entero con la barra lateral. No pares en las flashcards todavía; el objetivo es armar el mapa mental y las distinciones.</li>
+    <li><strong>Segunda pasada — cazar trampas.</strong> Volvé y leé solo los callouts amarillos de «Trampa del examen». Ahí está concentrado casi todo lo que te hace fallar una pregunta que creías saber.</li>
+    <li><strong>Tercera pasada — flashcards.</strong> Corré la ronda completa. Todo lo que caiga en «a repasar» al final volvé a buscarlo en la sección correspondiente, no lo memorices suelto.</li>
+    <li><strong>Cuarta pasada — escenarios.</strong> En <a href="18-ejercicios.html" style="color:var(--accent)">18 · Ejercicios</a> resolvés cada caso sin mirar la solución. Recién después la abrís. Lo que falles, volvé al módulo.</li>
+    <li><strong>En el portal.</strong> <a href="19-labs-portal.html" style="color:var(--accent)">19 · Labs</a> es para clicar Azure de verdad. No reemplaza a los escenarios.</li>
+    <li><strong>Antes del examen.</strong> Solo las tablas comparativas, las flashcards que fallaste y los escenarios de 18 que marcaste mal. Nada de contenido nuevo.</li>
+  </ol>
+</div>
+
+<footer>AZ-104 · Microsoft Azure Administrator Associate · 00 índice · 01–17 módulos · 18 ejercicios · 19 labs · 20–22 y 24–26 anexos · 23 extra</footer>
+
+</div>
+</body>
+</html>

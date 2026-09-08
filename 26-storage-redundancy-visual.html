@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azure Storage Redundancy</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Courier New', monospace;
+    background: #0d1117;
+    color: #e6edf3;
+    min-height: 100vh;
+    padding: 32px 20px;
+  }
+
+  h1 {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7d8590;
+    margin-bottom: 28px;
+    text-align: center;
+  }
+
+  h1 span {
+    color: #0078d4;
+  }
+
+  /* AXIS LABELS */
+  .axis-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 8px;
+    align-items: center;
+    padding-left: 4px;
+  }
+  .axis-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #7d8590;
+    width: 90px;
+    flex-shrink: 0;
+  }
+  .axis-arrow {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, #21262d, #0078d4 60%, transparent);
+    position: relative;
+  }
+  .axis-arrow::after {
+    content: '→ mayor protección';
+    position: absolute;
+    right: 0;
+    top: -8px;
+    font-size: 0.6rem;
+    color: #0078d4;
+    letter-spacing: 0.05em;
+  }
+
+  /* GRID */
+  .grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .card {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+    cursor: default;
+  }
+  .card:hover {
+    border-color: #388bfd44;
+  }
+
+  .card-badge {
+    width: 90px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 14px 8px;
+  }
+
+  .card-body {
+    flex: 1;
+    padding: 12px 16px;
+    background: #161b22;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .card-desc {
+    font-size: 0.78rem;
+    color: #8b949e;
+    line-height: 1.5;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 0.62rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .tag-zone   { background: #1f3a5f; color: #79c0ff; border: 1px solid #1f6feb44; }
+  .tag-geo    { background: #1a2d1a; color: #3fb950; border: 1px solid #238636aa; }
+  .tag-ra     { background: #2d1f3a; color: #d2a8ff; border: 1px solid #8957e544; }
+  .tag-copies { background: #161b22; color: #7d8590; border: 1px solid #30363d; }
+
+  /* Visual replication diagram inside card */
+  .viz {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+
+  .dc {
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 0.6rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .dc-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dc-primary   { background: #0d2136; color: #58a6ff; border: 1px solid #1f6feb55; }
+  .dc-zone      { background: #0d2136; color: #58a6ff; border: 1px dashed #1f6feb55; }
+  .dc-secondary { background: #1a2d1a; color: #3fb950; border: 1px solid #238636aa; }
+  .dc-ra        { background: #2d1f3a; color: #d2a8ff; border: 1px dashed #8957e555; }
+
+  .dc-dot-primary   { background: #58a6ff; }
+  .dc-dot-zone      { background: #388bfd; }
+  .dc-dot-secondary { background: #3fb950; }
+  .dc-dot-ra        { background: #d2a8ff; }
+
+  .arrow-geo { font-size: 0.8rem; color: #3fb950; }
+  .arrow-ra  { font-size: 0.8rem; color: #d2a8ff; }
+  .arrow-std { font-size: 0.8rem; color: #30363d; }
+
+  /* Color per option */
+  .lrs  { background: #1c2333; color: #58a6ff; }
+  .zrs  { background: #162032; color: #79c0ff; }
+  .grs  { background: #142414; color: #56d364; }
+  .ragrs { background: #1f1333; color: #d2a8ff; }
+  .gzrs { background: #162014; color: #7ee787; }
+  .ragzrs { background: #1f1533; color: #e0b0ff; }
+
+  /* Summary table */
+  .summary {
+    margin-top: 28px;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .summary-title {
+    background: #161b22;
+    padding: 10px 16px;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7d8590;
+    border-bottom: 1px solid #21262d;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.72rem;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  th {
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #7d8590;
+    background: #0d1117;
+    border-bottom: 1px solid #21262d;
+    font-weight: 500;
+  }
+
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #21262d;
+    color: #c9d1d9;
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #161b22; }
+
+  .opt { font-weight: 700; font-family: 'Courier New', monospace; }
+  .opt-lrs   { color: #58a6ff; }
+  .opt-zrs   { color: #79c0ff; }
+  .opt-grs   { color: #56d364; }
+  .opt-ragrs { color: #d2a8ff; }
+  .opt-gzrs  { color: #7ee787; }
+  .opt-ragzrs{ color: #e0b0ff; }
+
+  .yes { color: #3fb950; }
+  .no  { color: #30363d; }
+
+  /* Footer tip */
+  .tip {
+    margin-top: 20px;
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-left: 3px solid #0078d4;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    font-size: 0.75rem;
+    color: #8b949e;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+  }
+
+  .tip strong { color: #58a6ff; }
+</style>
+</head>
+<body>
+
+<p style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;margin:0 0 16px"><a href="00-indice.html" style="color:#5b8dee;text-decoration:none">← Índice AZ-104</a></p>
+<div style="max-width:920px;margin:0 auto 22px;padding:12px 16px;background:rgba(107,113,148,.12);border:1px solid rgba(107,113,148,.35);border-radius:8px;font-family:system-ui,sans-serif;font-size:13px;color:#cfd5ea;line-height:1.55">
+  <strong style="color:#99a0bd">Opcional · anexo visual.</strong> La teoría, trampas y cmdlets están en <a href="04-storage-accounts.html#sec4" style="color:#5b8dee">04 · Storage Accounts</a>. Este gráfico solo muestra dónde viven las copias (LRS → RA-GZRS).
+</div>
+
+<h1>Azure Storage · <span>Opciones de Redundancia</span></h1>
+
+<!-- AXIS -->
+<div class="axis-row">
+  <div class="axis-label">Protección →</div>
+  <div class="axis-arrow"></div>
+</div>
+
+<!-- CARDS -->
+<div class="grid">
+
+  <!-- LRS -->
+  <div class="card">
+    <div class="card-badge lrs">LRS</div>
+    <div class="card-body">
+      <div class="card-desc">3 copias dentro de <strong>un solo datacenter</strong> en la región primaria.</div>
+      <div class="viz">
+        <div class="dc dc-primary"><div class="dc-dot dc-dot-primary"></div>DC-A ×3</div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-copies">3 réplicas</span>
+        <span class="tag tag-copies">1 región · 1 DC</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZRS -->
+  <div class="card">
+    <div class="card-badge zrs">ZRS</div>
+    <div class="card-body">
+      <div class="card-desc">3 copias en <strong>3 Availability Zones</strong> distintas dentro de la misma región.</div>
+      <div class="viz">
+        <div class="dc dc-zone"><div class="dc-dot dc-dot-zone"></div>AZ-1</div>
+        <span class="arrow-std">·</span>
+        <div class="dc dc-zone"><div class="dc-dot dc-dot-zone"></div>AZ-2</div>
+        <span class="arrow-std">·</span>
+        <div class="dc dc-zone"><div class="dc-dot dc-dot-zone"></div>AZ-3</div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-copies">3 réplicas</span>
+        <span class="tag tag-zone">3 zonas · 1 región</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRS -->
+  <div class="card">
+    <div class="card-badge grs">GRS</div>
+    <div class="card-body">
+      <div class="card-desc">LRS en primaria + <strong>LRS en región secundaria</strong> (region pair). Sin acceso al secondary.</div>
+      <div class="viz">
+        <div class="dc dc-primary"><div class="dc-dot dc-dot-primary"></div>Primary ×3</div>
+        <span class="arrow-geo">──▶</span>
+        <div class="dc dc-secondary"><div class="dc-dot dc-dot-secondary"></div>Secondary ×3</div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-copies">6 réplicas</span>
+        <span class="tag tag-geo">2 regiones</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RA-GRS -->
+  <div class="card">
+    <div class="card-badge ragrs">RA-GRS</div>
+    <div class="card-body">
+      <div class="card-desc">Igual que GRS pero el secondary tiene <strong>endpoint de lectura</strong> disponible siempre.</div>
+      <div class="viz">
+        <div class="dc dc-primary"><div class="dc-dot dc-dot-primary"></div>Primary ×3</div>
+        <span class="arrow-geo">──▶</span>
+        <div class="dc dc-ra"><div class="dc-dot dc-dot-ra"></div>Secondary ×3 🔍</div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-copies">6 réplicas</span>
+        <span class="tag tag-geo">2 regiones</span>
+        <span class="tag tag-ra">read secondary</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GZRS -->
+  <div class="card">
+    <div class="card-badge gzrs">GZRS</div>
+    <div class="card-body">
+      <div class="card-desc"><strong>ZRS en primaria</strong> (3 zonas) + LRS en región secundaria. Máxima durabilidad.</div>
+      <div class="viz">
+        <div class="dc dc-zone"><div class="dc-dot dc-dot-zone"></div>AZ-1</div>
+        <span class="arrow-std">·</span>
+        <div class="dc dc-zone"><div class="dc-dot dc-dot-zone"></div>AZ-2</div>
+        <span class="arrow-std">·</span>
+        <div class="dc dc-zone"><div class="dc-dot dc-dot-zone"></div>AZ-3</div>
+        <span class="arrow-geo"> ──▶ </span>
+        <div class="dc dc-secondary"><div class="dc-dot dc-dot-secondary"></div>Secondary ×3</div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-copies">6 réplicas</span>
+        <span class="tag tag-zone">3 zonas</span>
+        <span class="tag tag-geo">2 regiones</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RA-GZRS -->
+  <div class="card">
+    <div class="card-badge ragzrs">RA-GZRS</div>
+    <div class="card-body">
+      <div class="card-desc">GZRS + <strong>lectura del secondary</strong> disponible en todo momento. La opción más completa.</div>
+      <div class="viz">
+        <div class="dc dc-zone"><div class="dc-dot dc-dot-zone"></div>AZ-1</div>
+        <span class="arrow-std">·</span>
+        <div class="dc dc-zone"><div class="dc-dot dc-dot-zone"></div>AZ-2</div>
+        <span class="arrow-std">·</span>
+        <div class="dc dc-zone"><div class="dc-dot dc-dot-zone"></div>AZ-3</div>
+        <span class="arrow-geo"> ──▶ </span>
+        <div class="dc dc-ra"><div class="dc-dot dc-dot-ra"></div>Secondary ×3 🔍</div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-copies">6 réplicas</span>
+        <span class="tag tag-zone">3 zonas</span>
+        <span class="tag tag-geo">2 regiones</span>
+        <span class="tag tag-ra">read secondary</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUMMARY TABLE -->
+<div class="summary">
+  <div class="summary-title">Comparativa rápida</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Opción</th>
+        <th>Réplicas</th>
+        <th>Multi-zona</th>
+        <th>Multi-región</th>
+        <th>Lee secondary</th>
+        <th>SLA durabilidad</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="opt opt-lrs">LRS</span></td>
+        <td>3</td>
+        <td class="no">✗</td>
+        <td class="no">✗</td>
+        <td class="no">✗</td>
+        <td>11 nines</td>
+      </tr>
+      <tr>
+        <td><span class="opt opt-zrs">ZRS</span></td>
+        <td>3</td>
+        <td class="yes">✓</td>
+        <td class="no">✗</td>
+        <td class="no">✗</td>
+        <td>12 nines</td>
+      </tr>
+      <tr>
+        <td><span class="opt opt-grs">GRS</span></td>
+        <td>6</td>
+        <td class="no">✗</td>
+        <td class="yes">✓</td>
+        <td class="no">✗</td>
+        <td>16 nines</td>
+      </tr>
+      <tr>
+        <td><span class="opt opt-ragrs">RA-GRS</span></td>
+        <td>6</td>
+        <td class="no">✗</td>
+        <td class="yes">✓</td>
+        <td class="yes">✓</td>
+        <td>16 nines</td>
+      </tr>
+      <tr>
+        <td><span class="opt opt-gzrs">GZRS</span></td>
+        <td>6</td>
+        <td class="yes">✓</td>
+        <td class="yes">✓</td>
+        <td class="no">✗</td>
+        <td>16 nines</td>
+      </tr>
+      <tr>
+        <td><span class="opt opt-ragzrs">RA-GZRS</span></td>
+        <td>6</td>
+        <td class="yes">✓</td>
+        <td class="yes">✓</td>
+        <td class="yes">✓</td>
+        <td>16 nines</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- TIP -->
+<div class="tip">
+  <strong>Tip examen:</strong> La diferencia entre GRS y RA-GRS no es física — es el permiso de lectura al secondary endpoint (<code>-secondary.blob.core.windows.net</code>). Si el escenario pide "leer datos sin esperar un failover" → la respuesta lleva <strong>RA-</strong>.
+</div>
+
+</body>
+</html>

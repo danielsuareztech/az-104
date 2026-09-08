@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Governance y Costos</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Governance y Costos</div>
+    <div class="nav-sub">Suscripciones, MGs, locks, tags, Policy y presupuestos</div>
+    <div class="nav-weight">Dominio 1 · 20–25%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#jerarquia"><span class="dot"></span>Jerarquía de gestión</a>
+  <a href="#resource-groups"><span class="dot"></span>Resource Groups y mover</a>
+  <a href="#locks"><span class="dot"></span>Resource Locks</a>
+  <a href="#tags"><span class="dot"></span>Tags</a>
+  <a href="#policy"><span class="dot"></span>Azure Policy (express)</a>
+  <a href="#cost-management"><span class="dot"></span>Cost Management y Budgets</a>
+  <a href="#ahorro"><span class="dot"></span>Modelos de ahorro</a>
+  <a href="#arm"><span class="dot"></span>ARM y resource providers</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen no te pide definiciones, te pide <strong>elegir el scope correcto</strong> y saber qué herramienta resuelve cada escenario. Casi todas las preguntas caen en tres moldes: "¿en qué nivel aplico esto para que se herede?", "¿qué mecanismo <em>impide</em> vs cuál solo <em>avisa</em>?" y "¿cuál es el número exacto del límite?". Locks (Cloud Shell: <code>Get-AzResourceLock | Where-Object | Remove-AzResourceLock -Force</code>), tags que no se heredan y budgets que no frenan nada son las tres trampas repetidas.
+  </div>
+
+  <!-- ══ 1 ══ -->
+  <div class="section" id="jerarquia">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🏛️</div>
+      <span class="section-title">Jerarquía de gestión: tenant, MGs, subscriptions, RGs</span>
+      <span class="section-tag">Scopes</span>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step highlight">Root MG<br><small>= tenant ID</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Management Groups<br><small>hasta 6 niveles</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Subscription<br><small>límite de facturación</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Resource Group<br><small>ciclo de vida</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Recurso</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Reglas duras de la jerarquía</div>
+      <ul>
+        <li>El <strong>Root Management Group</strong> se crea solo, su ID es el <strong>tenant ID</strong> de Entra ID. <strong>No se puede borrar ni renombrar el ID</strong>; el display name sí se cambia.</li>
+        <li>Profundidad: hasta <strong>6 niveles de management groups</strong> <em>sin contar</em> el root MG ni el nivel de subscription.</li>
+        <li>Hasta <strong>10.000 management groups por directorio</strong> (tenant).</li>
+        <li>Un MG o una subscription tiene <strong>exactamente un padre</strong>. Un MG puede tener muchos hijos (MGs y/o subscriptions).</li>
+        <li>Una <strong>subscription pertenece a un solo tenant</strong> de Entra ID. Se puede transferir a otro tenant, pero no estar en dos a la vez.</li>
+        <li>Todas las subscriptions nuevas del directorio caen por defecto bajo el <strong>root MG</strong>.</li>
+        <li>Las asignaciones de RBAC y de Policy hechas en un MG <strong>se heredan hacia abajo</strong> a todos los MGs, subscriptions, RGs y recursos descendientes.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Hierarchy protection: quién puede crear MGs</div>
+      <p>Por defecto <strong>cualquier usuario del tenant</strong> puede crear management groups. Hierarchy protection (o “require authorization”) lo apaga: hace falta <code>Microsoft.Management/managementGroups/write</code> en el root.</p>
+<pre><code>az account management-group hierarchy-settings create \
+  --name &lt;tenantId&gt; --require-authorization-for-group-creation true
+# PS: New-AzManagementGroupHierarchySetting -RequireAuthorizationForGroupCreation</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Operación en el JSON / rol custom</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>Microsoft.Management/managementGroups/write</code></td><td><span class="yes">Sí</span></td><td>Crear o actualizar un MG</td></tr>
+            <tr><td><code>.../managementGroups/delete</code></td><td><span class="no">No</span></td><td>Borrar, no crear</td></tr>
+            <tr><td><code>.../managementGroups/subscriptions/write</code></td><td><span class="no">No</span></td><td>Mover una sub dentro/fuera del MG</td></tr>
+            <tr><td><code>.../managementGroups/read</code></td><td><span class="no">No</span></td><td>Ver, no crear</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “hierarchy protection / que users estándar no creen MGs” = operación <strong><code>managementGroups/write</code></strong>. <code>subscriptions/write</code> es el move de SalesSub, no el create del grupo.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Scope</th><th>Para qué existe</th><th>¿Soporta RBAC?</th><th>¿Soporta Policy?</th><th>¿Soporta locks?</th></tr></thead>
+        <tbody>
+          <tr><td>Management Group</td><td>Agrupar subscriptions y aplicar governance en masa</td><td class="yes">Sí</td><td class="yes">Sí</td><td class="no">No</td></tr>
+          <tr><td>Subscription</td><td>Límite de facturación, cuotas y aislamiento</td><td class="yes">Sí</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td>Resource Group</td><td>Ciclo de vida común, borrado en bloque</td><td class="yes">Sí</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td>Recurso</td><td>La instancia concreta</td><td class="yes">Sí</td><td class="no">No se asigna, se evalúa</td><td class="yes">Sí</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si el escenario dice "aplicar la misma política a <em>todas</em> las suscripciones actuales <strong>y futuras</strong>", la respuesta es asignar en el <strong>management group</strong>, no repetir la asignación por subscription. Y si dice "sin importar en qué subscription", el nivel correcto suele ser el <strong>root MG</strong> o un MG intermedio, nunca el resource group.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Para operar el root MG necesitás el permiso elevado: en Entra ID, un Global Administrator activa <em>Access management for Azure resources</em> y se auto-asigna <strong>User Access Administrator</strong> en <code>/</code>. Sin eso, ni un Owner de subscription ve el root MG.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Mover una subscription de un MG a otro (PowerShell)</div>
+      <p>Consolidar SalesSub bajo el MG Marketing y después borrar el MG Sales (ya vacío). No hay <code>Move-AzSubscription</code> para esto.</p>
+<pre><code>Remove-AzManagementGroupSubscription -GroupName Sales -SubscriptionId &lt;id&gt;
+New-AzManagementGroupSubscription -GroupName Marketing -SubscriptionId &lt;id&gt;
+# recién ahora, si Sales está vacío:
+Remove-AzManagementGroup -GroupName Sales
+# CLI: az account management-group subscription remove|add</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Cmdlet</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>Remove-AzManagementGroupSubscription</code></td><td><span class="yes">Sí</span></td><td>Saca SalesSub del MG origen</td></tr>
+            <tr><td><code>New-AzManagementGroupSubscription</code></td><td><span class="yes">Sí</span></td><td>La engancha al MG destino</td></tr>
+            <tr><td><code>Update-AzManagementGroup</code></td><td><span class="no">No</span></td><td>Cambia display name / parent del <em>grupo</em>, no la sub</td></tr>
+            <tr><td><code>Remove-AzManagementGroup</code></td><td><span class="no">No</span></td><td>Borra el MG, y solo si ya está vacío. No es el move</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> mover la sub = <strong>Remove-…Subscription + New-…Subscription</strong>. El enunciado menciona borrar el MG Sales al final: eso es <code>Remove-AzManagementGroup</code> <em>después</em>, no el par que pide “move the subscription”.</span>
+    </div>
+  </div>
+
+  <!-- ══ 2 ══ -->
+  <div class="section" id="resource-groups">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">📦</div>
+      <span class="section-title">Resource Groups y mover recursos</span>
+      <span class="section-tag">Ciclo de vida</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Lo que hay que tener grabado</div>
+      <ul>
+        <li>Un recurso vive en <strong>exactamente un resource group</strong> a la vez. No hay recursos "sueltos" ni compartidos entre RGs.</li>
+        <li>El RG <strong>tiene su propia región</strong> porque almacena la <strong>metadata</strong> del grupo. Esa región <strong>puede ser distinta</strong> de la de los recursos que contiene: podés tener un RG en <em>West Europe</em> con VMs en <em>East US</em>.</li>
+        <li>Si la región del RG está caída, la metadata puede quedar no disponible aunque los recursos sigan funcionando — por eso conviene alinear la región del RG con la de la carga.</li>
+        <li><strong>Borrar el RG borra todo lo que hay adentro</strong>, en el orden que ARM decida. Es la forma canónica de limpiar un entorno de prueba.</li>
+        <li>El RG <strong>no</strong> limita la región de los recursos: dentro de un mismo RG puede haber recursos de varias regiones.</li>
+        <li>Los recursos pueden interactuar entre RGs distintos sin problema (una VM en RG-A usando una VNet en RG-B).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Mover recursos entre RG o entre subscriptions</div>
+      <pre><code># mover a otro resource group (misma subscription)
+az resource move --destination-group RG-Destino \
+  --ids /subscriptions/&lt;subId&gt;/resourceGroups/RG-Origen/providers/Microsoft.Compute/virtualMachines/VM1
+
+# mover a otra subscription
+az resource move --destination-group RG-Destino \
+  --destination-subscription-id &lt;subIdDestino&gt; --ids &lt;resourceId&gt;</code></pre>
+      <ul>
+        <li>Mover <strong>no</strong> cambia la región del recurso. Mover ≠ migrar de región (para eso, Azure Resource Mover o redeploy).</li>
+        <li><strong>El resource ID cambia</strong>: el ID incluye <code>/subscriptions/{id}/resourceGroups/{nombre}/...</code>, así que al mover se rompe todo lo que apunte al ID viejo (scripts, RBAC asignado directo al recurso, alertas, templates).</li>
+        <li>Durante la operación, <strong>el RG de origen y el de destino quedan bloqueados</strong>: no se pueden agregar, borrar ni actualizar recursos en ninguno de los dos hasta que termine.</li>
+        <li>Origen y destino deben tener registrados los <strong>resource providers</strong> involucrados.</li>
+        <li>Para mover entre subscriptions, ambas deben estar en el <strong>mismo tenant</strong> de Entra ID.</li>
+        <li>Necesitás permisos de escritura/borrado sobre el origen y de escritura sobre el destino.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Recurso</th><th>¿Se puede mover?</th><th>Detalle a recordar</th></tr></thead>
+        <tbody>
+          <tr><td>VM con managed disks</td><td class="yes">Sí</td><td>Se mueve junto con NIC, disks y la VNet asociada</td></tr>
+          <tr><td>Storage Account</td><td class="yes">Sí</td><td>El nombre es global, no cambia al mover</td></tr>
+          <tr><td>Public IP <span class="chip chip-yellow">Basic</span></td><td class="yes">Sí</td><td>La <strong>Standard</strong> tiene restricciones adicionales</td></tr>
+          <tr><td>Recursos con <strong>lock</strong></td><td class="no">No hasta sacarlo</td><td>Hay que remover el lock del origen antes de mover</td></tr>
+          <tr><td>Certificados de App Service en uso</td><td class="no">No</td><td>Bloquean el move del plan</td></tr>
+          <tr><td>Recursos <strong>classic</strong> (v1)</td><td class="no">No / restringido</td><td>Modelo de despliegue viejo, fuera de ARM</td></tr>
+          <tr><td>Recovery Services vault</td><td class="yes">Sí (con prereqs)</td><td>Cmdlet: <code>Move-AzResource</code> / <code>az resource move</code>. No Export- ni New-</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Vault1 de Sub1 a Sub2: primer cmdlet</div>
+      <p>RSV en Central US, ya con Azure Backup. Mínimo downtime y data loss al pasarlo a otra subscription.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Cmdlet</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>Move-AzResource</code></td><td><span class="yes">Sí</span></td><td>Mueve el recurso vivo (y su data) al RG/sub destino</td></tr>
+            <tr><td><code>Export-AzResourceGroup</code></td><td><span class="no">No</span></td><td>Saca un ARM template. No mueve el vault ni los recovery points</td></tr>
+            <tr><td><code>Set-AzResource</code></td><td><span class="no">No</span></td><td>Cambia properties del recurso en el mismo scope</td></tr>
+            <tr><td><code>New-AzResource</code></td><td><span class="no">No</span></td><td>Crea uno vacío: data loss / downtime</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>Move-AzResource -DestinationResourceGroupName RG2 `
+  -DestinationSubscriptionId &lt;sub2&gt; -ResourceId $vault.ResourceId
+# CLI: az resource move --destination-group RG2 \
+#   --destination-subscription-id &lt;sub2&gt; --ids &lt;vaultId&gt;</code></pre>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “mover Vault1 a Sub2” = <code>Move-AzResource</code>. Export- es foto ARM. New- recrea vacío. Set- no cambia de subscription.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "mover un recurso a otro resource group" suena inofensivo, pero <strong>el resource ID cambia y las asignaciones de RBAC hechas directamente sobre el recurso o heredadas del RG viejo no viajan con él</strong>: el recurso pasa a heredar el RBAC del RG destino. Si la pregunta menciona que "los permisos dejaron de funcionar después del move", esa es la causa.</span>
+    </div>
+    <div class="card">
+      <div class="card-title">Move entre subscriptions: RBAC huérfano en las VMs</div>
+      <p>sub010 → sub020. Después del move, las role assignments de las <strong>VMs</strong> quedan orphaned; las de los <strong>RGs</strong> siguen.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Causa</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>El move fue <strong>entre subscriptions</strong></td><td><span class="yes">Sí</span></td><td>El resource ID incluye el subId. Las assignments <em>directas al recurso</em> apuntan al ID viejo → orphaned. Las del RG viven en el RG destino y no se tocan</td></tr>
+            <tr><td>Network outage</td><td><span class="no">No</span></td><td>El move o completa o falla; no deja RBAC a medias</td></tr>
+            <tr><td>El user no tenía permisos</td><td><span class="no">No</span></td><td>Sin permisos el move ni arranca. Los RGs no habrían quedado bien</td></tr>
+            <tr><td>Se usó PowerShell y no el portal</td><td><span class="no">No</span></td><td>Portal, CLI y PS mueven igual. El efecto es del cambio de subscription</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> RBAC directo en el recurso se <strong>rompe al cambiar el resource ID</strong> (sub o RG). En un move <em>cross-subscription</em> el subId cambia → assignments de VM orphaned; las del RG (scope más alto, mismo objeto RG en destino o reaplicadas al RG) quedan. No es el portal ni un outage.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Mover App-RG01 → App-RG02: certs, LB, peering</div>
+      <p>Dos App Services con managed SSL, VNet peereada, Redis en la VNet, Standard LB.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Hay que <strong>borrar el managed SSL</strong> de cada App Service antes del move</td><td><span class="yes">Yes</span></td><td>El certificado managed no se mueve; bloquea el plan. Se recrea en destino</td></tr>
+            <tr><td>El Standard LB se puede mover <strong>entre subscriptions</strong></td><td><span class="no">No</span></td><td>Standard LB / Standard PIP: move cross-sub no soportado (sí RG en la misma sub, con matices)</td></tr>
+            <tr><td>Hay que <strong>sacar el peering</strong> antes de mover la VNet</td><td><span class="yes">Yes</span></td><td>Peering es dependencia. Delete peering → move → recrear</td></tr>
+            <tr><td>La VNet se puede mover <strong>dentro de la misma subscription</strong></td><td><span class="yes">Yes</span></td><td>RG→RG en la misma sub está soportado (sin peering)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Yes / No / Yes / Yes. Managed cert ≠ App Service Certificate que compraste. Standard LB cross-sub = No. Peering puesto = no hay move de VNet.</span>
+    </div>
+  </div>
+
+  <!-- ══ 3 ══ -->
+  <div class="section" id="locks">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">🔒</div>
+      <span class="section-title">Resource Locks: CanNotDelete vs ReadOnly</span>
+      <span class="section-tag">Protección</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Tipo de lock</th><th>Portal</th><th>Impide</th><th>Permite</th><th>Equivale a</th></tr></thead>
+        <tbody>
+          <tr><td><code>CanNotDelete</code></td><td>Delete</td><td>Borrar el recurso</td><td>Leer y <strong>modificar</strong></td><td>Rol Contributor sin delete</td></tr>
+          <tr><td><code>ReadOnly</code></td><td>Read-only</td><td>Borrar <strong>y</strong> modificar</td><td>Solo lectura</td><td>Rol <strong>Reader</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cómo se comportan</div>
+      <ul>
+        <li>Se pueden aplicar en <strong>subscription, resource group o recurso individual</strong>. <strong>No</strong> existen locks a nivel management group.</li>
+        <li><strong>Se heredan hacia abajo</strong>: un lock en el RG protege a todos los recursos de adentro.</li>
+        <li>Si hay varios locks en la cadena, <strong>gana el más restrictivo</strong> (<code>ReadOnly</code> le gana a <code>CanNotDelete</code>).</li>
+        <li>Aplican a <strong>todos los usuarios y roles, incluido el Owner y el Global Administrator</strong>. No es RBAC: no distingue identidades, es una barrera sobre el control plane.</li>
+        <li>Para <strong>crear o borrar un lock</strong> necesitás la acción <code>Microsoft.Authorization/locks/*</code> → la traen los roles <strong>Owner</strong> y <strong>User Access Administrator</strong>. Contributor <em>no</em> puede.</li>
+        <li>Solo afectan el <strong>control plane</strong> (operaciones ARM), <strong>no el data plane</strong>: un <code>CanNotDelete</code> en una Storage Account no impide borrar blobs adentro, ni un lock en una SQL DB impide un <code>DROP TABLE</code>.</li>
+        <li>Un lock <code>CanNotDelete</code> dentro de un RG <strong>impide borrar el RG entero</strong>, aunque el lock esté en un solo recurso.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> un lock <code>ReadOnly</code> sobre una <strong>Storage Account bloquea "List Keys"</strong>. Parece una lectura, pero <code>listKeys</code> es una operación <strong>POST</strong> y ARM la clasifica como escritura → falla. Mismo patrón: Storage Explorer (“Unable to list resources… list containers or list account keys”). CanNotDelete no bloquea listKeys.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Nadie borra <code>devtestrg</code> (ni lo de adentro), sin lock en la sub</div>
+      <p>Mínimo esfuerzo. No poner lock a nivel subscription.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Delete lock (<code>CanNotDelete</code>) en el <strong>resource group</strong></td><td><span class="yes">Sí</span></td><td>Se hereda a lo actual y lo futuro del RG. Permite modificar. Un solo lock</td></tr>
+            <tr><td>Delete lock en un recurso suelto</td><td><span class="no">No</span></td><td>El RG y el resto se pueden borrar (salvo que ese lock bloquee el delete del RG, no cubre “todos”)</td></tr>
+            <tr><td>Read-only en un recurso suelto</td><td><span class="no">No</span></td><td>Impide updates (no pedido) y no cubre el grupo</td></tr>
+            <tr><td>Read-only en la subscription</td><td><span class="no">No</span></td><td>El enunciado prohíbe lock en la sub; además congela todo el tenant de esa sub</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “sin lock en la subscription” + “el RG y sus recursos” = <strong>CanNotDelete en el RG</strong>. ReadOnly es overkill (bloquea writes). Un lock en un recurso no cubre el resto.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Delete lock en la subscription (mínimo esfuerzo)</div>
+      <p>Borraron TST01-RG y TST02-RG por accidente. Hay que: (1) que no se borre nada, (2) que Storage y App Service sigan funcionando, (3) cubrir recursos <strong>nuevos</strong>, (4) mínimo admin.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Delete lock en la subscription</strong></td><td><span class="yes">Sí</span></td><td>Se hereda a todo lo actual y lo futuro. Un solo lock. Permite modificar</td></tr>
+            <tr><td>Delete lock en TST01-RG y TST02-RG</td><td><span class="no">No</span></td><td>No cubre RGs nuevos. Más admin</td></tr>
+            <tr><td>Read-only lock en la subscription</td><td><span class="no">No</span></td><td>Rompe writes: List Keys, App Service, etc. Viola “all resource types should work”</td></tr>
+            <tr><td>Read-only en los dos RG de test</td><td><span class="no">No</span></td><td>Mismos problemas: no futuro + rompe operaciones</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “nuevos recursos + mínimo esfuerzo + que todo siga andando” = <strong>CanNotDelete en la subscription</strong>. ReadOnly es demasiado. Lock en los RG de test no hereda a lo que todavía no existe.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Storage Explorer: “inadequate permissions”</div>
+      <p>Error: <em>Permission to list containers or to list account keys is required.</em> Elegí dos causas.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Causa</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Rol <strong>Reader</strong> en la cuenta</td><td><span class="yes">Sí</span></td><td>Ve el recurso, no tiene <code>listKeys</code>. Explorer intenta keys y falla</td></tr>
+            <tr><td>Lock <strong>ReadOnly</strong> en la cuenta</td><td><span class="yes">Sí</span></td><td>List Keys = POST = escritura. El lock lo bloquea</td></tr>
+            <tr><td>Lock CanNotDelete</td><td><span class="no">No</span></td><td>Solo impide borrar. List Keys sigue</td></tr>
+            <tr><td>Storage Blob Data Reader / Contributor</td><td><span class="no">No</span></td><td>Son plano de <strong>datos</strong>: listarían blobs por Entra. No causan este error de keys</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el error nombra <strong>list keys</strong> → control plane. Reader y ReadOnly lo rompen. Blob Data Reader/Contributor lo arreglarían por AAD, no lo causan. CanNotDelete es carnada de “hay un lock”.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Congelar una VM para generalize + capture (lo más rápido)</div>
+      <p>VM en <code>iaas-rg</code>. Nadie debe cambiar la config hasta capturar la imagen. “As quickly as possible.”</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Read-only lock en el resource group</strong></td><td><span class="yes">Sí</span></td><td>Se hereda a la VM. Impide modificar <em>y</em> borrar. Un clic, se saca igual de fácil</td></tr>
+            <tr><td>Delete lock en la VM</td><td><span class="no">No</span></td><td><code>CanNotDelete</code> <strong>sigue permitiendo cambios</strong> de config</td></tr>
+            <tr><td>Editar RBAC en la VM o en el RG</td><td><span class="no">No</span></td><td>Funciona, pero no es “lo más rápido”: hay que tocar assignments de varios admins y revertirlo</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>az lock create -g iaas-rg -n freeze --lock-type ReadOnly
+New-AzResourceLock -LockName freeze -LockLevel ReadOnly -ResourceGroupName iaas-rg</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “que no cambien la VM hasta el capture, lo más rápido” = <strong>ReadOnly en el RG</strong> (se hereda). Delete lock no congela la config. RBAC no es el atajo. Lock ≠ “solo a esa VM”: en el RG cubre todo lo de adentro, que es lo que pide el enunciado típico.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down Cloud Shell: sacar todos los locks de RG1</div>
+      <p>12 VMs en <code>rg1</code>. Hay que <strong>levantar cualquier lock</strong> sobre esos recursos. Pipeline: listar → filtrar filas del RG → borrar sin confirmar.</p>
+<pre><code>$rg = "rg1"
+Get-AzResourceLock |
+Where-Object ResourceGroupName -eq "$rg" |
+Remove-AzResourceLock -Force</code></pre>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Cmdlet</th><th></th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td><code>Get-AzResourceLock</code></td><td><span class="yes">Sí · 1</span></td><td>Trae los locks de la subscription</td></tr>
+          <tr><td><code>Where-Object</code></td><td><span class="yes">Sí · 2</span></td><td>Filtra <em>filas</em>: <code>ResourceGroupName -eq "$rg"</code></td></tr>
+          <tr><td><code>Remove-AzResourceLock -Force</code></td><td><span class="yes">Sí · 3</span></td><td>Borra. <code>-Force</code> evita el prompt por cada lock</td></tr>
+          <tr><td><code>Select-Object</code></td><td><span class="no">No</span></td><td>Elige <em>columnas</em> (propiedades), no filtra recursos</td></tr>
+          <tr><td><code>Get-AzResource</code> / <code>Remove-AzResource</code></td><td><span class="no">No</span></td><td>Recursos, no locks. Más código y no es el objeto correcto</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>az lock list --resource-group rg1
+az lock delete --name lock1 --resource-group rg1 --yes</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <code>Where-Object</code> vs <code>Select-Object</code>. El drop-down pone <code>ResourceGroupName -eq</code> → es filtro de objetos, no de propiedades. <code>Get-AzResource</code> no lista locks. Hace falta <code>Microsoft.Authorization/locks/*</code> (Owner / UAA); Contributor no borra locks.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si el enunciado pide "impedir que los usuarios <em>creen</em> cierto tipo de recurso" o "impedir que se creen VMs fuera de una región", <strong>la respuesta es Azure Policy con effect Deny, no un lock</strong>. Los locks solo protegen lo que <em>ya existe</em>; no controlan qué se puede crear.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">VMs solo en regiones aprobadas (compliance)</div>
+      <p>Hay que impedir el deploy fuera de una lista de regiones.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Azure Policy (built-in <em>Allowed locations</em> o custom + <code>Deny</code>)</td><td><span class="yes">Sí</span></td><td>Gobierna <em>dónde</em> se crea el recurso</td></tr>
+            <tr><td>Conditional Access de Entra ID</td><td><span class="no">No</span></td><td>Quién entra (MFA, named location del usuario), no la región del recurso</td></tr>
+            <tr><td>Automation DSC</td><td><span class="no">No</span></td><td>Estado interno del guest (software, registry) después de creada</td></tr>
+            <tr><td>Crear un management group</td><td><span class="no">No</span></td><td>Es el scope. Sin Policy asignada no restringe regiones</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “approved Azure regions” = <strong>Policy Deny / Allowed locations</strong>. Conditional Access es identidad. DSC es el SO. El MG es dónde <em>asignás</em> la policy, no la policy.</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla mental:</strong> RBAC dice <em>quién</em> puede hacer qué · Policy dice <em>qué</em> se puede crear/configurar · Lock dice <em>nadie toca esto</em>.
+    </div>
+  </div>
+
+  <!-- ══ 4 ══ -->
+  <div class="section" id="tags">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🏷️</div>
+      <span class="section-title">Tags: metadata para costos y organización</span>
+      <span class="section-tag">Cost reporting</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Mecánica y límites</div>
+      <ul>
+        <li>Son pares <strong>nombre/valor</strong> aplicables a <strong>subscriptions, resource groups y recursos</strong>.</li>
+        <li>Límite: <strong>50 tags por recurso / RG / subscription</strong>.</li>
+        <li>Nombre de tag: hasta <strong>512 caracteres</strong>. Valor: hasta <strong>256 caracteres</strong>. (En Storage Accounts el nombre se limita a 128.)</li>
+        <li>Los <strong>nombres</strong> de tag son case-insensitive para las operaciones; los <strong>valores</strong> son case-sensitive.</li>
+        <li><strong>Algunos tipos de recurso no soportan tags</strong> (por ejemplo los recursos del modelo classic). Si el recurso no soporta tags, no aparece desglosado por tag en cost reporting.</li>
+        <li>Son la base del <strong>cost reporting</strong>: en Cost Analysis podés agrupar/filtrar por tag para imputar gasto a un centro de costo, proyecto o entorno.</li>
+        <li>Un <strong>Contributor</strong> puede editar tags de un recurso; el rol específico <strong>Tag Contributor</strong> permite gestionar tags sin poder tocar el recurso en sí (pero desde el portal no puede aplicar tags a recursos ni a resource groups — solo a subscriptions; para recursos y RGs tiene que usar PowerShell, CLI o la REST API).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Aplicar y propagar</div>
+      <pre><code># CLI: agrega/actualiza sin borrar los existentes
+az tag update --resource-id &lt;resourceId&gt; --operation Merge --tags CostCenter=1001 Env=Prod
+
+# ojo: --operation Replace pisa TODOS los tags existentes</code></pre>
+      <ul>
+        <li>En PowerShell, <code>Update-AzTag -Operation Merge</code> agrega; <code>Set-AzResource -Tag</code> <strong>reemplaza</strong> el set completo.</li>
+        <li>Para heredar de verdad hay que usar <strong>Azure Policy</strong>: la definición built-in <em>"Inherit a tag from the resource group"</em> usa effect <strong>Modify</strong> y una <strong>remediation task</strong> para aplicarlo a lo existente.</li>
+        <li><code>Append</code> agrega el tag al momento de crear/actualizar; <code>Modify</code> puede agregar, reemplazar o borrar tags y <strong>sí sirve para remediar recursos existentes</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <strong>los tags NO se heredan.</strong> Un tag puesto en la subscription o en el resource group <em>no</em> aparece automáticamente en los recursos hijos. Si la pregunta es "cómo garantizo que todos los recursos tengan el tag CostCenter del RG", la respuesta es <strong>Azure Policy con effect Modify + remediation task</strong> — nunca "poner el tag en el RG y listo".</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí 2: CostCenter para accounting, mínimo esfuerzo</div>
+      <p>Billing Reader ya ve costos. Hay que <strong>proveer</strong> el dato de centro de costo para imputar. CSP de por medio.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Tag <code>CostCenter</code> en <strong>cada resource group</strong></td><td><span class="yes">Sí</span></td><td>Cost Analysis agrupa por tag del RG (costos a nivel grupo)</td></tr>
+            <tr><td>Tag <code>CostCenter</code> en <strong>cada recurso</strong></td><td><span class="yes">Sí</span></td><td>Los tags no se heredan: sin esto el recurso no trae el valor</td></tr>
+            <tr><td>Mandarlos al Azure Account Center</td><td><span class="no">No</span></td><td>Portal viejo / deprecado. No carga metadata</td></tr>
+            <tr><td>Solo “usen Cost Analysis en la subscription”</td><td><span class="no">No</span></td><td>Ahí <em>se mira</em> el gasto. Sin tags no hay centro de costo que filtrar</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “provide cost center information” = <strong>crear el tag en RGs y en recursos</strong>, no abrir Cost Analysis. Account Center es carnada de portal legado. Si más adelante piden que <em>todos</em> los recursos nuevos hereden el del RG, ahí sí entra Policy Modify.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><code>Set-AzResource -Tag</code> pisa el diccionario</div>
+      <p>Script que “agrega” un tag y borra los que ya había:</p>
+<pre><code>$r = Get-AzResource -ResourceName "corpstorage99" -ResourceGroupName "prod-rg"
+Set-AzResource -Tag @{Dept="IT"} -ResourceId $r.ResourceId -Force</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Arreglo</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>$r.Tags.Add("Dept","IT")</code> y después <code>Set-AzResource -Tag $r.Tags</code></td><td><span class="yes">Sí</span></td><td>Sumás al hashtable existente. Mínimo cambio al script</td></tr>
+            <tr><td><code>Update-AzTag -Operation Merge</code></td><td><span class="yes">Sí</span></td><td>Merge agrega; Replace pisa. Equivalente moderno</td></tr>
+            <tr><td>Plantilla ARM</td><td><span class="no">No</span></td><td>No es el arreglo más rápido de un script de un recurso</td></tr>
+            <tr><td>Azure Policy Enforce tag</td><td><span class="no">No</span></td><td>Gobernanza a escala, no arregla este cmdlet</td></tr>
+            <tr><td>Reescribir en CLI</td><td><span class="no">No</span></td><td>Overhead. En CLI igual hay que usar merge: <code>az tag update --operation Merge</code> / <code>az resource tag --is-incremental</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>$r = Get-AzResource -Name corpstorage99 -ResourceGroupName prod-rg
+$r.Tags.Add("Dept","IT")          # o $r.Tags["Dept"] = "IT"
+Set-AzResource -ResourceId $r.ResourceId -Tag $r.Tags -Force
+# moderno: Update-AzTag -ResourceId $r.ResourceId -Tag @{Dept="IT"} -Operation Merge</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <code>Set-AzResource -Tag @{...}</code> <strong>reemplaza todos</strong> los tags. Para append: <code>.Tags.Add()</code> o <code>Update-AzTag -Operation Merge</code>. Policy y “pasalo a CLI” no arreglan la línea que pisa el hashtable.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: primer tag en una cuenta sin tags</div>
+      <p>La storage no tenía tags. Hay que poner <code>Dept=Marketing</code> y <code>Status=Standard</code> para el reporte mensual.</p>
+<pre><code>$tags = @{"Dept"="Marketing"; "Status"="Standard"}
+$resource = Get-AzResource -Name marketingsa -ResourceGroupName ukmkrg01
+New-AzTag -ResourceId $resource.Id -Tag $tags</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Cmdlet</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>Get-AzResource</code></td><td><span class="yes">Sí</span></td><td>Objeto genérico con <code>.Id</code> / <code>.ResourceId</code> para el tag cmdlet</td></tr>
+            <tr><td><code>New-AzTag</code></td><td><span class="yes">Sí</span></td><td>Setea el diccionario. Cuenta vacía = New-, no merge</td></tr>
+            <tr><td><code>Update-AzTag</code></td><td><span class="no">No</span></td><td>Merge/Replace/Delete sobre tags que <em>ya hay</em>. Acá no había ninguno</td></tr>
+            <tr><td><code>Set-AzTag</code></td><td><span class="no">No</span></td><td>No es el cmdlet de aplicar tags a un resource ID</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> sin tags previos = <code>New-AzTag -ResourceId</code>. <code>Update-AzTag</code> es para merge después. <code>Get-AzResource</code> (no hace falta <code>Get-AzStorageAccount</code>) te da el ID.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: agregar un tag sin pisar el que ya hay</div>
+      <p>StorAcct1 ya tiene <code>Department=Marketing</code>. Hay que sumar <code>Status=Approved</code>.</p>
+<pre><code>$tags = @{"Status"="Approved"}
+$resource = Get-AzResource -Name StorAcct1 -ResourceGroupName RG1
+Update-AzTag -ResourceId $resource.Id -Tag $tags -Operation Merge</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Pieza</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>Get-AzResource</code></td><td><span class="yes">Sí</span></td><td>El <code>.Id</code> para el tag cmdlet</td></tr>
+            <tr><td><code>Update-AzTag</code> + <code>-Operation Merge</code></td><td><span class="yes">Sí</span></td><td>Append. Conserva Department</td></tr>
+            <tr><td><code>New-AzTag</code></td><td><span class="no">No</span></td><td>Pisa el set (o es para el primer diccionario vacío)</td></tr>
+            <tr><td><code>-Operation Replace</code></td><td><span class="no">No</span></td><td>Queda solo Status; se pierde Department</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> tags existentes + “preserve” = <code>Update-AzTag -Operation Merge</code>. Vacío = <code>New-AzTag</code>. Replace / New- sobre un recurso taggeado borra Marketing.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Combo típico de escenario: <code>Deny</code> o <code>Audit</code> para exigir que exista el tag en recursos nuevos, más <code>Modify</code> + remediación para arreglar el parque ya desplegado.</span>
+    </div>
+  </div>
+
+  <!-- ══ 5 ══ -->
+  <div class="section" id="policy">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">📜</div>
+      <span class="section-title">Azure Policy — repaso operativo</span>
+      <span class="section-tag">Compliance</span>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 14px">Mapa visual opcional (flujo Definition → Remediation): <a href="25-policy-visual.html" style="color:var(--accent)">25 · Policy visual</a>.</p>
+
+    <div class="flow">
+      <div class="flow-step">Definition<br><small>la regla (JSON)</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Initiative<br><small>set de definitions</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">Assignment<br><small>scope + exclusiones</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Compliance<br><small>evaluación</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Remediation<br><small>arregla lo existente</small></div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Effect</th><th>Qué hace</th><th>¿Managed Identity?</th><th>¿Remediation task?</th></tr></thead>
+        <tbody>
+          <tr><td><code>Deny</code></td><td>Bloquea la creación/actualización no conforme</td><td class="no">No</td><td class="no">No</td></tr>
+          <tr><td><code>Audit</code></td><td>Permite pero marca no conforme en el reporte</td><td class="no">No</td><td class="no">No</td></tr>
+          <tr><td><code>Append</code></td><td>Agrega campos/tags al request de creación</td><td class="no">No</td><td class="no">No</td></tr>
+          <tr><td><code>Modify</code></td><td>Agrega, reemplaza o borra propiedades/tags</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td><code>DeployIfNotExists</code></td><td>Despliega un recurso relacionado que falta</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td><code>AuditIfNotExists</code></td><td>Marca no conforme si falta un recurso relacionado</td><td class="no">No</td><td class="no">No</td></tr>
+          <tr><td><code>Disabled</code></td><td>Apaga la evaluación de esa definición</td><td class="no">No</td><td class="no">No</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Datos operativos que caen en el examen</div>
+      <ul>
+        <li>Los scopes de asignación son <strong>management group, subscription o resource group</strong>. Se pueden definir <strong>exclusiones</strong> de sub-scopes dentro de la asignación.</li>
+        <li>Policy <strong>no es retroactivo</strong>: <code>Deny</code> no borra ni apaga lo que ya existía, solo bloquea cambios y creaciones nuevas. Lo viejo aparece como <strong>non-compliant</strong>.</li>
+        <li>Después de crear o cambiar una asignación, los resultados de compliance de los recursos existentes tardan <strong>hasta ~30 minutos</strong> en aparecer.</li>
+        <li>El ciclo de evaluación estándar corre aproximadamente <strong>cada 24 horas</strong>; se puede forzar un scan on-demand.</li>
+        <li>Para <code>Modify</code> y <code>DeployIfNotExists</code>, la asignación necesita una <strong>managed identity</strong> con el rol adecuado (típicamente Contributor) sobre el scope, y hay que lanzar una <strong>remediation task</strong> para corregir lo ya desplegado.</li>
+        <li>Las <strong>Initiatives</strong> (policy sets) permiten asignar decenas de definiciones de una y reportar compliance agrupado. Azure Blueprints era el paquete de nivel superior — hoy en camino de reemplazo por Deployment Stacks / Template Specs.</li>
+        <li><strong>Definition scope</strong> = dónde vive y es visible. <strong>Assignment scope</strong> = dónde se aplica. Una definition guardada en una subscription <strong>no se puede asignar a un management group</strong>: para más alcance, guardala en el MG.</li>
+        <li>Las definitions <strong>built-in</strong> y <strong>static</strong> no se editan (son de Microsoft). Cambiar el JSON de una custom <strong>no actualiza sola</strong> los assignments: hay que editarlos o reasignar.</li>
+        <li><code>mode: Indexed</code> evalúa solo recursos que soportan <strong>tags y location</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Policy: tag Environment ∈ {dev, qa, prod}, solo recursos con tags</div>
+      <p>Deny si el tag no es uno de esos tres. Solo evaluar tipos que soportan tagging.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Campo JSON</th><th>Valor</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>mode</code></td><td><strong>Indexed</strong></td><td>Solo tipos con tags/location. <code>All</code> incluye RGs/subs y tipos sin tags</td></tr>
+            <tr><td><code>field</code></td><td><code>tags['Environment']</code></td><td>La key. Case-sensitive</td></tr>
+            <tr><td>operador</td><td><strong>notIn</strong> <code>[dev, qa, prod]</code></td><td>El if es verdadero (y dispara Deny) si el valor <em>no</em> está en la lista. <code>in</code> denegaría los válidos</td></tr>
+            <tr><td><code>effect</code></td><td><strong>deny</strong></td><td>“deny the creation”. Audit solo loguea</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>{
+  "mode": "Indexed",
+  "if": {
+    "not": {
+      "field": "tags['Environment']",
+      "in": [ "dev", "qa", "prod" ]
+    }
+  },
+  "then": { "effect": "deny" }
+}
+# equivalente: field notIn [dev, qa, prod]</code></pre>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “only resources that support tagging” = <code>mode: Indexed</code>, no <code>All</code>. Lista permitida + deny = <strong>notIn</strong> (o <code>not</code> + <code>in</code>). <code>in</code> solo denegaría los que sí cumplen.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Yes/No: orden y effects (CostCenter)</div>
+      <p>Policy de subscription para validar el tag <code>CostCenter</code>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Deny se evalúa <strong>primero</strong></td><td><span class="no">No</span></td><td>Orden: Disabled → Append/Modify → <strong>Deny</strong> → Audit → AuditIfNotExists → DeployIfNotExists</td></tr>
+            <tr><td>Append <strong>modifica</strong> el valor de un campo que ya existe</td><td><span class="no">No</span></td><td>Append <strong>agrega</strong> campos. Reemplazar = <code>Modify</code></td></tr>
+            <tr><td>Audit escribe un warning en el <strong>Activity Log</strong> si no cumple</td><td><span class="yes">Yes</span></td><td>No bloquea el request; deja rastro</td></tr>
+            <tr><td>DeployIfNotExists corre solo si el Resource Provider respondió <strong>éxito</strong></td><td><span class="yes">Yes</span></td><td>Es post-creación. Si el deploy falló, DINE no arranca</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Deny no va primero (Append/Modify se aplican antes, para que el request pueda quedar conforme). Append ≠ Modify. DINE no es un Deny: espera el 200 del provider.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Si el escenario pide "<strong>impedir</strong>" → <code>Deny</code>. Si pide "<strong>reportar / detectar</strong> sin bloquear" → <code>Audit</code>. Si pide "<strong>corregir automáticamente</strong> recursos existentes" → <code>Modify</code> o <code>DeployIfNotExists</code> + remediation task.</span>
+    </div>
+  </div>
+
+  <!-- ══ 6 ══ -->
+  <div class="section" id="cost-management">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">💰</div>
+      <span class="section-title">Cost Management, Budgets y Advisor</span>
+      <span class="section-tag">Costos</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cost Analysis</div>
+      <ul>
+        <li>Vista de gasto <strong>acumulado y proyectado</strong>, con agrupación y filtro por <strong>subscription, resource group, resource type, location, service name y tag</strong>.</li>
+        <li>Se puede exportar de forma programada a una <strong>Storage Account</strong> (diario / semanal / mensual) para análisis externo.</li>
+        <li>Los datos de costo pueden tardar en consolidarse; no es facturación en tiempo real.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Budgets</div>
+      <ul>
+        <li><strong>Scope:</strong> management group, subscription o resource group (también scopes de facturación en EA/MCA).</li>
+        <li><strong>Período de reset:</strong> mensual, trimestral o anual, con fecha de expiración.</li>
+        <li><strong>Umbrales de alerta:</strong> se definen como <strong>% del monto del budget</strong>, y pueden dispararse sobre el costo <strong>actual</strong> o el <strong>forecast</strong> (previsto). Hasta <strong>5 condiciones de alerta por budget</strong>.</li>
+        <li>Las alertas notifican por <strong>email</strong> y/o vía <strong>Action Group</strong> — lo que habilita automatizar (webhook, Logic App, Automation runbook, Azure Function) para, por ejemplo, apagar VMs.</li>
+        <li>El Action Group usado por un budget debe estar configurado con el esquema común de alertas para recibir el payload correctamente.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí 2: budget de hace 4 años, alertas de más</div>
+      <p>Budget mensual al 100% que se consume la primera semana. Finanzas quiere visibilidad actual y alertas con sentido.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Revisar Cost Analysis</strong> (histórico)</td><td><span class="yes">Sí</span></td><td>Sabés cuánto gastan ahora para poner un monto realista</td></tr>
+            <tr><td><strong>Modificar el budget</strong> al monto actual y consolidar umbrales</td><td><span class="yes">Sí</span></td><td>El 100% de un número viejo dispara mail todos los días</td></tr>
+            <tr><td>Cost anomaly detection</td><td><span class="no">No</span></td><td>Picos raros. Acá el gasto es predecible y el budget quedó chico</td></tr>
+            <tr><td>Billing Reader al Finance Director</td><td><span class="no">No</span></td><td>Visibilidad sí; no apaga las alertas ni corrige el monto</td></tr>
+            <tr><td>Azure Advisor cost recommendations</td><td><span class="no">No</span></td><td>Ahorrar (resize). No es el budget ni el spam de mails</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> alertas “unnecessary” de un budget viejo = <strong>Cost Analysis + retocar el budget</strong>. Anomaly/Advisor/Billing Reader son herramientas reales, pero no arreglan el umbral desactualizado.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>Budget</th><th>Spending limit</th></tr></thead>
+        <tbody>
+          <tr><td>¿Frena el gasto?</td><td><span class="chip chip-red">NO</span> solo notifica</td><td><span class="chip chip-green">SÍ</span> deshabilita servicios al llegar al crédito</td></tr>
+          <tr><td>¿Quién lo define?</td><td>Vos, con el monto que quieras</td><td>Azure, atado al crédito de la oferta</td></tr>
+          <tr><td>Disponible en</td><td>Cualquier subscription</td><td>Ofertas con crédito: <strong>Free Trial</strong>, <strong>Visual Studio / MSDN</strong></td></tr>
+          <tr><td>Disponible en Pay-As-You-Go / EA</td><td class="yes">Sí</td><td class="no">No aplica</td></tr>
+          <tr><td>Efecto al alcanzarlo</td><td>Email + Action Group</td><td>Recursos deallocated; los datos se conservan</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> un <strong>Budget NO detiene el gasto</strong>. Si la pregunta dice "asegurar que la suscripción <em>deje de generar cargos</em> al llegar a X", un budget solo <strong>no alcanza</strong>: hay que combinarlo con un <strong>Action Group que dispare una automatización</strong> (Runbook / Logic App / Function) que apague o borre los recursos. El spending limit no es configurable en Pay-As-You-Go.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Herramienta</th><th>Qué te da</th><th>Escenario típico</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Cost Management + Billing</strong></td><td>Gasto real e histórico, budgets, exports, alertas</td><td>"¿Cuánto gastó el RG de Producción el mes pasado?"</td></tr>
+          <tr><td><strong>Azure Advisor</strong></td><td><strong>Recomendaciones</strong> personalizadas en 5 pilares: <em>Cost, Security, Reliability, Operational Excellence, Performance</em></td><td>"¿Qué VMs están subutilizadas? ¿Conviene una reserva?"</td></tr>
+          <tr><td><strong>Pricing Calculator</strong></td><td>Estimación <strong>previa</strong> al despliegue</td><td>"Cuánto costaría esta arquitectura antes de crearla"</td></tr>
+          <tr><td><strong>TCO Calculator</strong></td><td>Comparación on-premises vs Azure</td><td>Justificar la migración a la dirección</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Advisor es <strong>reactivo sobre lo desplegado</strong> (mira tu telemetría real); los calculadores son <strong>previos al despliegue</strong>. Si la pregunta menciona "recomendaciones para reducir el costo de recursos existentes", es <strong>Advisor</strong>, no Cost Analysis. Alertar recomendaciones nuevas con Bicep: <code>Microsoft.Insights/activityLogAlerts</code> + <code>actionGroups</code> — detalle en <a href="16-azure-monitor.html#sec-alertas">16 · Alertas</a>.</span>
+    </div>
+  </div>
+
+  <!-- ══ 7 ══ -->
+  <div class="section" id="ahorro">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">📉</div>
+      <span class="section-title">Modelos de ahorro: cuál pide cada escenario</span>
+      <span class="section-tag">Optimización</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Modelo</th><th>Compromiso</th><th>Requisito</th><th>Palabra clave en el enunciado</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Reserved Instances</strong></td>
+            <td><strong>1 o 3 años</strong> de capacidad reservada</td>
+            <td>Carga estable y predecible que corre 24/7, atada a familia/región/tamaño</td>
+            <td>"workload constante", "no va a cambiar de tamaño", "24/7"</td>
+          </tr>
+          <tr>
+            <td><strong>Azure Savings Plans</strong></td>
+            <td><strong>1 o 3 años</strong> de gasto horario (USD/hora)</td>
+            <td>Cómputo elegible que cambia de familia, región o servicio</td>
+            <td>"compromiso de gasto", "flexibilidad entre tamaños/regiones"</td>
+          </tr>
+          <tr>
+            <td><strong>Azure Hybrid Benefit</strong></td>
+            <td>Ninguno temporal</td>
+            <td>Licencias de <strong>Windows Server</strong> o <strong>SQL Server</strong> con <strong>Software Assurance</strong> (o suscripciones RHEL/SUSE)</td>
+            <td>"ya tenemos licencias on-premises", "Software Assurance"</td>
+          </tr>
+          <tr>
+            <td><strong>Spot VMs</strong></td>
+            <td>Ninguno — <strong>desalojables</strong></td>
+            <td>La carga tolera interrupción y reinicio</td>
+            <td>"batch", "render", "puede interrumpirse", "sin SLA"</td>
+          </tr>
+          <tr>
+            <td><strong>Dev/Test pricing</strong></td>
+            <td>Ninguno</td>
+            <td>Subscription <strong>Enterprise Dev/Test</strong> o <strong>Pay-As-You-Go Dev/Test</strong>; solo cargas de no producción</td>
+            <td>"entorno de desarrollo/QA", "no productivo"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Detalles finos</div>
+      <ul>
+        <li><strong>Reservations:</strong> se compran por 1 o 3 años, con pago <strong>upfront o mensual</strong> (el mensual no cuesta más). Aplican a VMs, SQL DB, Cosmos DB, Storage reservado, etc. Se pueden <strong>intercambiar o cancelar</strong> (con condiciones), y el scope es <strong>shared</strong> (toda la billing account), <strong>single subscription</strong> o <strong>single resource group</strong>.</li>
+        <li>La reserva cubre el <strong>costo de cómputo</strong>, no la licencia de Windows: por eso <strong>RI + Azure Hybrid Benefit se combinan</strong> y es la respuesta cuando el escenario pide máximo ahorro con licencias propias.</li>
+        <li><strong>Savings Plans:</strong> compromiso de <strong>$/hora</strong> por 1 o 3 años, flexible entre familias, regiones y servicios de cómputo elegibles. Menos descuento que una RI atada, más flexibilidad. Si el enunciado dice "la carga cambia de tamaño/región pero podemos comprometernos", es Savings Plan, no RI.</li>
+        <li><strong>Spot VMs:</strong> Azure las desaloja cuando necesita la capacidad o cuando el precio supera tu <strong>máximo</strong>. Política de desalojo: <strong>Deallocate</strong> (se conserva el disco, podés reiniciarla) o <strong>Delete</strong>. <strong>No tienen SLA</strong>, <strong>no soportan Availability Sets</strong> ni la serie B; sí pueden ir a <strong>Availability Zones</strong>.</li>
+        <li><strong>Auto-shutdown</strong> de VMs y el <strong>right-sizing</strong> que sugiere Advisor son las respuestas "baratas" cuando el escenario dice "sin compromiso a largo plazo y sin cambiar de suscripción".</li>
+        <li>Frenar una VM desde el SO <strong>no</strong> corta la facturación de cómputo: hay que <strong>deallocate</strong> (Stop desde el portal/CLI). El disco se sigue pagando igual.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si el escenario dice "la carga es crítica y no puede interrumpirse", <strong>Spot queda descartado sí o sí</strong> aunque sea la opción más barata. Si dice "sin comprometerse por adelantado", quedan fuera RI y Savings Plan. Si dice "la carga varía de tamaño/región pero hay compromiso de gasto", la respuesta es <strong>Savings Plan</strong>, no Reserved Instances.</span>
+    </div>
+  </div>
+
+  <!-- ══ 8 ══ -->
+  <div class="section" id="arm">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">⚙️</div>
+      <span class="section-title">Azure Resource Manager y resource providers</span>
+      <span class="section-tag">Control plane</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">ARM es la única puerta</div>
+      <ul>
+        <li><strong>Todo</strong> pasa por ARM: portal, Azure CLI, Azure PowerShell, SDKs y la REST API terminan hablando con el mismo endpoint. Por eso el resultado es idéntico sin importar la herramienta.</li>
+        <li>ARM aplica de forma consistente <strong>RBAC, Policy, locks y tags</strong>, y maneja el orden de dependencias en los despliegues.</li>
+        <li>Un despliegue de template puede ser <strong>Incremental</strong> (default: agrega/actualiza y deja intacto lo que no está en el template) o <strong>Complete</strong> (<strong>borra del RG lo que no esté declarado</strong> en el template).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Resource providers</div>
+      <ul>
+        <li>Un <strong>resource provider</strong> es el servicio que aporta los tipos de recurso: <code>Microsoft.Compute</code> (VMs), <code>Microsoft.Network</code>, <code>Microsoft.Storage</code>, <code>Microsoft.Web</code>, <code>Microsoft.KeyVault</code>, <code>Microsoft.OperationalInsights</code> (<strong>Log Analytics workspace</strong>), <code>Microsoft.App</code> (Container Apps). Tabla completa en <a href="11-arm-bicep.html">11 · ARM</a>.</li>
+        <li>Se registran <strong>por subscription</strong>. Hasta que un provider no está <strong>Registered</strong>, no se pueden crear recursos de sus tipos en esa subscription.</li>
+        <li>Muchos se registran automáticamente al crear el primer recurso desde el portal, pero desde <strong>CLI/PowerShell o al mover recursos a otra subscription</strong> puede hacer falta registrarlo a mano.</li>
+        <li>El <strong>resource ID</strong> completo tiene esta forma: <code>/subscriptions/{subId}/resourceGroups/{rg}/providers/{namespace}/{tipo}/{nombre}</code>.</li>
+      </ul>
+      <pre><code>az provider list --query "[?registrationState=='Registered'].namespace" -o table
+az provider register --namespace Microsoft.Compute
+az provider show --namespace Microsoft.Compute --query registrationState</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si el escenario dice que la creación de un tipo de recurso <strong>falla en una subscription nueva pero funciona en otra</strong>, la causa más probable es que el <strong>resource provider no está registrado</strong> en esa subscription — no un problema de RBAC ni de cuota. Y ojo con el otro clásico: un despliegue en modo <strong>Complete</strong> <strong>borra</strong> los recursos del RG que no figuran en el template.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">CLI 2.62 + Policy “no funciona” en una sub nueva</div>
+      <p>Global Administrator + Scheduled Patching Contributor en la subscription. Policies creadas con Azure CLI no aplican.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Causa</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Falta registrar <code>Microsoft.PolicyInsights</code></td><td><span class="yes">Sí</span></td><td>Sub nueva: compliance/evaluación de Policy vive en ese provider</td></tr>
+            <tr><td>No tenés rol para Policy</td><td><span class="no">No</span></td><td>Contributor-level en la sub alcanza para asignar policies</td></tr>
+            <tr><td>Hay que actualizar el CLI (2.62)</td><td><span class="no">No</span></td><td>Versión moderna. No es el bloqueo</td></tr>
+            <tr><td>No tenés acceso a la subscription</td><td><span class="no">No</span></td><td>El enunciado te da un rol a nivel sub</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>az provider register --namespace Microsoft.PolicyInsights
+Register-AzResourceProvider -ProviderNamespace Microsoft.PolicyInsights</code></pre>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Global Administrator es carnada de “faltan permisos / elevate access”. En sub nueva + CLI, Policy que “no funciona” = <strong><code>Microsoft.PolicyInsights</code> no registrado</strong>. (LAW = OperationalInsights; no los mezcles.)</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Chequeo rápido de la capa de governance, de arriba hacia abajo: <strong>MG → Subscription → RG → Recurso</strong>. RBAC y Policy se heredan en toda la cadena; los <strong>locks</strong> se heredan desde subscription para abajo; los <strong>tags no se heredan nunca</strong> sin Policy.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Cuántos niveles de management group podés anidar y cuántos MGs entran por directorio?", a: "<strong>6 niveles</strong> de management groups, <strong>sin contar</strong> el root MG ni el nivel de subscription. Hasta <strong>10.000 MGs</strong> por directorio.", cat: "Jerarquía" },
+  { q: "¿Cuántos padres puede tener una subscription y a cuántos tenants puede pertenecer?", a: "<strong>Un solo management group padre</strong> y <strong>un solo tenant</strong> de Entra ID. Se puede transferir de tenant, pero nunca estar en dos a la vez.", cat: "Jerarquía" },
+  { q: "¿Qué es el ID del Root Management Group y se puede borrar?", a: "Su ID es el <strong>tenant ID</strong> de Entra ID. <strong>No se puede borrar ni mover</strong>; solo se le cambia el display name. Para operarlo hace falta elevar permisos (User Access Administrator en <code>/</code>).", cat: "Jerarquía" },
+  { q: "Mover SalesSub del MG Sales al MG Marketing. ¿Qué dos cmdlets? ¿Update-AzManagementGroup? ¿Remove-AzManagementGroup?", a: "<code>Remove-AzManagementGroupSubscription</code> del origen y <code>New-AzManagementGroupSubscription</code> al destino. No hay Move. <code>Update-AzManagementGroup</code> cambia display name / parent del grupo. <code>Remove-AzManagementGroup</code> borra el MG vacío <em>después</em>. CLI: <code>az account management-group subscription remove|add</code>.", cat: "Jerarquía" },
+  { q: "Todos los users pueden crear MGs. Hierarchy protection. ¿Qué operación en el JSON: write, delete, subscriptions/write o read?", a: "<code>Microsoft.Management/managementGroups/write</code>. Delete borra. subscriptions/write mueve la sub. Read solo ve. Default: cualquiera crea MGs; protection exige ese write en el root. CLI: <code>az account management-group hierarchy-settings create --require-authorization-for-group-creation true</code>.", cat: "Jerarquía" },
+  { q: "La región de un resource group, ¿tiene que coincidir con la de sus recursos?", a: "<strong>No.</strong> La región del RG solo define dónde se guarda su <strong>metadata</strong>. Un RG en West Europe puede contener VMs en East US, y un mismo RG puede tener recursos de varias regiones.", cat: "Resource Groups" },
+  { q: "Al mover un recurso a otro resource group, ¿qué cambia?", a: "Cambia el <strong>resource ID</strong> (incluye subscription y RG), así que se rompen referencias y las asignaciones de RBAC del RG viejo no viajan. <strong>La región NO cambia</strong>. Durante el move, RG origen y destino quedan bloqueados.", cat: "Resource Groups" },
+  { q: "Diferencia entre lock CanNotDelete y ReadOnly", a: "<code>CanNotDelete</code>: podés <strong>leer y modificar</strong>, no borrar. <code>ReadOnly</code>: <strong>solo lectura</strong>, ni borrar ni modificar (equivale al rol Reader). Si hay varios, <strong>gana el más restrictivo</strong>.", cat: "Locks" },
+  { q: "¿Por qué un lock ReadOnly en una Storage Account rompe el acceso a los access keys?", a: "Porque <strong>List Keys es una operación POST</strong> y ARM la clasifica como <strong>escritura</strong>, no lectura. Con ReadOnly falla, y las apps que recuperan las keys dinámicamente se caen.", cat: "Locks" },
+  { q: "¿Qué permiso necesitás para crear o borrar un resource lock?", a: "La acción <code>Microsoft.Authorization/locks/*</code> — la traen <strong>Owner</strong> y <strong>User Access Administrator</strong>. <strong>Contributor no puede.</strong> Los locks aplican a todos los usuarios, incluidos los Owners.", cat: "Locks" },
+  { q: "Cloud Shell: sacar todos los locks de RG1. ¿Tres cmdlets del pipeline?", a: "<code>Get-AzResourceLock | Where-Object ResourceGroupName -eq \"$rg\" | Remove-AzResourceLock -Force</code>. <code>Select-Object</code> filtra columnas, no filas. <code>Get-AzResource</code> / <code>Remove-AzResource</code> no son locks. CLI: <code>az lock list --resource-group rg1</code> · <code>az lock delete --yes</code>.", cat: "Locks" },
+  { q: "¿En qué scopes se aplican los resource locks?", a: "<strong>Subscription, resource group y recurso</strong>. <strong>No existen locks a nivel management group.</strong> Se heredan hacia abajo y solo afectan el control plane, no el data plane (no impiden borrar blobs ni filas).", cat: "Locks" },
+  { q: "Borraron RGs de test. Que no se borre nada, que Storage/App Service anden, cubrir lo nuevo, mínimo esfuerzo. ¿Delete en los RG, Delete en la sub, ReadOnly en la sub?", a: "<strong>Delete (CanNotDelete) en la subscription</strong>. Se hereda a lo actual y lo futuro. ReadOnly rompe writes (List Keys). Lock solo en los RG de test no cubre RGs nuevos.", cat: "Locks" },
+  { q: "Storage Explorer: unable to list containers or list account keys. ¿Reader? ¿ReadOnly lock? ¿CanNotDelete? ¿Blob Data Reader?", a: "Causas: rol <strong>Reader</strong> (no listKeys) y lock <strong>ReadOnly</strong> (listKeys = POST). CanNotDelete no bloquea keys. Blob Data Reader/Contributor son plano de datos: no causan ese error.", cat: "Locks" },
+  { q: "¿Los tags se heredan del resource group a los recursos?", a: "<strong>No.</strong> Nunca se heredan automáticamente. Para propagarlos hay que usar <strong>Azure Policy con effect Modify</strong> (o <code>Append</code> en creación) más una <strong>remediation task</strong> para lo ya existente. Límite: <strong>50 tags por recurso</strong>.", cat: "Tags" },
+  { q: "¿Qué effects de Policy requieren managed identity y remediation task?", a: "<strong><code>Modify</code></strong> y <strong><code>DeployIfNotExists</code></strong>. <code>Deny</code>, <code>Audit</code>, <code>Append</code>, <code>AuditIfNotExists</code> y <code>Disabled</code> <strong>no</strong> necesitan identidad.", cat: "Policy" },
+  { q: "Policy Yes/No: ¿Deny primero? ¿Append modifica un campo existente? ¿Audit en Activity Log? ¿DINE solo si el RP dio éxito?", a: "<strong>No / No / Yes / Yes</strong>. Orden: Disabled → Append/Modify → Deny → Audit → … → DINE. Append agrega, no pisa (eso es Modify). Audit = warning en Activity Log. DINE es post-creación (espera 200 del provider).", cat: "Policy" },
+  { q: "¿Azure Policy es retroactivo? ¿Cuánto tarda en evaluar lo existente?", a: "<strong>No es retroactivo</strong>: un <code>Deny</code> no borra ni apaga lo que ya existe, solo lo marca <strong>non-compliant</strong>. Los resultados de compliance tras una asignación tardan <strong>hasta ~30 minutos</strong>; el ciclo estándar corre cada ~24 h.", cat: "Policy" },
+  { q: "¿Cuál es la diferencia entre el scope de una Definition y el de una Assignment?", a: "<strong>Definition</strong> = dónde vive y es visible. <strong>Assignment</strong> = dónde se aplica y evalúa. Una definition en una subscription <strong>no se asigna a un MG</strong>: para más alcance, guardala en el management group.", cat: "Policy" },
+  { q: "Querés aplicar 15 policies de compliance juntas. ¿Qué usás?", a: "Una <strong>Initiative</strong> (policy set). Se asigna como una sola unidad y reporta compliance agrupado.", cat: "Policy" },
+  { q: "¿Qué tipo de policy definition NO podés editar?", a: "<strong>Built-in</strong> y <strong>Static</strong> (Microsoft). Solo las custom se editan. Cambiar el JSON de una custom <strong>no actualiza sola</strong> los assignments.", cat: "Policy" },
+  { q: "¿Qué hace mode: Indexed en una policy?", a: "Evalúa solo recursos que <strong>soportan tags y location</strong>. Excluye automáticamente los tipos que no los tienen.", cat: "Policy" },
+  { q: "Un Budget de Cost Management, ¿frena el gasto al llegar al umbral?", a: "<strong>NO.</strong> Solo <strong>alerta</strong> (email y/o Action Group) sobre costo actual o forecast, hasta 5 condiciones. Para frenar de verdad hay que encadenar un <strong>Action Group con automatización</strong> (Runbook / Logic App / Function). El <strong>spending limit</strong> sí corta, pero solo existe en ofertas con crédito (Free Trial, Visual Studio).", cat: "Costos" },
+  { q: "Budget de hace 4 años al 100%, mails todos los días. Elegí 2: ¿Cost Analysis, retocar el budget, anomaly, Billing Reader, Advisor?", a: "<strong>Cost Analysis</strong> (histórico realista) + <strong>modificar el budget y consolidar umbrales</strong>. Anomaly es picos raros. Billing Reader da visibilidad, no apaga el spam. Advisor ahorra (resize), no corrige el monto.", cat: "Costos" },
+  { q: "¿Cuáles son los 5 pilares de recomendaciones de Azure Advisor?", a: "<strong>Cost, Security, Reliability, Operational Excellence y Performance.</strong> Advisor recomienda sobre lo <em>ya desplegado</em>; el Pricing Calculator y el TCO Calculator estiman <em>antes</em> de desplegar.", cat: "Costos" },
+  { q: "VM en iaas-rg. Generalize + capture; nadie debe cambiar la config, lo más rápido. ¿ReadOnly en el RG, Delete lock en la VM, o editar RBAC?", a: "<strong>ReadOnly lock en el resource group</strong> (se hereda). Delete lock (<code>CanNotDelete</code>) sigue permitiendo cambios. RBAC funciona pero no es “as quickly as possible”. <code>az lock create -g iaas-rg --lock-type ReadOnly</code> / <code>New-AzResourceLock -LockLevel ReadOnly -ResourceGroupName iaas-rg</code>.", cat: "Locks" },
+  { q: "Accounting (Billing Reader) necesita centro de costo, mínimo esfuerzo. ¿Tag en cada RG? ¿En cada recurso? ¿Account Center? ¿Solo Cost Analysis?", a: "Tag <code>CostCenter</code> en <strong>cada RG y cada recurso</strong> (los tags no se heredan). Account Center es legado. Cost Analysis <em>muestra</em> costos; sin tags no hay centro de costo que filtrar.", cat: "Tags" },
+  { q: "Set-AzResource -Tag @{Dept=\"IT\"} borra los tags viejos. ¿Cómo se appendea? ¿ARM, Policy o pasar a CLI?", a: "<code>$r.Tags.Add(\"Dept\",\"IT\")</code> y después Set con <code>$r.Tags</code>, o <code>Update-AzTag -Operation Merge</code>. ARM/Policy no arreglan el script. CLI igual necesita merge (<code>az tag update --operation Merge</code> / <code>--is-incremental</code>), no un rewrite.", cat: "Tags" },
+  { q: "Move sub010→sub020: RBAC de las VMs orphaned, el de los RGs sigue. ¿Outage, faltan permisos, porque es entre subs, o porque no usaste el portal?", a: "Porque el move fue <strong>entre subscriptions</strong>: el resource ID cambia el subId y las assignments <em>directas al recurso</em> quedan huérfanas. Las del RG no. Outage/permisos/portal no explican ese recorte.", cat: "Resource Groups" },
+  { q: "Storage sin tags. Dept=Marketing y Status=Standard. ¿Get-AzResource + New-AzTag, Update-AzTag o Set-AzTag?", a: "<code>Get-AzResource</code> (el <code>.Id</code>) y <code>New-AzTag -ResourceId -Tag $tags</code>. Sin tags previos no es Update- (merge). Set-AzTag no es el cmdlet de aplicar el hashtable a un recurso.", cat: "Tags" },
+  { q: "VMs solo en regiones aprobadas. ¿Conditional Access, Policy, DSC o crear un management group?", a: "<strong>Azure Policy</strong> (Allowed locations / custom + Deny). CA = login. DSC = estado del guest. El MG es el scope, no la restricción.", cat: "Policy" },
+  { q: "Mover App-RG: ¿borrar managed SSL? ¿Standard LB a otra sub? ¿sacar peering? ¿VNet en la misma sub?", a: "<strong>Yes / No / Yes / Yes</strong>. Managed cert no se mueve. Standard LB/PIP cross-sub no. Peering hay que borrarlo. VNet RG→RG en la misma sub sí.", cat: "Resource Groups" },
+  { q: "StorAcct1 ya tiene Department=Marketing; hay que sumar Status=Approved. ¿New-AzTag o Update-AzTag? ¿Merge o Replace?", a: "<code>Get-AzResource</code> + <code>Update-AzTag -Operation Merge</code>. New- o Replace pisan y se pierde Department.", cat: "Tags" },
+  { q: "CLI 2.62, GA + Contributor en una sub nueva: Policy no aplica. ¿Falta rol, CLI viejo, sin acceso, o PolicyInsights?", a: "<strong><code>Microsoft.PolicyInsights</code> no registrado</strong>. GA es carnada de permisos. 2.62 no es viejo. El enunciado ya te da rol en la sub. <code>az provider register --namespace Microsoft.PolicyInsights</code>.", cat: "Providers" },
+  { q: "Mover Vault1 (RSV, Backup on) de Sub1 a Sub2, mín. downtime. ¿Export-AzResourceGroup, Move-AzResource, Set-AzResource o New-AzResource?", a: "<code>Move-AzResource</code> (el vault vivo). Export- = template, no mueve data. Set- cambia properties en el mismo scope. New- crea vacío (data loss).", cat: "Resource Groups" },
+  { q: "Nadie borra devtestrg ni lo de adentro, sin lock en la sub, mín. esfuerzo. ¿Delete en un recurso, Delete en el RG, ReadOnly en un recurso o ReadOnly en la sub?", a: "<strong>CanNotDelete en el resource group</strong>. Se hereda. Un recurso suelto no cubre el grupo. ReadOnly bloquea updates. Lock en la sub está prohibido en el enunciado.", cat: "Locks" },
+  { q: "Policy: deny si Environment no es dev/qa/prod; solo recursos con tags. ¿mode, field, operador, effect?", a: "<code>mode: Indexed</code> · <code>tags['Environment']</code> · <strong>notIn</strong> [dev, qa, prod] · <code>deny</code>. All evalúa tipos sin tags. <code>in</code> denegaría los válidos. Audit no bloquea.", cat: "Policy" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

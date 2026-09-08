@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · ARM Templates y Bicep</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">ARM Templates y Bicep</div>
+    <div class="nav-sub">Plantillas, modos de despliegue y automatización</div>
+    <div class="nav-weight">Dominio 3 · 20–25%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#sec-arm"><span class="dot"></span>ARM: capa de control</a>
+  <a href="#sec-anatomia"><span class="dot"></span>Anatomía del template</a>
+  <a href="#sec-funciones"><span class="dot"></span>Funciones y dependencias</a>
+  <a href="#sec-modos"><span class="dot"></span>Modos: Incremental vs Complete</a>
+  <a href="#sec-scopes"><span class="dot"></span>Scopes de despliegue</a>
+  <a href="#sec-bicep"><span class="dot"></span>Bicep</a>
+  <a href="#sec-operacion"><span class="dot"></span>Validación y operación</a>
+  <a href="#sec-comparativa"><span class="dot"></span>ARM vs Terraform vs CLI</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen no te pide escribir una plantilla de cero. Te pide reconocer <strong>qué secciones son obligatorias</strong>, qué pasa exactamente cuando desplegás en modo <strong>Complete</strong>, en qué <strong>scope</strong> corre cada comando, y en Bicep si una dependencia es <strong>implícita</strong> (símbolo) o <strong>explícita</strong> (<code>dependsOn</code>) — con dependsOn no hay paralelo. Registrar providers: Log Analytics = <code>Microsoft.OperationalInsights</code> (no PolicyInsights ni Insights). Plantilla en GitHub o Blob+SAS: <code>New-AzResourceGroupDeployment -TemplateUri</code>.
+  </div>
+
+  <!-- ══════════ SECCIÓN 1 ══════════ -->
+  <div class="section" id="sec-arm">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🧭</div>
+      <span class="section-title">Azure Resource Manager como capa de control</span>
+      <span class="section-tag">Fundamento</span>
+    </div>
+
+    <p><strong>ARM es la única puerta de entrada al control plane de Azure.</strong> No importa por dónde entres: portal, Azure CLI, Azure PowerShell, un SDK o una llamada REST cruda. Todo termina en el mismo endpoint de ARM, que autentica contra Microsoft Entra ID, autoriza contra RBAC, evalúa Azure Policy y recién ahí le pasa la operación al resource provider correspondiente.</p>
+
+    <div class="flow">
+      <div class="flow-step">Portal / CLI / PowerShell / SDK<br><small>cliente</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step highlight">Azure Resource Manager<br><small>authN + RBAC + Policy + locks</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Resource provider<br><small>Microsoft.Compute, etc.</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Recurso</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Consecuencias prácticas</div>
+      <ul>
+        <li>Un <strong>RBAC role assignment</strong>, un <strong>resource lock</strong> o una <strong>Azure Policy</strong> se aplican igual sin importar la herramienta: no hay "puerta trasera" por CLI.</li>
+        <li>Las operaciones de <strong>data plane</strong> (leer un blob, consultar una base) NO pasan por ARM. Por eso un rol de control plane como <em>Contributor</em> no te da automáticamente lectura de datos de un blob.</li>
+        <li>Los <strong>resource locks</strong> (<code>CanNotDelete</code>, <code>ReadOnly</code>) son evaluados por ARM, así que también bloquean despliegues de plantillas.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Resource providers</div>
+      <p>Cada familia de servicios vive en un <strong>resource provider</strong> con formato <code>Microsoft.&lt;Servicio&gt;</code>: <code>Microsoft.Compute</code>, <code>Microsoft.Storage</code>, <code>Microsoft.Network</code>, <code>Microsoft.KeyVault</code>. El provider define los <strong>tipos de recurso</strong>, las <strong>operaciones</strong> y las <strong>API versions</strong> disponibles.</p>
+      <p>El registro es <strong>por subscription</strong>. Si el provider no está registrado, el despliegue falla con <code>NoRegisteredProviderFound</code> o <code>MissingSubscriptionRegistration</code>.</p>
+      <pre>az provider list --query "[?registrationState=='Registered'].namespace" -o tsv
+az provider register --namespace Microsoft.Insights
+az provider show --namespace Microsoft.Insights --query registrationState
+
+# PowerShell
+Register-AzResourceProvider -ProviderNamespace Microsoft.Insights</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Namespaces que el examen hace matchear</div>
+      <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Namespace</th><th>Recurso típico</th></tr></thead>
+        <tbody>
+          <tr><td><code>Microsoft.OperationalInsights</code></td><td><strong>Log Analytics workspace</strong></td></tr>
+          <tr><td><code>Microsoft.Insights</code></td><td>Metric/Activity Log alerts, action groups, Autoscale</td></tr>
+          <tr><td><code>Microsoft.App</code></td><td>Container Apps (environment + app)</td></tr>
+          <tr><td><code>Microsoft.PolicyInsights</code></td><td>Compliance / remediación de Azure Policy</td></tr>
+          <tr><td><code>Microsoft.NotificationHubs</code></td><td>Push a móviles (Notification Hubs)</td></tr>
+          <tr><td><code>Microsoft.Automation</code></td><td>Runbooks, Update Management</td></tr>
+          <tr><td><code>Microsoft.Compute</code> · <code>Network</code> · <code>Storage</code> · <code>Web</code> · <code>KeyVault</code></td><td>VMs, red, storage, App Service, vault</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “registrar el workspace de Log Analytics” = <code>Microsoft.OperationalInsights</code>. PolicyInsights / NotificationHubs / Automation son distractores de nombre parecido. Extension CLI faltante ≠ provider faltante: el enunciado que pide <code>az provider register</code> quiere el <strong>namespace</strong>.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el registro de un resource provider es a nivel de <strong>subscription</strong>, no de resource group ni de tenant. Si el escenario dice "el despliegue falla en una subscription nueva pero funciona en la vieja", la respuesta es registrar el provider en la subscription nueva. Registrar requiere la acción <code>*/register/action</code>: <em>Owner</em> y <em>Contributor</em> la tienen, un rol de solo lectura no.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Resource ID: el identificador completo</div>
+      <pre>/subscriptions/{subscriptionId}
+  /resourceGroups/{rgName}
+  /providers/Microsoft.Storage/storageAccounts/{nombre}</pre>
+      <ul>
+        <li>Es <strong>único en todo Azure</strong> y lo usás en plantillas, scripts, role assignments y diagnósticos.</li>
+        <li>Un recurso <strong>hijo</strong> extiende el ID del padre: <code>.../storageAccounts/st01/blobServices/default/containers/logs</code>.</li>
+        <li>En plantillas lo construís con <code>resourceId()</code>; nunca lo concatenes a mano.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 2 ══════════ -->
+  <div class="section" id="sec-anatomia">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">📄</div>
+      <span class="section-title">Anatomía de un ARM template (JSON)</span>
+      <span class="section-tag">Estructura</span>
+    </div>
+
+    <p>Un ARM template es un archivo JSON declarativo: describís el <strong>estado final deseado</strong>, no los pasos. ARM se encarga del orden y del paralelismo.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Sección</th><th>¿Obligatoria?</th><th>Para qué sirve</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>$schema</code></td><td><span class="chip chip-green">Sí</span></td><td>URL del esquema JSON. Determina el scope: <code>deploymentTemplate.json#</code> (resource group) vs <code>subscriptionDeploymentTemplate.json#</code>.</td></tr>
+          <tr><td><code>contentVersion</code></td><td><span class="chip chip-green">Sí</span></td><td>Versión que definís vos (típicamente <code>1.0.0.0</code>). ARM no la interpreta; sirve para trazabilidad.</td></tr>
+          <tr><td><code>resources</code></td><td><span class="chip chip-green">Sí</span></td><td>Qué se despliega. Puede estar vacío (<code>[]</code>), pero el elemento debe existir.</td></tr>
+          <tr><td><code>parameters</code></td><td><span class="chip chip-yellow">No</span></td><td>Valores que se pasan en tiempo de despliegue. Admiten <code>defaultValue</code>, <code>allowedValues</code>, <code>minLength</code>/<code>maxLength</code>, <code>type: securestring</code>.</td></tr>
+          <tr><td><code>variables</code></td><td><span class="chip chip-yellow">No</span></td><td>Valores calculados dentro de la plantilla para no repetir expresiones. No se pueden pasar desde afuera.</td></tr>
+          <tr><td><code>functions</code></td><td><span class="chip chip-yellow">No</span></td><td>User-defined functions con namespace propio, para reutilizar expresiones.</td></tr>
+          <tr><td><code>outputs</code></td><td><span class="chip chip-yellow">No</span></td><td>Valores que devuelve el deployment (IPs, FQDNs, resource IDs) y que consumen las linked/nested templates.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Ejemplo mínimo válido</div>
+      <pre>{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageName": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 24
+    },
+    "sku": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [ "Standard_LRS", "Standard_GRS", "Premium_LRS" ]
+    }
+  },
+  "variables": {
+    "location": "[resourceGroup().location]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-01-01",
+      "name": "[parameters('storageName')]",
+      "location": "[variables('location')]",
+      "sku": { "name": "[parameters('sku')]" },
+      "kind": "StorageV2",
+      "properties": { "supportsHttpsTrafficOnly": true }
+    }
+  ],
+  "outputs": {
+    "storageId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageName'))]"
+    }
+  }
+}</pre>
+      <p>Fijate que todo recurso necesita mínimamente <code>type</code>, <code>apiVersion</code> y <code>name</code>. Las expresiones van entre corchetes y comillas: <code>"[expresión]"</code>.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Parameter files (.parameters.json)</div>
+      <p>Separan los valores del código. Un mismo <code>azuredeploy.json</code> con <code>dev.parameters.json</code> y <code>prod.parameters.json</code> es el patrón canónico de "despliegue consistente entre entornos".</p>
+      <pre>{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageName": { "value": "stprodweu001" },
+    "sku":         { "value": "Standard_GRS" }
+  }
+}</pre>
+      <pre>az deployment group create \
+  --resource-group rg-prod \
+  --template-file azuredeploy.json \
+  --parameters @prod.parameters.json \
+  --parameters sku=Standard_ZRS      # este inline pisa al del archivo
+
+# PowerShell
+New-AzResourceGroupDeployment -ResourceGroupName rg-prod `
+  -TemplateFile azuredeploy.json `
+  -TemplateParameterFile prod.parameters.json</pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> ojo con el <code>@</code> en CLI. <code>--parameters @archivo.json</code> lee un <strong>parameter file</strong>; sin el <code>@</code>, Azure CLI lo interpreta como un string literal o como JSON inline y el despliegue falla o toma el valor equivocado. Y el orden importa: los parámetros inline <strong>sobrescriben</strong> a los del archivo.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: password cifrada vía Key Vault en el parameter file</div>
+      <p>Plantilla de VMs bajada del portal. El password tiene que ir <strong>referenciado</strong> (no en claro) y quedar <strong>encriptado en reposo</strong>.</p>
+<pre>{
+  "adminPassword": {
+    "reference": {
+      "keyVault": {
+        "id": "/subscriptions/&lt;sub-id&gt;/resourceGroups/RG1/providers/Microsoft.KeyVault/vaults/Vault1209"
+      },
+      "secretName": "password2483"
+    }
+  }
+}</pre>
+      <p>En el parameter file va <code>reference</code>, no <code>value</code>. En la plantilla el parámetro es <code>securestring</code>. El vault necesita <code>enabledForTemplateDeployment</code>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Hueco</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>keyVault</code></td><td><span class="yes">Sí</span></td><td>Ahí vive el secreto. Storage Account no es para passwords de deploy</td></tr>
+            <tr><td><code>id</code> = <code>/subscriptions/.../resourceGroups/.../providers/Microsoft.KeyVault/vaults/Vault1209</code></td><td><span class="yes">Sí</span></td><td>Subscription <strong>antes</strong> que RG. El path invertido es el distractor</td></tr>
+            <tr><td><code>secretName</code></td><td><span class="yes">Sí</span></td><td>Password = <strong>secret</strong>. <code>keyName</code> es una clave criptográfica (JWK). No hay propiedad <code>password</code> dentro de <code>reference</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> tres huecos = <code>keyVault</code> + resource ID en orden <strong>subscription → RG → vault</strong> + <code>secretName</code>. No Storage. No <code>keyName</code>. No poner el password en <code>value</code> (queda en claro en el JSON).</span>
+    </div>
+    <div class="card">
+      <div class="card-title">Primera acción: password de 50 VMs sin texto claro</div>
+      <p>Bajaste el template de una VM. Hay que referenciar un admin password cifrado. ¿Qué hacés <strong>primero</strong>?</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Guardar el password en <strong>Key Vault</strong> y crear una <strong>access policy</strong> (o RBAC + <code>enabledForTemplateDeployment</code>)</td><td><span class="yes">Sí</span></td><td>ARM tiene que poder leer el secreto. Después recién el parameter file con <code>reference</code></td></tr>
+            <tr><td>Guardarlo en la plantilla origen</td><td><span class="no">No</span></td><td>Queda en claro en el JSON</td></tr>
+            <tr><td>Guardarlo en otra plantilla y linkearla</td><td><span class="no">No</span></td><td>Sigue siendo texto en un archivo</td></tr>
+            <tr><td>Recovery Services vault + backup policy</td><td><span class="no">No</span></td><td>Backup/ASR, no secretos de deploy</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “what should you do <em>first</em>” = crear el secreto en Key Vault y dar acceso a ARM. Nested templates y RSV son carnada. El JSON del parameter file viene después.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 3 ══════════ -->
+  <div class="section" id="sec-funciones">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">⚙️</div>
+      <span class="section-title">Funciones, expresiones y dependencias</span>
+      <span class="section-tag">Sintaxis</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Función</th><th>Qué devuelve</th><th>Uso típico</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>parameters('x')</code></td><td>Valor del parámetro <code>x</code></td><td>Todo lo que viene de afuera.</td></tr>
+          <tr><td><code>variables('x')</code></td><td>Valor de la variable <code>x</code></td><td>Expresiones repetidas o nombres compuestos.</td></tr>
+          <tr><td><code>resourceGroup()</code></td><td>Objeto del RG: <code>.location</code>, <code>.id</code>, <code>.name</code>, <code>.tags</code></td><td><code>"location": "[resourceGroup().location]"</code> — el patrón recomendado para heredar la región.</td></tr>
+          <tr><td><code>subscription()</code></td><td><code>.subscriptionId</code>, <code>.tenantId</code>, <code>.displayName</code></td><td>Construir IDs o etiquetar.</td></tr>
+          <tr><td><code>concat()</code></td><td>Concatena strings o arrays</td><td><code>[concat('vm-', parameters('env'))]</code>.</td></tr>
+          <tr><td><code>uniqueString()</code></td><td>Hash determinístico de 13 caracteres</td><td>Nombres globalmente únicos: <code>[concat('st', uniqueString(resourceGroup().id))]</code>. Mismo input ⇒ mismo output, así que es idempotente.</td></tr>
+          <tr><td><code>resourceId()</code></td><td>El resource ID completo</td><td>Referenciar otro recurso en <code>dependsOn</code> o en properties.</td></tr>
+          <tr><td><code>reference()</code></td><td>Estado <em>runtime</em> del recurso (sus <code>properties</code>)</td><td>Leer la IP pública, el FQDN o el endpoint de un storage. <strong>Crea dependencia implícita.</strong></td></tr>
+          <tr><td><code>listKeys()</code></td><td>Claves de un recurso</td><td>Keys de storage. Nunca las pongas en <code>outputs</code>.</td></tr>
+          <tr><td><code>copy</code> / <code>copyIndex()</code></td><td>Bucle de recursos</td><td>Crear N discos, N NICs o N VMs desde un solo bloque.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">dependsOn: explícito vs implícito</div>
+      <ul>
+        <li><strong>Explícito:</strong> array <code>dependsOn</code> con los resource IDs o nombres de los recursos que deben existir primero. Es la forma clásica en JSON.</li>
+        <li><strong>Implícito:</strong> si usás <code>reference()</code> sobre otro recurso de la misma plantilla, ARM infiere la dependencia solo. <code>resourceId()</code> por sí solo <strong>no</strong> crea dependencia: es solo construcción de string. En <strong>Bicep</strong>, referenciar el símbolo (<code>PrimaryDnsZone.properties.nameServers</code>) es implícito; el array <code>dependsOn</code> es explícito.</li>
+        <li>Sin dependencias, ARM despliega <strong>en paralelo</strong>. Con ellas, arma un grafo y serializa lo necesario.</li>
+      </ul>
+      <pre>{
+  "type": "Microsoft.Network/networkInterfaces",
+  "apiVersion": "2023-05-01",
+  "name": "nic-web01",
+  "location": "[resourceGroup().location]",
+  "dependsOn": [
+    "[resourceId('Microsoft.Network/virtualNetworks', 'vnet-prod')]",
+    "[resourceId('Microsoft.Network/publicIPAddresses', 'pip-web01')]"
+  ],
+  "properties": {
+    "ipConfigurations": [{
+      "name": "ipconfig1",
+      "properties": {
+        "subnet": { "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'vnet-prod', 'web')]" },
+        "publicIPAddress": { "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'pip-web01')]" }
+      }
+    }]
+  }
+}</pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si el escenario dice "el despliegue falla intermitentemente porque la NIC se crea antes que la VNet", la causa es un <strong><code>dependsOn</code> faltante</strong>, no un problema de permisos ni de región. Y al revés: encadenar <code>dependsOn</code> de más serializa todo y hace el despliegue lento sin necesidad.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span><code>uniqueString()</code> es determinístico, no aleatorio. Si lo alimentás con <code>resourceGroup().id</code>, el nombre generado se mantiene idéntico en cada redespliegue sobre ese mismo RG — que es exactamente lo que querés para que la plantilla sea idempotente.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Export del portal: location hardcodeada</div>
+      <p>Automation script de un RG con una VM. Hay que reusar la plantilla y que <strong>todos</strong> los recursos hereden la región del RG.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Editar la <strong>plantilla</strong>: cada <code>location</code> = <code>[resourceGroup().location]</code></td><td><span class="yes">Sí</span></td><td>Es una expresión ARM. Se evalúa en el deploy</td></tr>
+            <tr><td>Poner eso como default en el <strong>parameters file</strong></td><td><span class="no">No</span></td><td>El .parameters.json no evalúa funciones ARM</td></tr>
+            <tr><td>Crear el RG (portal o <code>New-AzResourceGroup -Location</code>) y desplegar sin tocar el JSON</td><td><span class="no">No</span></td><td>El export trae <code>"eastus"</code> literal. El RG nuevo no pisa eso</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <code>[resourceGroup().location]</code> va en el <strong>template</strong>, no en el parameters file. Crear el RG en West Europe no mueve recursos si el JSON sigue diciendo East US.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 4 ══════════ -->
+  <div class="section" id="sec-modos">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">🔀</div>
+      <span class="section-title">Modos de despliegue: Incremental vs Complete</span>
+      <span class="section-tag">⭐ Lo más preguntado</span>
+    </div>
+
+    <p>Este es <strong>el</strong> tema de ARM que cae sí o sí. La diferencia no es cómo se crean los recursos de la plantilla (eso es igual en ambos modos), sino <strong>qué pasa con los recursos del resource group que NO figuran en la plantilla</strong>.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Situación</th><th>Incremental (default)</th><th>Complete</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Recurso en la plantilla, no existe en Azure</td><td class="yes">Se crea</td><td class="yes">Se crea</td></tr>
+          <tr><td>Recurso en la plantilla, existe en Azure con otras properties</td><td>Se actualiza al estado del template</td><td>Se actualiza al estado del template</td></tr>
+          <tr><td><strong>Recurso en el RG que NO está en la plantilla</strong></td><td><span class="chip chip-green">Se deja intacto</span></td><td><span class="chip chip-red">SE BORRA</span></td></tr>
+          <tr><td>Property que existe en Azure pero se omite en la plantilla</td><td>Puede quedar tal cual (no se resetea automáticamente)</td><td>Puede quedar tal cual (no se resetea automáticamente)</td></tr>
+          <tr><td>Uso típico</td><td>Agregar o modificar sin romper lo existente. Despliegues parciales.</td><td>Forzar que el RG sea <em>exactamente</em> lo que dice la plantilla (drift eliminado).</td></tr>
+          <tr><td>Flag CLI</td><td><code>--mode Incremental</code> (implícito)</td><td><code>--mode Complete</code></td></tr>
+          <tr><td>Scopes soportados</td><td>RG, subscription, management group, tenant</td><td><span class="chip chip-yellow">Solo resource group</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <pre>az deployment group create \
+  --resource-group rg-prod \
+  --template-file main.json \
+  --mode Complete
+
+# PowerShell
+New-AzResourceGroupDeployment -ResourceGroupName rg-prod `
+  -TemplateFile main.json -Mode Complete</pre>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el escenario clásico. Un RG tiene una VM, una VNet y un storage account creados a mano. Alguien despliega una plantilla que solo define la VNet, <strong>en modo Complete</strong>. Resultado: la VM y el storage account <strong>se eliminan</strong>. La respuesta correcta a "cómo evitarlo" es desplegar en modo <strong>Incremental</strong> (el default) — o correr <code>what-if</code> antes. No es "agregar un lock" salvo que la pregunta lo pida explícitamente.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">¿Por qué el RG quedó solo con el storage nuevo?</div>
+      <p>Plantilla ARM <strong>sin</strong> nested/linked. <code>New-AzResourceGroupDeployment</code> terminó OK y borró todo lo demás.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Causa</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Usaste <code>-Mode Complete</code> en el <strong>cmdlet</strong></td><td><span class="yes">Sí</span></td><td>Complete borra del RG lo que no está en la plantilla</td></tr>
+            <tr><td>No usaste <code>-Mode</code></td><td><span class="no">No</span></td><td>Default = <strong>Incremental</strong>: no borra lo extra</td></tr>
+            <tr><td>La plantilla trae <code>mode: Incremental</code></td><td><span class="no">No</span></td><td>El JSON <strong>no tiene</strong> mode. Es del deployment, no del template</td></tr>
+            <tr><td>La plantilla trae <code>mode: Complete</code></td><td><span class="no">No</span></td><td>Idem: no es una property del ARM</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el modo va en <code>New-AzResourceGroupDeployment -Mode Complete</code> / <code>az deployment group create --mode Complete</code>, <strong>nunca dentro del JSON</strong>. Sin <code>-Mode</code> = Incremental = no se borra nada.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el modo Complete <strong>solo existe a nivel de resource group</strong>. Los despliegues de scope subscription, management group y tenant son siempre <strong>Incremental</strong>. Si una opción dice "desplegar en modo Complete a nivel de subscription para limpiar resource groups viejos", es falsa.</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>Regla mnemotécnica:</strong> Incremental = "sumá lo mío y no toques lo demás". Complete = "el resource group tiene que quedar idéntico a mi plantilla, borrá el resto".
+    </div>
+
+    <div class="card">
+      <div class="card-title">Matices que conviene tener</div>
+      <ul>
+        <li>Complete respeta los <strong>resource locks</strong>: un recurso con <code>CanNotDelete</code> hace fallar el intento de borrado.</li>
+        <li>Ambos modos son <strong>idempotentes</strong> respecto de los recursos declarados: redesplegar la misma plantilla sin cambios no rompe nada.</li>
+        <li>El modo se define <strong>por deployment</strong>, no por plantilla. El mismo JSON puede correr en un modo u otro.</li>
+        <li>Complete no es un "borrar el resource group": el RG en sí sobrevive, se vacía de lo que no esté declarado.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 5 ══════════ -->
+  <div class="section" id="sec-scopes">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🎯</div>
+      <span class="section-title">Scopes de despliegue</span>
+      <span class="section-tag">Comandos</span>
+    </div>
+
+    <p>El scope define <strong>dónde se ancla el deployment</strong> y, por lo tanto, qué podés crear. Cambiar de scope implica cambiar el <code>$schema</code> y el comando.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Scope</th><th>Comando CLI</th><th>PowerShell</th><th>Qué se despliega ahí</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="chip chip-blue">Resource group</span></td>
+            <td><code>az deployment group create -g &lt;rg&gt;</code></td>
+            <td><code>New-AzResourceGroupDeployment</code></td>
+            <td>El 90% de los casos: VMs, VNets, storage, NSGs, App Services. El RG ya debe existir.</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-purple">Subscription</span></td>
+            <td><code>az deployment sub create -l &lt;region&gt;</code></td>
+            <td><code>New-AzSubscriptionDeployment</code></td>
+            <td><strong>Crear resource groups</strong>, policy definitions y assignments, role assignments a nivel sub, <strong>Deployment Stacks</strong> (Blueprints se retiran el 31 ene 2027).</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-purple">Management group</span></td>
+            <td><code>az deployment mg create -m &lt;mg&gt; -l &lt;region&gt;</code></td>
+            <td><code>New-AzManagementGroupDeployment</code></td>
+            <td>Policies y roles que bajan a varias subscriptions, subscription aliases, MGs anidados.</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-purple">Tenant</span></td>
+            <td><code>az deployment tenant create -l &lt;region&gt;</code></td>
+            <td><code>New-AzTenantDeployment</code></td>
+            <td>Management groups de raíz y asignaciones a nivel tenant. Poco frecuente.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <strong>no podés crear un resource group desde un deployment con scope de resource group</strong> — es el huevo y la gallina. Si la plantilla incluye un recurso de tipo <code>Microsoft.Resources/resourceGroups</code>, tenés que usar <code>az deployment sub create</code> (o <code>New-AzSubscriptionDeployment</code>) con el schema de subscription. Los scopes que no son RG exigen además <code>--location</code>, porque el registro del deployment tiene que guardarse en alguna región.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Elegí dos: plantilla ARM en GitHub → RG existente</div>
+      <p>El enunciado dice VMs en <strong>RG01</strong> basadas en un <strong>ARM template</strong> (a menudo en GitHub) y “automatizar”. Hay que desplegar la <em>plantilla</em>, no crear una VM a mano. Cada comando es una solución completa (CLI <em>o</em> PowerShell).</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Comando</th><th>¿Sirve?</th></tr></thead>
+        <tbody>
+          <tr><td><code>az deployment group create</code></td><td><span class="yes">Sí</span> — CLI, scope RG. URI: <code>--template-uri</code></td></tr>
+          <tr><td><code>New-AzResourceGroupDeployment</code></td><td><span class="yes">Sí</span> — PowerShell, scope RG. URI: <code>-TemplateUri</code></td></tr>
+          <tr><td><code>-TemplateUri $ResourceTemplate</code></td><td><span class="yes">Sí</span> — plantilla en repo web / URL</td></tr>
+          <tr><td><code>-TemplateFile</code></td><td><span class="no">No</span> — disco local, no un repositorio web</td></tr>
+          <tr><td><code>New-AzResourceGroup</code></td><td><span class="no">No</span> — crea el RG, no despliega la plantilla adentro</td></tr>
+          <tr><td><code>Start-AzResourceGroupDeployment</code></td><td><span class="no">No</span> — no es el cmdlet (es <code>New-</code>)</td></tr>
+          <tr><td><code>az vm create</code> / <code>New-AzVM</code></td><td><span class="no">No</span> — crean <strong>una</strong> VM; no aplican la plantilla</td></tr>
+          <tr><td><code>az deployment sub create</code> / <code>New-AzSubscriptionDeployment</code></td><td><span class="no">No</span> — scope subscription (crear RGs, no poblar RG01)</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>az deployment group create -g RG01 \
+  --template-uri https://raw.githubusercontent.com/org/repo/main/azuredeploy.json
+
+New-AzResourceGroupDeployment -ResourceGroupName RG01 `
+  -TemplateUri https://raw.githubusercontent.com/org/repo/main/azuredeploy.json</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “varias VMs, ARM en GitHub, RG01, automatizar — elegí dos”. Correctas: <code>az deployment group create</code> y <code>New-AzResourceGroupDeployment</code>. <code>az vm create</code> y <code>New-AzVM</code> son distractores (imperativo, una VM). GitHub ⇒ <code>--template-uri</code> / <code>-TemplateUri</code> (archivo local ⇒ <code>--template-file</code> / <code>-TemplateFile</code>). El RG ya tiene que existir.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">15 VMs idénticas a un equipo existente</div>
+      <p>La estrategia “mejor” del examen es una plantilla declarativa, no clonar a mano.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Estrategia</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>JSON que describe la VM + PowerShell para desplegar la plantilla</td><td><span class="yes">Sí</span></td><td>ARM = JSON. <code>New-AzResourceGroupDeployment -TemplateFile</code></td></tr>
+            <tr><td>XML + Azure CLI</td><td><span class="no">No</span></td><td>ARM no es XML. CLI sí desplegaría un JSON</td></tr>
+            <tr><td>Crear una VM y copiarla 14 veces (CLI o PS)</td><td><span class="no">No</span></td><td>No hay un “copy VM ×14” de producción. Eso es imagen/template</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> plantilla ARM = <strong>JSON</strong>, nunca XML. “Copy the VM 14 times” (CLI o PS) es carnada. El cmdlet es <code>New-AzResourceGroupDeployment</code>, no un bucle de <code>New-AzVM</code>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: plantilla privada en Blob + SAS</div>
+      <p>El JSON está en un container privado. ARM tiene que <strong>bajarlo por HTTPS</strong>, así que necesitás un SAS de <strong>lectura</strong> y pasarle la URL completa al deployment. <code>-FullUri</code> concatena blob + token; sin eso <code>$templateuri</code> sería solo el token y el deploy falla.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Hueco</th><th>Correcto</th><th>No</th></tr></thead>
+        <tbody>
+          <tr><td>Generar el SAS del blob</td><td><code>New-AzStorageBlobSASToken</code></td><td>Container/Account SAS, <code>New-AzStorageBlob</code></td></tr>
+          <tr><td>Parámetro del deploy</td><td><code>-TemplateUri</code></td><td><code>-TemplateFile</code> (disco local)</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>$templateuri = New-AzStorageBlobSASToken -Container private -Blob SAS.json `
+  -Permission r -ExpiryTime (Get-Date).AddHours(2.0) -FullUri
+
+New-AzResourceGroup -Name RG1 -Location "West US"
+New-AzResourceGroupDeployment -ResourceGroupName RG1 -TemplateUri $templateuri
+
+az storage blob generate-sas -c private -n SAS.json --permissions r \
+  --expiry 2026-12-31T00:00Z --full-uri
+az deployment group create -g RG1 --template-uri "$templateuri"</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> plantilla en Storage privado. Cmdlet = <code>New-AzStorageBlobSASToken</code> con <code>-Permission r</code> y <code>-FullUri</code>. El deploy usa <code>-TemplateUri</code>, no <code>-TemplateFile</code>. GitHub público no necesita SAS; archivo en tu PC sí usa TemplateFile.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Schema por scope</div>
+      <pre>// Resource group
+"$schema": ".../2019-04-01/deploymentTemplate.json#"
+
+// Subscription
+"$schema": ".../2018-05-01/subscriptionDeploymentTemplate.json#"
+
+// Management group
+"$schema": ".../2019-08-01/managementGroupDeploymentTemplate.json#"
+
+// Tenant
+"$schema": ".../2019-08-01/tenantDeploymentTemplate.json#"</pre>
+      <p>En Bicep no tocás el schema: declarás <code>targetScope = 'subscription'</code> (o <code>'managementGroup'</code>, <code>'tenant'</code>) en la primera línea. Si no ponés nada, el default es <code>'resourceGroup'</code>.</p>
+      <pre>targetScope = 'subscription'
+
+param rgName string
+param location string = 'eastus'
+
+resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+  name: rgName
+  location: location
+}</pre>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Un deployment puede <strong>cruzar scopes</strong>: desde una plantilla de subscription podés desplegar recursos dentro de un RG con un módulo/nested deployment apuntando a ese <code>scope</code>. Patrón típico: crear el RG y poblarlo en un solo comando.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 6 ══════════ -->
+  <div class="section" id="sec-bicep">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(165,180,252,.15)">💪</div>
+      <span class="section-title">Bicep</span>
+      <span class="section-tag">DSL moderno</span>
+    </div>
+
+    <p><strong>Bicep es un DSL declarativo que transpila a ARM JSON.</strong> No es un motor nuevo: al desplegar, la herramienta compila el <code>.bicep</code> a una plantilla ARM y la manda al mismo endpoint de siempre. Por eso hay <strong>paridad 1:1</strong>: todo lo que se puede hacer en ARM JSON se puede hacer en Bicep, y los recursos y API versions nuevas están disponibles el día cero.</p>
+
+    <div class="flow">
+      <div class="flow-step">main.bicep</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step highlight">transpile<br><small>az bicep build</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">main.json<br><small>ARM template</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">ARM</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Ventajas frente a JSON crudo</div>
+      <ul>
+        <li><strong>Sintaxis mucho más limpia:</strong> sin comillas por todos lados, sin corchetes de expresión, sin <code>[concat(...)]</code> — se usa string interpolation.</li>
+        <li><strong>Dependencias automáticas:</strong> si referenciás el símbolo de otro recurso (<code>sa.id</code> o <code>PrimaryDnsZone.properties.nameServers</code>), Bicep genera el <code>dependsOn</code> solo. Eso es <strong>implícito</strong>. El bloque <code>dependsOn</code> escrito a mano es <strong>explícito</strong>.</li>
+        <li><strong>Modules:</strong> descomponés la infra en archivos reutilizables y los invocás con <code>module</code>, incluyendo scope distinto.</li>
+        <li><strong>Tipado y validación en el editor:</strong> IntelliSense, tipos de recurso, autocompletado de properties y errores antes de desplegar.</li>
+        <li><strong>Sin estado externo:</strong> el "estado" es Azure mismo. No hay state file que mantener, bloquear ni versionar.</li>
+        <li>Es <strong>gratis y soportado por Microsoft</strong>, incluido en Azure CLI moderno.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Yes/No: implícito vs dependsOn vs paralelo</div>
+      <p>ARM no arranca un recurso hasta que sus dependencias (implícitas o explícitas) estén listas. Sin ninguna dependencia, sí van en paralelo.</p>
+<pre><code>resource PrimaryDnsZone 'Microsoft.Network/dnszones@2018-05-01' = {
+  name: 'myZone'
+  location: 'global'
+}
+resource otherResource 'Microsoft.Example/examples@2023-05-01' = {
+  name: 'example1'
+  properties: {
+    nameServers: PrimaryDnsZone.properties.nameServers  // implícito
+  }
+}
+resource otherZone 'Microsoft.Network/dnszones@2023-06-01' = {
+  name: 'demoZone2'
+  location: 'global'
+  dependsOn: [ PrimaryDnsZone ]  // explícito
+}</code></pre>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Afirmación</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><code>otherResource</code> depende <strong>implícitamente</strong> de <code>PrimaryDnsZone</code></td><td><span class="yes">Yes</span> — usa una property del símbolo</td></tr>
+          <tr><td><code>otherZone</code> depende <strong>implícitamente</strong> de <code>PrimaryDnsZone</code></td><td><span class="no">No</span> — es <code>dependsOn</code> (<strong>explícito</strong>)</td></tr>
+          <tr><td>ARM despliega <code>PrimaryDnsZone</code> y <code>otherZone</code> <strong>en paralelo</strong></td><td><span class="no">No</span> — el dependsOn las serializa</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>az deployment group create -g RG --template-file main.bicep
+New-AzResourceGroupDeployment -ResourceGroupName RG -TemplateFile main.bicep</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “implícito” = referenciás el símbolo (<code>.id</code>, <code>.properties.nameServers</code>). “Explícito” = bloque <code>dependsOn</code>. Si hay cualquiera de las dos, <strong>no</strong> van en paralelo con el recurso padre. <code>otherResource</code> y <code>otherZone</code> sí pueden ir en paralelo <em>entre sí</em>, después de que exista <code>PrimaryDnsZone</code>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Lado a lado: mismo storage account</div>
+      <p><strong>ARM JSON</strong></p>
+      <pre>{
+  "type": "Microsoft.Storage/storageAccounts",
+  "apiVersion": "2023-01-01",
+  "name": "[concat('st', uniqueString(resourceGroup().id))]",
+  "location": "[resourceGroup().location]",
+  "sku": { "name": "[parameters('sku')]" },
+  "kind": "StorageV2"
+}</pre>
+      <p><strong>Bicep</strong></p>
+      <pre>param sku string = 'Standard_LRS'
+param location string = resourceGroup().location
+
+resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  name: 'st${uniqueString(resourceGroup().id)}'
+  location: location
+  sku: { name: sku }
+  kind: 'StorageV2'
+}
+
+output saId string = sa.id</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Comandos de Bicep</div>
+      <pre># Compilar .bicep -&gt; ARM JSON
+az bicep build --file main.bicep
+
+# Decompilar ARM JSON -&gt; .bicep (best effort)
+az bicep decompile --file main.json
+
+az bicep install         # instalar la CLI de Bicep
+az bicep upgrade
+az bicep version
+
+# Desplegar: se pasa el .bicep directo, la CLI compila sola
+az deployment group create -g rg-prod --template-file main.bicep</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: array de objetos → un object (<code>toObject</code>)</div>
+<pre><code>var cats = [
+  { name: 'MrFunny', age: 2 }
+  { name: 'MrNaughty', age: 3 }
+]
+output twocats object = toObject(cats, entry => entry.name)
+// {"MrFunny":{"name":"MrFunny","age":2},"MrNaughty":{"name":"MrNaughty","age":3}}</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Función</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>toObject(array, keySelector)</code></td><td><span class="yes">Sí</span></td><td>Array → un object, keys = <code>entry.name</code></td></tr>
+            <tr><td><code>map</code></td><td><span class="no">No</span></td><td>Array → otro array</td></tr>
+            <tr><td><code>filter</code></td><td><span class="no">No</span></td><td>Subset del array, misma forma</td></tr>
+            <tr><td><code>reduce</code></td><td><span class="no">No</span></td><td>Se puede forzar, pero no es el built-in de este caso</td></tr>
+            <tr><td><code>sort</code></td><td><span class="no">No</span></td><td>Reordena; sigue siendo array</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “array de objetos → un JSON con las keys custom” = <code>toObject</code>. <code>map</code> deja array. No es <code>reduce</code> aunque en teoría se pueda.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> cuidado con la dirección de <code>build</code> y <code>decompile</code>. <strong><code>az bicep build</code> = Bicep → JSON</strong> (compilar). <strong><code>az bicep decompile</code> = JSON → Bicep</strong> (migrar plantillas existentes). El decompile es <em>best effort</em>: suele dejar warnings y nombres de variables genéricos que hay que limpiar a mano, así que no lo pongas como "conversión perfecta y automática".</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>No hace falta compilar antes de desplegar: <code>az deployment group create --template-file main.bicep</code> transpila en el momento. <code>az bicep build</code> se usa para inspeccionar el JSON generado o para pipelines que necesitan el artefacto.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 7 ══════════ -->
+  <div class="section" id="sec-operacion">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(34,211,238,.15)">🔍</div>
+      <span class="section-title">Validación, historial y reutilización</span>
+      <span class="section-tag">Operación</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">what-if: ver el impacto antes de aplicar</div>
+      <p>La operación <strong>what-if</strong> hace un dry run contra ARM y devuelve los cambios previstos con símbolos: <span class="chip chip-green">+ Create</span> <span class="chip chip-yellow">~ Modify</span> <span class="chip chip-red">- Delete</span> <span class="chip chip-blue">= NoChange</span> e <span class="chip chip-purple">* Ignore</span>.</p>
+      <pre>az deployment group what-if \
+  --resource-group rg-prod \
+  --template-file main.bicep \
+  --mode Complete
+
+# confirmación interactiva integrada al deploy
+az deployment group create -g rg-prod --template-file main.bicep --confirm-with-what-if
+
+# PowerShell
+New-AzResourceGroupDeployment -ResourceGroupName rg-prod -TemplateFile main.bicep -WhatIf</pre>
+      <p>Si vas a correr modo <strong>Complete</strong>, <code>what-if</code> te muestra explícitamente las líneas <code>- Delete</code> de los recursos que van a desaparecer. Es la mitigación esperada en las preguntas de escenario.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">validate: chequeo de sintaxis y permisos</div>
+      <pre>az deployment group validate \
+  --resource-group rg-prod \
+  --template-file main.json \
+  --parameters @prod.parameters.json</pre>
+      <ul>
+        <li><strong><code>validate</code></strong> verifica que la plantilla sea sintácticamente válida, que los parámetros estén completos y que el deployment sea aceptable. <strong>No</strong> te dice qué recursos se van a borrar.</li>
+        <li><strong><code>what-if</code></strong> sí compara contra el estado real y te lista los cambios. Cuando la pregunta dice "ver el impacto / qué recursos se modifican o eliminan", la respuesta es <strong>what-if</strong>, no validate.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Historial de deployments</div>
+      <ul>
+        <li>Cada deployment queda registrado en el resource group (Portal → Resource group → <strong>Deployments</strong>) con nombre, estado, timestamp, parámetros usados y recursos tocados. Sirve para auditar y para reintentar.</li>
+        <li>El historial guarda hasta <strong>800 deployments por resource group</strong>; al acercarse al límite, ARM borra automáticamente las entradas más viejas.</li>
+        <li>Un deployment sin <code>--name</code> toma el nombre del archivo de plantilla, así que se pisan entre corridas. En pipelines conviene nombrarlos con fecha o build ID.</li>
+        <li>Borrar entradas del historial <strong>no borra recursos</strong>: es solo metadata del deployment.</li>
+      </ul>
+      <pre>az deployment group list -g rg-prod -o table
+az deployment group show -g rg-prod -n mainDeploy --query properties.outputs</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Exportar plantillas</div>
+      <ul>
+        <li>Desde un <strong>resource group</strong> o un <strong>recurso individual</strong>: Portal → <em>Export template</em>, o <code>az group export --name rg-prod</code> / <code>Export-AzResourceGroup</code>.</li>
+        <li>También existe la opción de exportar la plantilla desde el <strong>historial de un deployment</strong> — esa versión suele estar más limpia porque es la que efectivamente se usó.</li>
+      </ul>
+      <p>LOB en un RG, recursos agregados en <strong>varios deployments</strong>. Plantilla para redesplegar <em>todo lo que hay ahora</em>:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Cmdlet</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>Export-AzResourceGroup</code></td><td><span class="yes">Sí</span></td><td>Foto del <strong>estado actual</strong> del RG, da igual cuántos deploys lo armaron. CLI: <code>az group export</code></td></tr>
+            <tr><td><code>New-AzResourceGroupDeployment</code></td><td><span class="no">No</span></td><td><strong>Aplica</strong> una plantilla. No genera una a partir del RG</td></tr>
+            <tr><td><code>Save-AzResourceGroupDeploymentTemplate</code></td><td><span class="no">No</span></td><td>Plantilla de <strong>un</strong> deployment pasado del RG. Los cambios a mano del portal no están</td></tr>
+            <tr><td><code>Save-AzDeploymentTemplate</code></td><td><span class="no">No</span></td><td>Igual: historial, a menudo de scope subscription. No es el live state</td></tr>
+            <tr><td><code>Get-AzResourceGroupDeployment</code></td><td><span class="no">No</span></td><td>Lista historial (nombre, estado, fecha). No genera JSON redesplegable</td></tr>
+            <tr><td><code>Get-AzResourceGroupDeploymentOperation</code></td><td><span class="no">No</span></td><td>Operaciones de un deploy (troubleshooting). Tampoco es la plantilla</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>Export-AzResourceGroup -ResourceGroupName rg-lob -Path ./lob.json
+az group export -n rg-lob --include-parameter-default-value</code></pre>
+      <div class="callout callout-warn">
+        <span class="callout-icon">⚠️</span>
+        <span><strong>Trampa del examen:</strong> “estado actual / cambios a mano en el portal” → <code>Export-AzResourceGroup</code>. <code>New-AzResourceGroupDeployment</code> despliega, no exporta. <code>Save-AzResourceGroupDeploymentTemplate</code> / <code>Save-AzDeploymentTemplate</code> son el JSON de <strong>un</strong> evento del historial (sin lo que después tocaste en el portal).</span>
+      </div>
+      <p>Yes/No cuando el RG se armó en fases y vas a redesplegar en Complete:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Hay que exportar la plantilla del <strong>último deployment</strong></td><td><span class="no">No</span></td><td>Ese JSON solo tiene lo de esa fase. El estado actual = export del <strong>RG</strong></td></tr>
+            <tr><td>Cada deployment contiene solo los recursos de <strong>esa</strong> corrida</td><td><span class="yes">Yes</span></td><td>El historial no es la foto del RG</td></tr>
+            <tr><td>El parameters file trae los valores usados en el deploy</td><td><span class="yes">Yes</span></td><td>Ahí están name, SKU, etc. por ambiente</td></tr>
+            <tr><td>La plantilla contiene los <strong>scripts</strong> para desplegar</td><td><span class="no">No</span></td><td>Es JSON/Bicep declarativo. ARM ejecuta; no hay scripts adentro</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “fases distintas + Complete” = exportá el <strong>RG ahora</strong>, no el último deploy (si no, Complete borra lo que esa fase no declaró). Parameters sí; scripts no.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Yes/No: 20 Linux VMs copiando la config de VM1</div>
+      <p>RG1 tiene VM1 (Linux). Hay que automatizar 20 VMs más <strong>basadas en la configuración</strong> de VM1.</p>
+      <p><strong>Solución propuesta:</strong> guardar las properties de la VM en una plantilla y desplegar las demás <strong>editando los parámetros</strong> (nombre, IP) en cada corrida.</p>
+      <p>¿Cumple el objetivo? <span class="yes">Yes</span>.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Camino</th><th>¿Cumple?</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Export template</strong> de VM1 → parametrizar → <code>az deployment group create</code></td><td><span class="yes">Yes</span></td><td>Clona tamaño, NIC, discos, extensiones. VM1 sigue viva. Distintos parámetros = distintas VMs</td></tr>
+            <tr><td>Capture / generalize + imagen</td><td>También Yes, otra pregunta</td><td>Clona el <strong>disco</strong>. En Linux: <code>waagent -deprovision</code>; la origen suele quedar inutilizable</td></tr>
+            <tr><td>“Solo VMSS / solo snapshot sirven”</td><td><span class="no">No</span></td><td>VMSS es un set escalable, no es el único modo. Snapshot es un disco, no despliega 20 VMs solas</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code># Portal: VM1 → Export template → bajar JSON y parametrizar name / IP
+az deployment group create -g RG1 --template-file vm.json --parameters @vm.parameters.json
+
+# 20 veces (o un loop) con parámetros distintos
+for i in $(seq 1 20); do
+  az deployment group create -g RG1 --template-file vm.json \
+    --parameters vmName=vm$i
+done</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Yes/No “plantilla ARM + cambiar parámetros por cada VM extra”. La respuesta es <strong>Yes</strong>. El “No” aparece porque pensás que hace falta imagen, snapshot o VMSS. Esos también pueden servir en <em>otras</em> propuestas; esta solución igual cumple. Export: VM o RG → <em>Export template</em>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Template specs</div>
+      <ul>
+        <li>Un <strong>template spec</strong> es un recurso de Azure (<code>Microsoft.Resources/templateSpecs</code>) que guarda una plantilla ARM/Bicep <strong>versionada</strong> dentro de una subscription.</li>
+        <li>Se comparte con <strong>RBAC</strong>: le das <em>Reader</em> al equipo y despliegan sin acceder al archivo ni a un repo. Nadie puede modificar la plantilla sin permisos de escritura sobre el spec.</li>
+        <li>Cada versión es inmutable y podés desplegar una versión concreta, lo que da despliegues repetibles y auditables.</li>
+      </ul>
+      <pre>az ts create --name webapp-spec --version 1.0 \
+  --resource-group rg-shared --template-file main.bicep
+
+az deployment group create -g rg-app \
+  --template-spec "/subscriptions/&lt;subId&gt;/resourceGroups/rg-shared/providers/Microsoft.Resources/templateSpecs/webapp-spec/versions/1.0"</pre>
+    </div>
+  </div>
+
+  <!-- ══════════ SECCIÓN 8 ══════════ -->
+  <div class="section" id="sec-comparativa">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(236,72,153,.15)">⚖️</div>
+      <span class="section-title">ARM/Bicep vs Terraform vs CLI/PowerShell</span>
+      <span class="section-tag">Elegir herramienta</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>ARM / Bicep</th><th>Terraform</th><th>Azure CLI / PowerShell</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Paradigma</td><td><span class="chip chip-green">Declarativo</span></td><td><span class="chip chip-green">Declarativo</span></td><td><span class="chip chip-yellow">Imperativo</span></td></tr>
+          <tr><td>Alcance</td><td>Solo Azure (nativo)</td><td>Multi-cloud y multi-proveedor</td><td>Solo Azure</td></tr>
+          <tr><td>Estado</td><td><strong>Sin state file</strong>: el estado es Azure</td><td><strong>State file</strong> que hay que almacenar, bloquear y proteger</td><td>Sin estado; vos manejás la lógica</td></tr>
+          <tr><td>Idempotencia</td><td>Nativa</td><td>Nativa</td><td>Hay que programarla a mano (chequeos, <code>if exists</code>)</td></tr>
+          <tr><td>Soporte de features nuevas</td><td>Día cero</td><td>Depende del provider de AzureRM</td><td>Suele ser rápido</td></tr>
+          <tr><td>Preview de cambios</td><td><code>what-if</code></td><td><code>terraform plan</code></td><td>No existe</td></tr>
+          <tr><td>Soporte de Microsoft</td><td class="yes">Sí, de punta a punta</td><td>Provider soportado, herramienta de HashiCorp</td><td class="yes">Sí</td></tr>
+          <tr><td>Cuándo elegirlo en el examen</td><td><strong>"Despliegue repetible y consistente", "misma infra en dev/test/prod", "minimizar esfuerzo administrativo"</strong></td><td>Cuando el enunciado dice explícitamente <strong>multi-cloud</strong> o "ya usan Terraform"</td><td>Tareas puntuales, one-offs, automatización de operaciones (apagar VMs, rotar keys)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>Heurística para el examen:</strong> si la pregunta menciona <em>consistencia</em>, <em>repetibilidad</em>, <em>múltiples entornos idénticos</em> o <em>minimizar esfuerzo administrativo</em> dentro de Azure ⇒ ARM template o Bicep. Si menciona <em>varias nubes</em> ⇒ Terraform. Si es una acción única y puntual ⇒ CLI/PowerShell.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Errores comunes de despliegue</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Error</th><th>Causa</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td><code>MissingSubscriptionRegistration</code></td><td>Resource provider no registrado en la subscription</td><td><code>az provider register --namespace ...</code></td></tr>
+            <tr><td><code>InvalidTemplateDeployment</code></td><td>Policy que bloquea, SKU/región no permitida</td><td>Revisar Azure Policy y disponibilidad regional</td></tr>
+            <tr><td><code>QuotaExceeded</code></td><td>Límite de vCPUs o de recursos en la región</td><td>Pedir aumento de quota o cambiar región/SKU</td></tr>
+            <tr><td><code>ResourceNotFound</code> durante el deploy</td><td><code>dependsOn</code> faltante</td><td>Declarar la dependencia (o usar Bicep con símbolos)</td></tr>
+            <tr><td><code>ScopeLocked</code></td><td>Resource lock <code>CanNotDelete</code> / <code>ReadOnly</code></td><td>Quitar el lock (requiere <em>Owner</em> o <em>User Access Administrator</em>)</td></tr>
+            <tr><td><code>StorageAccountAlreadyTaken</code></td><td>Nombre global no único</td><td>Generarlo con <code>uniqueString()</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>ARM/Bicep, Terraform y los scripts no son excluyentes: el patrón real es plantilla declarativa para la infra + CLI/PowerShell para operaciones del día a día. Pero en el examen, cuando la palabra clave es "consistente y repetible", la respuesta es la plantilla.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Qué secciones de un ARM template son obligatorias?", a: "<strong>$schema</strong>, <strong>contentVersion</strong> y <strong>resources</strong>. <code>parameters</code>, <code>variables</code>, <code>functions</code> y <code>outputs</code> son opcionales. <code>resources</code> puede estar vacío, pero el elemento debe existir.", cat: "Estructura" },
+  { q: "Modo Incremental: ¿qué pasa con un recurso del RG que NO está en la plantilla?", a: "<strong>Queda intacto.</strong> Incremental es el modo por defecto: agrega y actualiza lo que declara la plantilla, y no toca nada más del resource group.", cat: "Modos" },
+  { q: "Modo Complete: ¿qué pasa con un recurso del RG que NO está en la plantilla?", a: "<strong>Se elimina.</strong> Complete deja el resource group exactamente como lo describe la plantilla. Es la trampa más frecuente del examen.", cat: "Modos" },
+  { q: "¿En qué scopes se puede usar el modo Complete?", a: "<strong>Solo a nivel de resource group.</strong> Los despliegues de scope subscription, management group y tenant son siempre <strong>Incremental</strong>.", cat: "Modos" },
+  { q: "Querés crear un resource group desde una plantilla. ¿Qué comando usás?", a: "<code>az deployment sub create --location &lt;region&gt; --template-file main.bicep</code> (o <code>New-AzSubscriptionDeployment</code>). Un resource group <strong>no</strong> se puede crear desde un deployment de scope resource group.", cat: "Scopes" },
+  { q: "Varias VMs en RG01 desde un ARM template en GitHub. ¿Qué dos comandos automatizan?", a: "<code>az deployment group create</code> (CLI, <code>--template-uri</code>) y <code>New-AzResourceGroupDeployment</code> (PowerShell, <code>-TemplateUri</code>). <code>az vm create</code> y <code>New-AzVM</code> crean una VM, no despliegan la plantilla. Drop-down: repo web = <code>-TemplateUri</code>, no <code>-TemplateFile</code>. No <code>New-AzResourceGroup</code> ni <code>Start-AzResourceGroupDeployment</code>.", cat: "Scopes" },
+  { q: "Plantilla ARM privada en Blob. Drop-down: generar SAS y desplegar.", a: "<code>New-AzStorageBlobSASToken</code> (<code>-Container</code>, <code>-Blob</code>, <code>-Permission r</code>, <code>-FullUri</code>) y <code>New-AzResourceGroupDeployment -TemplateUri $templateuri</code>. No <code>-TemplateFile</code>. CLI: <code>az storage blob generate-sas --full-uri</code> + <code>az deployment group create --template-uri</code>.", cat: "Scopes" },
+  { q: "¿Qué hace az bicep build y qué hace az bicep decompile?", a: "<code>az bicep build</code> compila <strong>Bicep → ARM JSON</strong>. <code>az bicep decompile</code> convierte <strong>ARM JSON → Bicep</strong> (best effort: hay que limpiar el resultado).", cat: "Bicep" },
+  { q: "Array de {name, age} → un object con name como key. ¿toObject, map, filter, reduce o sort?", a: "<code>toObject(cats, entry => entry.name)</code>. map/filter/sort dejan array. reduce se puede forzar, no es el built-in de este caso.", cat: "Bicep" },
+  { q: "¿Bicep necesita un state file como Terraform?", a: "<strong>No.</strong> Bicep transpila a ARM JSON y el estado es Azure mismo. Terraform sí mantiene un <strong>state file</strong> externo que hay que almacenar y proteger.", cat: "Comparativa" },
+  { q: "¿Cómo ves qué recursos se van a crear, modificar o borrar antes de desplegar?", a: "Con <strong>what-if</strong>: <code>az deployment group what-if</code> o <code>-WhatIf</code> en PowerShell. Devuelve <code>+ Create</code>, <code>~ Modify</code>, <code>- Delete</code>, <code>= NoChange</code>. <code>validate</code> solo chequea sintaxis y parámetros, no muestra el impacto.", cat: "Validación" },
+  { q: "¿Cuál es la diferencia entre dependencia explícita e implícita en ARM?", a: "<strong>Explícita:</strong> array <code>dependsOn</code>. <strong>Implícita:</strong> usar <code>reference()</code> sobre otro recurso de la plantilla — ARM infiere el orden solo. <code>resourceId()</code> por sí solo <strong>no</strong> crea dependencia. En Bicep, referenciar el símbolo del recurso ya la genera.", cat: "Funciones" },
+  { q: "Bicep: otherResource usa PrimaryDnsZone.properties.nameServers; otherZone tiene dependsOn: [PrimaryDnsZone]. Yes/No.", a: "otherResource implícito → <strong>Yes</strong>. otherZone implícito → <strong>No</strong> (es explícito). ¿PrimaryDnsZone y otherZone en paralelo? → <strong>No</strong>. Cmdlets: <code>az deployment group create --template-file main.bicep</code> / <code>New-AzResourceGroupDeployment -TemplateFile</code>.", cat: "Bicep" },
+  { q: "¿A qué nivel se registran los resource providers y qué error tirás si falta uno?", a: "Se registran <strong>por subscription</strong>. Si falta, el despliegue falla con <code>MissingSubscriptionRegistration</code> / <code>NoRegisteredProviderFound</code>. Se arregla con <code>az provider register --namespace Microsoft.&lt;X&gt;</code>.", cat: "ARM" },
+  { q: "¿Qué namespace registrás para un Log Analytics workspace? ¿Y cuál es cada distractor?", a: "<strong><code>Microsoft.OperationalInsights</code></strong>. PolicyInsights = compliance de Policy. NotificationHubs = push móvil. Automation = runbooks. Insights = alertas/métricas, no el workspace. Container Apps usa además <code>Microsoft.App</code>.", cat: "ARM" },
+  { q: "¿Para qué sirve un Template Spec?", a: "Guarda una plantilla ARM/Bicep <strong>versionada como recurso de Azure</strong> y la comparte vía <strong>RBAC</strong>: el equipo despliega con permiso de <em>Reader</em> sin acceder al archivo ni al repo, y cada versión es inmutable.", cat: "Reutilización" },
+  { q: "¿La plantilla exportada desde un resource group se puede redesplegar tal cual?", a: "<strong>No necesariamente.</strong> El export suele traer valores hardcodeados, omitir dependencias o recursos no soportados, y no incluye secretos. Hay que revisarla y parametrizarla antes de redesplegar.", cat: "Operación" },
+  { q: "RG con recursos de varios deployments. Plantilla del estado actual. ¿Export-AzResourceGroup, New-AzResourceGroupDeployment, Save-AzResourceGroupDeploymentTemplate o Save-AzDeploymentTemplate?", a: "<code>Export-AzResourceGroup</code> / <code>az group export</code> = foto del RG ahora (incluye cambios a mano). New-AzResourceGroupDeployment <strong>despliega</strong>, no exporta. Save-…DeploymentTemplate / Save-AzDeploymentTemplate = <strong>un</strong> evento del historial.", cat: "Operación" },
+  { q: "VM1 Linux en RG1. Automatizar 20 VMs más con su config: guardar properties en template y cambiar parámetros por VM. ¿Yes o No? ¿Hace falta VMSS o snapshot?", a: "<strong>Yes.</strong> Export template (VM o RG) → parametrizar name/IP → <code>az deployment group create -g RG1 --template-file vm.json --parameters @params.json</code>. VMSS/snapshot/imagen también existen, pero esta solución igual cumple. Capture generaliza y suele dejar VM1 inutilizable.", cat: "Operación" },
+  { q: "Parameter file: password de VM cifrada. ¿keyVault o Storage? ¿id subscription→RG o al revés? ¿secretName, keyName o password?", a: "<code>reference.keyVault.id</code> = <code>/subscriptions/.../resourceGroups/.../providers/Microsoft.KeyVault/vaults/&lt;vault&gt;</code> y <code>secretName</code>. No Storage. No RG antes que subscription. <code>keyName</code> es clave cripto, no password. En la plantilla: <code>securestring</code>. Vault: <code>enabledForTemplateDeployment</code>.", cat: "Parámetros" },
+  { q: "LOB en un RG, recursos en fases, Complete. Yes/No: ¿export del último deploy? ¿cada deploy solo lo de esa corrida? ¿parameters file con los valores? ¿la plantilla trae scripts?", a: "<strong>No / Yes / Yes / No</strong>. Foto actual = <code>Export-AzResourceGroup</code>, no el último historial (Complete borraría el resto). Parameters sí. La plantilla es declarativa, no scripts.", cat: "Operación" },
+  { q: "Template de una VM, 50 VMs, password no en claro. ¿Primero: en la plantilla, Key Vault + access policy, nested template, o Recovery Services vault?", a: "<strong>Key Vault + access policy</strong> (y <code>enabledForTemplateDeployment</code>). En la plantilla o en otra plantilla queda en claro. RSV es Backup, no secretos. Después el parameter file con <code>reference</code>.", cat: "Parámetros" },
+  { q: "Deploy OK y el RG quedó solo con el storage de la plantilla. ¿-Mode Complete en el cmdlet, no usaste -Mode, o mode: Complete en el JSON?", a: "<code>-Mode Complete</code> en <code>New-AzResourceGroupDeployment</code>. Sin <code>-Mode</code> = Incremental (no borra). El ARM JSON <strong>no tiene</strong> property mode.", cat: "Modos" },
+  { q: "15 VMs idénticas a un equipo. ¿JSON+PS, XML+CLI, o crear una VM y copiarla 14 veces?", a: "<strong>JSON + PowerShell</strong> (<code>New-AzResourceGroupDeployment -TemplateFile</code>). ARM no es XML. No hay “copy VM ×14” en CLI/PS: eso es plantilla o imagen.", cat: "Operación" },
+  { q: "Export de una VM, reusar, todos en la región del RG. ¿parameters file con [resourceGroup().location], crear el RG y desplegar, o editar el template?", a: "Editar la <strong>plantilla</strong>: cada location = <code>[resourceGroup().location]</code>. El parameters file no evalúa funciones ARM. Crear el RG no pisa un <code>\"eastus\"</code> hardcodeado.", cat: "Funciones" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

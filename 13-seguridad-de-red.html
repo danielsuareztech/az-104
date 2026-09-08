@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Seguridad de Red</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Seguridad de Red</div>
+    <div class="nav-sub">NSG, ASG, Azure Firewall, Bastion y rutas</div>
+    <div class="nav-weight">Dominio 4 · 15–20%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#nsg"><span class="dot"></span>NSG: reglas y evaluación</a>
+  <a href="#default-rules"><span class="dot"></span>Reglas por defecto</a>
+  <a href="#tags-asg"><span class="dot"></span>Service Tags y ASG</a>
+  <a href="#firewall"><span class="dot"></span>Azure Firewall</a>
+  <a href="#udr"><span class="dot"></span>UDR y forced tunneling</a>
+  <a href="#bastion"><span class="dot"></span>Azure Bastion</a>
+  <a href="#jit"><span class="dot"></span>Just-in-Time VM access</a>
+  <a href="#ddos"><span class="dot"></span>DDoS Protection</a>
+  <a href="#decision"><span class="dot"></span>Qué usar en cada escenario</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen casi nunca te pide "definí NSG". Te tira un escenario con una VM que no responde y te pregunta <strong>por qué</strong>: prioridades que se pisan, un NSG en la subred que bloquea antes de llegar a la NIC, una UDR <code>0.0.0.0/0</code> que rompió el retorno, o un Bastion desplegado sin abrir 3389 en el NSG de la VM. “IP address details” de Bastion = <strong>CIDR de <code>AzureBastionSubnet</code></strong> (/26, sin overlap, adentro del VNet), no la Public IP del host. Memorizá las <strong>reglas por defecto con sus números</strong>, el <strong>orden de evaluación</strong> (inbound: subred → NIC; outbound: NIC → subred; VM↔VM cruza hasta 4 NSG) y el <strong>orden de procesamiento del Firewall</strong> (NAT → Network → Application).
+  </div>
+
+  <!-- ══ 1. NSG ══ -->
+  <div class="section" id="nsg">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🛡️</div>
+      <span class="section-title">Network Security Groups (NSG)</span>
+      <span class="section-tag">Núcleo del tema</span>
+    </div>
+
+    <p>Un NSG es una <strong>lista de reglas de filtrado L3/L4</strong> (IP, puerto, protocolo) que permite o deniega tráfico hacia y desde recursos de una VNet. No inspecciona el contenido del paquete: no sabe de URLs, ni de FQDNs, ni de TLS. Es gratis y es el primer control que el examen espera que apliques.</p>
+
+    <div class="card">
+      <div class="card-title">Campos de una regla</div>
+      <ul>
+        <li><strong>Priority</strong> — número entre <strong>100 y 4096</strong>. <strong>El número más bajo gana.</strong> Se evalúa de menor a mayor y en cuanto una regla matchea, se aplica y se corta la evaluación.</li>
+        <li><strong>Source</strong> — IP/CIDR, service tag, ASG o <code>Any</code>.</li>
+        <li><strong>Source port range</strong> — casi siempre <code>*</code> (el cliente usa puertos efímeros aleatorios).</li>
+        <li><strong>Destination</strong> — IP/CIDR, service tag, ASG o <code>Any</code>.</li>
+        <li><strong>Destination port range</strong> — acá va el puerto del servicio: <code>443</code>, <code>3389</code>, <code>80,8080</code>, <code>1000-2000</code>.</li>
+        <li><strong>Protocol</strong> — TCP, UDP, ICMP, ESP, AH o <code>Any</code>.</li>
+        <li><strong>Direction</strong> — Inbound u Outbound (son dos listas separadas e independientes).</li>
+        <li><strong>Action</strong> — Allow o Deny.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Dónde se asocia</div>
+      <ul>
+        <li>A una <strong>subnet</strong> — protege a todo lo que esté adentro.</li>
+        <li>A una <strong>NIC</strong> de una VM — protege sólo a esa interfaz.</li>
+        <li>Se puede asociar <strong>a los dos a la vez</strong>, y ahí es donde el examen te complica.</li>
+        <li>Un NSG puede estar asociado a <strong>muchas</strong> subredes y NICs; pero una subred o una NIC admite <strong>un solo NSG</strong>.</li>
+        <li>El NSG tiene que estar en la <strong>misma región y suscripción</strong> que el recurso al que lo asociás.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: crear NSG con dos reglas (PowerShell)</div>
+      <p>NSG reutilizable en varias subnets: inbound RDP (3389) y HTTP (80) desde <code>Internet</code>.</p>
+<pre><code>$rule1 = New-AzNetworkSecurityRuleConfig -Name rdp -Access Allow -Protocol Tcp `
+  -Direction Inbound -Priority 100 -SourceAddressPrefix Internet `
+  -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389
+$rule2 = New-AzNetworkSecurityRuleConfig -Name web -Access Allow -Protocol Tcp `
+  -Direction Inbound -Priority 101 -SourceAddressPrefix Internet `
+  -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 80
+$nsg = New-AzNetworkSecurityGroup -ResourceGroupName TestRG -Location westus `
+  -Name NSG-FrontEnd -SecurityRules $rule1,$rule2</code></pre>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Cmdlet</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><code>New-AzNetworkSecurityRuleConfig</code></td><td><span class="yes">Sí</span></td><td>Objeto <em>en memoria</em>. No crea el recurso. Se pasa a <code>-SecurityRules</code></td></tr>
+            <tr><td><code>New-AzNetworkSecurityGroup</code></td><td><span class="yes">Sí</span></td><td>Crea el NSG en Azure, con las reglas ya armadas</td></tr>
+            <tr><td><code>Add-AzNetworkSecurityRuleConfig</code></td><td><span class="no">No</span></td><td>Suma una regla a un NSG <strong>ya existente</strong> (objeto Get-). Después hace falta <code>Set-AzNetworkSecurityGroup</code></td></tr>
+            <tr><td><code>Set-AzNetworkSecurityGroup</code></td><td><span class="no">No</span></td><td>Empuja cambios de un NSG que ya vive en Azure. No es el create</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> las dos primeras líneas son <code>New-AzNetworkSecurityRuleConfig</code> (config local), la tercera <code>New-AzNetworkSecurityGroup</code>. No pongas “Group” en las reglas ni <code>Add-</code>/<code>Set-</code> en un script que crea todo de cero.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Orden de evaluación — memorizalo</div>
+      <p><strong>Tráfico entrante (inbound) hacia una VM:</strong></p>
+      <div class="flow">
+        <div class="flow-step">Origen</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">NSG de la <strong>subnet</strong><br><small>primero</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">NSG de la <strong>NIC</strong><br><small>después</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">VM</div>
+      </div>
+      <p><strong>Tráfico saliente (outbound) desde una VM:</strong></p>
+      <div class="flow">
+        <div class="flow-step">VM</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">NSG de la <strong>NIC</strong><br><small>primero</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">NSG de la <strong>subnet</strong><br><small>después</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Destino</div>
+      </div>
+      <p>Regla de oro: <strong>los dos NSG tienen que permitir</strong> el tráfico. Un Deny en cualquiera de los dos mata el paquete. No hay "el más permisivo gana": es un AND.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Varios NSG: VM → VM (el exhibit Yes/No)</div>
+      <p>Entre dos VMs el paquete cruza <strong>hasta cuatro filtros</strong>, en este orden. Si una capa no tiene NSG, se salta.</p>
+      <div class="flow" style="flex-wrap:wrap">
+        <div class="flow-step">VM origen</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">NIC origen<br><small>outbound</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Subnet origen<br><small>outbound</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Subnet destino<br><small>inbound</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">NIC destino<br><small>inbound</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">VM destino</div>
+      </div>
+      <ul>
+        <li>Misma subred: igual se evalúa el NSG de esa subnet (salida y entrada). <strong>Intra-subnet no se salta el NSG de subnet.</strong></li>
+        <li>Internet → VM: solo inbound (subnet y después NIC).</li>
+      </ul>
+      <p>Exhibit clásico: NSG1 en la subnet de VM1, NSG2 en la NIC de VM1, NSG3 en la subnet de VM6/VM7.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td>Incoming a VM1: NSG1 aplica <strong>antes</strong> que NSG2</td><td><span class="yes">Yes</span></td><td>Inbound = subnet y después NIC</td></tr>
+          <tr><td>Entre VM1 y VM2 aplica <strong>solo</strong> NSG2</td><td><span class="no">No</span></td><td>También NSG1 (subnet) y el NSG de la NIC de VM2 si hay</td></tr>
+          <tr><td>Entre VM6 y VM7 aplica NSG3</td><td><span class="yes">Yes</span></td><td>NSG de su subnet, aunque el tráfico sea intra-subnet</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>Get-AzEffectiveNetworkSecurityGroup -NetworkInterfaceName nic-vm1 -ResourceGroupName RG
+az network nic list-effective-nsg -g RG -n nic-vm1</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “entre VM1 y VM2 solo aplica el NSG de la NIC”. <strong>No.</strong> El de la subnet siempre entra si está asociado, incluso entre VMs de la misma subred. Inbound internet: <strong>subnet → NIC</strong>. Outbound: <strong>NIC → subnet</strong>. Effective security rules en la NIC es la foto unificada.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SFTP en una VM: SSH solo desde un CIDR, sin tocar el NSG de subnet</div>
+      <p>Linux SFTP (TCP 22) alcanzable desde internet <strong>solo</strong> desde <code>151.112.10.0/24</code>. En la misma subnet hay otros servers que tienen que seguir recibiendo 80/443/22. <strong>No podés cambiar el NSG de la subnet.</strong></p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>NSG en la <strong>NIC</strong> de esa VM: Allow SSH desde <code>151.112.10.0/24</code></td><td><span class="yes">Sí</span></td><td>Filtro por VM. Inbound: subnet Allow y después la NIC recorta el origen. El resto de servers no se toca</td></tr>
+            <tr><td>NSG en la NIC: Allow SSH <strong>desde Internet</strong></td><td><span class="no">No</span></td><td>Abre 22 a todo el mundo, no al /24</td></tr>
+            <tr><td>NSG en la NIC: Deny HTTP/HTTPS</td><td><span class="no">No</span></td><td>No restringe SSH. Además no era el pedido</td></tr>
+            <tr><td>NSG de la <strong>subnet</strong>: solo SSH desde el /24</td><td><span class="no">No</span></td><td>Prohibido por el enunciado y corta 80/443/22 de los otros servers</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “no cambies el NSG de subnet” = regla en la <strong>NIC</strong> de esa VM, con source = el CIDR, no “Internet”. Deny 80/443 no resuelve SSH. La subnet Allow y la NIC Allow tienen que coincidir: si la subnet ya deja 22, la NIC es el recorte.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tres CIDR on-prem en un NSG: una sola regla</div>
+      <p>S2S VPN. Inbound solo desde <code>192.168.2.0/24</code>, <code>192.168.4.0/24</code>, <code>192.168.8.0/24</code>. Exactamente esos rangos, mínimas reglas, mínimo mantenimiento.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Los tres CIDR en <strong>una</strong> regla, separados por coma</td><td><span class="yes">Sí</span></td><td>Source admite lista. Una regla, scope exacto</td></tr>
+            <tr><td><code>192.168.0.0/22</code></td><td><span class="no">No</span></td><td>Cubre 0–3, no el .4 ni el .8, y mete IPs de más</td></tr>
+            <tr><td>Service tag <code>VirtualNetwork</code></td><td><span class="no">No</span></td><td>Toda la VNet + peered + on-prem. Demasiado amplio</td></tr>
+            <tr><td>Tres reglas (una por CIDR)</td><td><span class="no">No</span></td><td>Funciona pero viola “minimize the number of NSG rules”</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> supernet tentador (<code>/22</code>) casi nunca cubre 2, 4 y 8 a la vez y siempre incluye basura. <code>VirtualNetwork</code> incluye el on-prem entero del S2S, no “solo estos tres /24”.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>NSG subnet</th><th>NSG NIC</th><th>Resultado</th></tr></thead>
+        <tbody>
+          <tr><td>Allow 443</td><td>Allow 443</td><td><span class="chip chip-green">Pasa</span></td></tr>
+          <tr><td>Allow 443</td><td>Sin regla (cae en DenyAllInBound)</td><td><span class="chip chip-red">Bloqueado</span></td></tr>
+          <tr><td>Deny 443</td><td>Allow 443</td><td><span class="chip chip-red">Bloqueado</span> — la subnet corta antes en inbound</td></tr>
+          <tr><td>Sin NSG asociado</td><td>Allow 443</td><td><span class="chip chip-green">Pasa</span> — no hay NSG, no hay filtro en esa capa</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Es stateful</div>
+      <p>El NSG mantiene estado de la conexión. Si permitís el <strong>inbound</strong> en 443, la respuesta sale <strong>sin necesidad de una regla outbound explícita</strong>. Y viceversa: si permitís una salida, el tráfico de vuelta entra solo. Los flujos se identifican por la 5-tupla (origen IP, puerto origen, destino IP, puerto destino, protocolo).</p>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> te muestran una regla inbound Allow y te preguntan si hace falta agregar la regla outbound de retorno. <strong>No hace falta</strong> — el NSG es stateful. Cualquier opción que diga "crear también una regla outbound para el tráfico de respuesta" es distractor.</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> prioridad <strong>más baja = más fuerte</strong>. Una regla Deny en 100 gana sobre un Allow en 200. Si el escenario dice "el tráfico se sigue bloqueando aunque creé una regla Allow", buscá una regla Deny con número menor. La solución es darle a la regla Allow un número más bajo que la Deny, no "reiniciar la VM" ni "recrear el NSG".</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Dejá huecos entre prioridades (100, 200, 300...) para poder insertar reglas después sin renumerar todo. Es la práctica que Microsoft recomienda y aparece como opción correcta en preguntas de diseño.</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>Herramientas de diagnóstico:</strong> <code>IP flow verify</code> (<code>Test-AzNetworkWatcherIPFlow</code>) es la única que responde <strong>Allowed/Denied</strong> de un 5-tuple. <code>Effective security rules</code> es la lista unificada NIC+subnet, no el veredicto de un paquete. Juntas responden “qué filtering rule”. Next Hop = ruteo. Connection Troubleshoot = ¿llega? El “intermitente / last 24 hours” no cambia el verbo: si piden allow/deny, sigue siendo IP Flow.
+    </div>
+  </div>
+
+  <!-- ══ 2. REGLAS POR DEFECTO ══ -->
+  <div class="section" id="default-rules">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">📋</div>
+      <span class="section-title">Reglas por defecto del NSG</span>
+      <span class="section-tag">Memorizar números</span>
+    </div>
+
+    <p>Todo NSG nace con seis reglas de sistema. <strong>No se pueden borrar ni editar</strong>, pero sí se pueden <strong>sobrescribir</strong> creando reglas propias con prioridad más baja (100–4096, siempre menores que 65000).</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Dir.</th><th>Prioridad</th><th>Nombre</th><th>Source</th><th>Destination</th><th>Puerto</th><th>Acción</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip chip-blue">IN</span></td><td>65000</td><td>AllowVNetInBound</td><td>VirtualNetwork</td><td>VirtualNetwork</td><td>Any</td><td class="yes">Allow</td></tr>
+          <tr><td><span class="chip chip-blue">IN</span></td><td>65001</td><td>AllowAzureLoadBalancerInBound</td><td>AzureLoadBalancer</td><td>Any</td><td>Any</td><td class="yes">Allow</td></tr>
+          <tr><td><span class="chip chip-blue">IN</span></td><td>65500</td><td>DenyAllInBound</td><td>Any</td><td>Any</td><td>Any</td><td class="no">Deny</td></tr>
+          <tr><td><span class="chip chip-purple">OUT</span></td><td>65000</td><td>AllowVnetOutBound</td><td>VirtualNetwork</td><td>VirtualNetwork</td><td>Any</td><td class="yes">Allow</td></tr>
+          <tr><td><span class="chip chip-purple">OUT</span></td><td>65001</td><td>AllowInternetOutBound</td><td>Any</td><td>Internet</td><td>Any</td><td class="yes">Allow</td></tr>
+          <tr><td><span class="chip chip-purple">OUT</span></td><td>65500</td><td>DenyAllOutBound</td><td>Any</td><td>Any</td><td>Any</td><td class="no">Deny</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Las tres consecuencias que se preguntan</div>
+      <ul>
+        <li><strong>Dentro de la VNet todo está permitido por defecto</strong> — incluyendo entre subredes distintas de la misma VNet, y también hacia VNets peereadas (el tag <code>VirtualNetwork</code> incluye los espacios de direcciones de las VNets peereadas y los rangos on-premises anunciados por VPN/ExpressRoute). Si querés aislar dos subredes entre sí, tenés que crear una regla Deny explícita.</li>
+        <li><strong>La salida a internet está permitida por defecto</strong> — una VM sin IP pública igual sale a internet vía SNAT. Para cortarla hay que crear un Deny outbound hacia el tag <code>Internet</code>.</li>
+        <li><strong>La entrada desde internet está bloqueada por defecto</strong> — <code>DenyAllInBound</code> (65500) tapa todo lo que no venga de la VNet o del Load Balancer. Para publicar un servicio hay que crear un Allow explícito.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> "Aplico un NSG nuevo, vacío, a la subred. ¿Se rompe la comunicación entre mis VMs?" <strong>No.</strong> Un NSG "vacío" trae las reglas por defecto, y <code>AllowVNetInBound</code> deja pasar todo el tráfico intra-VNet. Lo que sí se rompe es cualquier acceso entrante desde internet que estuviera funcionando por no tener NSG.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Si el escenario dice "bloquear <strong>todo</strong> el acceso saliente a internet salvo a Azure Storage", la respuesta es: <code>Deny</code> outbound a <code>Internet</code> con prioridad alta (número más grande, ej. 4000) + <code>Allow</code> outbound a <code>Storage</code> con prioridad más baja (ej. 100). El orden importa más que la cantidad de reglas.</span>
+    </div>
+  </div>
+
+  <!-- ══ 3. SERVICE TAGS Y ASG ══ -->
+  <div class="section" id="tags-asg">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">🏷️</div>
+      <span class="section-title">Service Tags y Application Security Groups</span>
+      <span class="section-tag">Reglas sin IPs</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Service Tags — rangos que mantiene Microsoft</div>
+      <p>Un service tag representa un <strong>grupo de prefijos IP de un servicio de Azure</strong>. Microsoft actualiza los rangos automáticamente: vos no tocás nada cuando cambian. Se usan como <strong>source</strong> o <strong>destination</strong> en reglas NSG (y también en Azure Firewall).</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Service tag</th><th>Qué representa</th><th>Uso típico en el examen</th></tr></thead>
+        <tbody>
+          <tr><td><code>Internet</code></td><td>Todo lo que está fuera de la VNet y del espacio privado de Azure</td><td>Denegar la salida a internet</td></tr>
+          <tr><td><code>VirtualNetwork</code></td><td>El espacio de direcciones de la VNet + VNets peereadas + rangos on-prem conectados</td><td>Permitir tráfico interno</td></tr>
+          <tr><td><code>AzureLoadBalancer</code></td><td>El probe del Load Balancer de Azure</td><td>Permitir health probes — si lo bloqueás, el backend queda unhealthy</td></tr>
+          <tr><td><code>Storage</code></td><td>Azure Storage (se puede acotar por región: <code>Storage.EastUS</code>)</td><td>Permitir backup/acceso a blobs sin abrir todo internet</td></tr>
+          <tr><td><code>Sql</code></td><td>Azure SQL Database, SQL MI, Synapse (acotable por región)</td><td>Salida de la capa de app hacia la base</td></tr>
+          <tr><td><code>AzureCloud</code></td><td>Todas las IPs públicas de los datacenters de Azure</td><td>Salida hacia servicios PaaS en general</td></tr>
+          <tr><td><code>AzureBastion</code></td><td>El servicio Azure Bastion</td><td>Reglas del <code>AzureBastionSubnet</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Los service tags <strong>no se pueden crear ni modificar</strong>: son de Microsoft. Si necesitás un "tag propio" para tus prefijos, lo que buscás es un <strong>IP Group</strong> (Azure Firewall) o un <strong>ASG</strong> (NSG), no un service tag.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Application Security Groups (ASG)</div>
+      <ul>
+        <li>Agrupan <strong>NICs por rol de aplicación</strong>: <code>asg-web</code>, <code>asg-app</code>, <code>asg-db</code>.</li>
+        <li>La regla NSG se escribe <strong>por rol, no por IP</strong>: "permitir de <code>asg-web</code> a <code>asg-db</code> en 1433". Cuando agregás una VM nueva al ASG, hereda las reglas sin tocar el NSG.</li>
+        <li>Se asignan a nivel de <strong>NIC</strong> (o de la configuración IP de la NIC). Una NIC puede pertenecer a varios ASG.</li>
+        <li>El ASG desacopla la seguridad del direccionamiento: las VMs no necesitan estar en subredes separadas ni tener IPs contiguas.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si una regla usa un ASG como <strong>source</strong> y otro ASG como <strong>destination</strong>, todas las NICs de ambos ASG tienen que estar en la <strong>misma VNet</strong>. Los ASG no cruzan VNets, ni siquiera con peering. Si el escenario tiene VMs en dos VNets distintas, la respuesta correcta usa prefijos IP o service tags, no ASG.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Drop-down: qué NICs entran en cada ASG</div>
+      <p>ASG01 → NIC01 en <strong>VNET01</strong>. ASG02 → NIC02 en <strong>VNET02</strong>. ASG03 → NIC03 en <strong>VNET02</strong>. El ASG queda atado a la VNet de su primera NIC. El resto:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>NIC</th><th>VNet</th><th>¿A qué ASG?</th></tr></thead>
+          <tbody>
+            <tr><td>NIC04, NIC09, NIC11, NIC12</td><td>VNET01</td><td><strong>ASG01</strong></td></tr>
+            <tr><td>NIC05, NIC06, NIC07, NIC10</td><td>VNET02</td><td><strong>ASG02 y/o ASG03</strong> (los dos viven en VNET02; una NIC puede estar en varios ASG)</td></tr>
+            <tr><td>NIC08</td><td>VNET03</td><td><span class="no">Ninguno</span> — no hay ASG en VNET03</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> asignar NICs al ASG = <strong>misma VNet</strong>, no “las que falten” ni las de VNET03. ASG02 y ASG03 comparten VNET02, así que el mismo set de NICs sirve para los dos. NIC08 es el distractor sobrante.</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>Patrón clásico three-tier:</strong> <code>asg-web</code> acepta 443 desde <code>Internet</code>; <code>asg-app</code> acepta 8080 sólo desde <code>asg-web</code>; <code>asg-db</code> acepta 1433 sólo desde <code>asg-app</code>. Un solo NSG en la subred puede implementar todo eso si las VMs están etiquetadas.
+    </div>
+  </div>
+
+  <!-- ══ 4. AZURE FIREWALL ══ -->
+  <div class="section" id="firewall">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">🔥</div>
+      <span class="section-title">Azure Firewall</span>
+      <span class="section-tag">Control centralizado</span>
+    </div>
+
+    <p>Firewall <strong>gestionado, stateful y con alta disponibilidad incorporada</strong> (no hay que configurar availability sets; se puede desplegar en zonas de disponibilidad). Opera a nivel de red y de aplicación, escala automáticamente y expone una <strong>IP pública estática</strong> — lo que permite hacer allow-listing de tu salida en un tercero.</p>
+
+    <div class="card">
+      <div class="card-title">Requisitos de despliegue</div>
+      <ul>
+        <li>Una subred llamada <strong>exactamente <code>AzureFirewallSubnet</code></strong>, de <strong>/26 como mínimo</strong>. El nombre no es negociable.</li>
+        <li>Esa subred <strong>no lleva NSG ni route table</strong> propios en un despliegue estándar.</li>
+        <li>Un firewall por VNet; el patrón típico es <strong>hub-and-spoke</strong>: el firewall vive en el hub y los spokes rutean hacia él con UDR.</li>
+        <li>La SKU Basic requiere además una subred <code>AzureFirewallManagementSubnet</code> (también /26 mínimo) para el tráfico de administración.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Capacidad</th><th>Basic</th><th>Standard</th><th>Premium</th></tr></thead>
+        <tbody>
+          <tr><td>Network / Application / NAT rules</td><td class="yes">Sí</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td>Threat intelligence</td><td>Sólo <em>alert</em></td><td>Alert &amp; deny</td><td>Alert &amp; deny</td></tr>
+          <tr><td>FQDN filtering / FQDN tags</td><td class="yes">Sí</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td><strong>TLS inspection</strong></td><td class="no">No</td><td class="no">No</td><td class="yes">Sí</td></tr>
+          <tr><td><strong>IDPS</strong> (detección/prevención de intrusiones)</td><td class="no">No</td><td class="no">No</td><td class="yes">Sí</td></tr>
+          <tr><td><strong>URL filtering</strong> (URL completa, no sólo FQDN)</td><td class="no">No</td><td class="no">No</td><td class="yes">Sí</td></tr>
+          <tr><td><strong>Web categories</strong></td><td class="no">No</td><td class="yes">Sí (clasifica por FQDN)</td><td class="yes">Sí (clasifica por URL completa)</td></tr>
+          <tr><td>Escenario objetivo</td><td>PyME / bajo volumen</td><td>Producción general</td><td>Entornos regulados / sensibles</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Regla mnemotécnica: <strong>si el escenario menciona inspeccionar tráfico cifrado, detectar intrusiones o filtrar por URL completa, la respuesta es Premium. Ojo con las web categories (redes sociales, gambling): también existen en Standard, sólo que ahí la clasificación es por FQDN y en Premium por URL completa.</strong> Cualquier otra cosa de filtrado por FQDN o por IP la hace Standard.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Los tres tipos de regla y su orden de precedencia</div>
+      <div class="flow">
+        <div class="flow-step highlight">1. NAT rules<br><small>DNAT entrante</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">2. Network rules<br><small>L3/L4: IP, puerto, protocolo</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">3. Application rules<br><small>L7: FQDN, URL, categorías</small></div>
+      </div>
+      <ul>
+        <li><strong>NAT rules</strong> — hacen <strong>DNAT</strong>: traducen la IP pública del firewall + puerto hacia una IP privada interna. Es como publicás un servicio hacia adentro. Al crear una NAT rule se agrega implícitamente la network rule correspondiente.</li>
+        <li><strong>Network rules</strong> — filtran por IP de origen/destino, puerto y protocolo (TCP, UDP, ICMP, Any). Acá van los service tags y los IP Groups.</li>
+        <li><strong>Application rules</strong> — filtran por <strong>FQDN</strong> (<code>*.microsoft.com</code>), FQDN tags (<code>WindowsUpdate</code>) y, en Premium, URL completa y web categories. Sólo aplican a HTTP/HTTPS y MSSQL.</li>
+      </ul>
+      <p><strong>Consecuencia clave:</strong> si una <em>network rule</em> matchea el tráfico, las <em>application rules</em> <strong>nunca se evalúan</strong>. Por eso, para filtrar por FQDN de salida, no tenés que tener una network rule genérica que permita ese mismo tráfico antes.</p>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el orden es <strong>NAT → Network → Application</strong>, siempre, sin importar la prioridad que le pongas a las colecciones. Una application rule que bloquea <code>*.facebook.com</code> es inútil si existe una network rule que permite salir a <code>Internet</code> por 443 — el tráfico matchea la network rule y jamás llega a evaluarse la de aplicación.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SNAT, DNAT y Firewall Policy</div>
+      <ul>
+        <li><strong>SNAT (salida)</strong> — el firewall reescribe la IP de origen a su IP pública. Todo lo que sale de tus VNets por el firewall aparece con una única IP pública estática. Por defecto, el tráfico hacia direcciones <em>privadas</em> no se SNATea.</li>
+        <li><strong>DNAT (entrada)</strong> — una NAT rule traduce <code>IP pública del FW : puerto</code> a <code>IP privada de la VM : puerto</code>. Así publicás un RDP o un web server sin darle IP pública a la VM.</li>
+        <li><strong>Firewall Policy</strong> — recurso independiente y <strong>reutilizable</strong> que contiene las rule collection groups. Se puede asociar a <strong>varios firewalls</strong>, incluso en distintas regiones y suscripciones, y es <strong>jerárquico</strong>: una policy hija hereda de la padre y las reglas heredadas se procesan primero. Es el modelo recomendado; las "classic rules" del firewall son el modelo viejo.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Criterio</th><th>NSG</th><th>Azure Firewall</th></tr></thead>
+        <tbody>
+          <tr><td>Capa</td><td>L3/L4 (IP, puerto, protocolo)</td><td>L3/L4 <strong>+ L7</strong> (FQDN, URL, categorías)</td></tr>
+          <tr><td>Alcance</td><td>Subred o NIC, dentro de una VNet</td><td>Recurso central en el hub, filtra tráfico de muchas VNets</td></tr>
+          <tr><td>Tipo de recurso</td><td>Distribuido, sin instancia dedicada</td><td>Appliance PaaS gestionado con IP pública y privada</td></tr>
+          <tr><td>FQDN filtering</td><td class="no">No</td><td class="yes">Sí</td></tr>
+          <tr><td>DNAT / publicación de servicios</td><td class="no">No</td><td class="yes">Sí</td></tr>
+          <tr><td>Threat intelligence</td><td class="no">No</td><td class="yes">Sí</td></tr>
+          <tr><td>Logging</td><td>NSG flow logs (requiere Network Watcher + Storage)</td><td>Logs completos a Log Analytics / Storage / Event Hub, integrado</td></tr>
+          <tr><td>Costo</td><td><span class="chip chip-green">Gratis</span></td><td><span class="chip chip-yellow">Por hora de despliegue + por GB procesado</span></td></tr>
+          <tr><td>Requiere UDR para funcionar</td><td class="no">No</td><td class="yes">Sí — hay que rutear el tráfico hacia él</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>No son alternativas: se usan <strong>juntos</strong>. El Firewall filtra el perímetro y la salida a internet de forma centralizada; los NSG hacen la micro-segmentación entre subredes y cargas. Si una pregunta ofrece "usar sólo uno de los dos", suele ser distractor.</span>
+    </div>
+  </div>
+
+  <!-- ══ 5. UDR ══ -->
+  <div class="section" id="udr">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🧭</div>
+      <span class="section-title">User Defined Routes y forced tunneling</span>
+      <span class="section-tag">Ruteo</span>
+    </div>
+
+    <p>Azure crea <strong>system routes</strong> automáticamente en cada subred (hacia la VNet, hacia internet <code>0.0.0.0/0</code>, y hacia los rangos peereados o del gateway). Una <strong>route table</strong> con UDRs se asocia a una <strong>subred</strong> para sobreescribir ese comportamiento y forzar el tráfico por donde vos querés — típicamente por un firewall o una NVA.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Next hop type</th><th>Qué hace</th><th>Cuándo se usa</th></tr></thead>
+        <tbody>
+          <tr><td><code>Virtual appliance</code></td><td>Envía el tráfico a una IP privada específica (firewall, NVA)</td><td>Forzar la inspección por Azure Firewall o una appliance de terceros. <strong>Es el único que pide next hop IP address.</strong></td></tr>
+          <tr><td><code>Virtual network gateway</code></td><td>Envía el tráfico al VPN Gateway o ExpressRoute Gateway</td><td>Forced tunneling hacia on-premises</td></tr>
+          <tr><td><code>Virtual network</code></td><td>Rutea dentro del espacio de direcciones de la VNet</td><td>Sobrescribir el ruteo entre subredes</td></tr>
+          <tr><td><code>Internet</code></td><td>Sale directo a internet por la infraestructura de Azure</td><td>Excepciones: dejar que un prefijo puntual salga sin pasar por el firewall</td></tr>
+          <tr><td><code>None</code></td><td><strong>Descarta el tráfico</strong> (black hole)</td><td>Bloquear un destino a nivel de ruteo, sin NSG</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Precedencia de rutas</div>
+      <div class="flow">
+        <div class="flow-step highlight">1. UDR<br><small>User Defined Route</small></div>
+        <span class="flow-arrow">&gt;</span>
+        <div class="flow-step">2. BGP<br><small>rutas aprendidas por VPN/ER</small></div>
+        <span class="flow-arrow">&gt;</span>
+        <div class="flow-step">3. System routes<br><small>las que crea Azure</small></div>
+      </div>
+      <p>Pero antes de todo eso gana el <strong>prefijo más específico (longest prefix match)</strong>. Una system route hacia <code>10.0.1.0/24</code> le gana a una UDR <code>0.0.0.0/0</code>. La precedencia UDR &gt; BGP &gt; System sólo desempata cuando <strong>dos rutas tienen exactamente el mismo prefijo</strong>.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Forced tunneling</div>
+      <ul>
+        <li>En el examen, “<strong>forced tunneling</strong>” casi siempre es mandar internet hacia <strong>on-premises</strong> vía <code>Virtual network gateway</code> (VPN/ER), no un checkbox en la VNet.</li>
+        <li>Para inspeccionar salida con una <strong>NVA en Azure</strong>, la respuesta es una <strong>UDR</strong> <code>0.0.0.0/0</code> en la subnet de workload, next hop <code>Virtual appliance</code> + IP de la NVA.</li>
+        <li>Hay que asociar la route table a <strong>cada subred de workload</strong> que quieras forzar. Nunca a <code>AzureFirewallSubnet</code> / <code>GatewaySubnet</code> / <code>AzureBastionSubnet</code>.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">NVA en FirewallSubnet: AppSubnet sigue saliendo directo</div>
+      <p>Las VMs usan la system route a internet. Hay que pasar todo el outbound por la NVA.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>UDR <code>0.0.0.0/0</code> en <strong>AppSubnet</strong>, next hop <strong>Virtual appliance</strong></td><td><span class="yes">Sí</span></td><td>Pisa la system route. Asociás la route table a AppSubnet, no a la de la NVA</td></tr>
+            <tr><td>Enable forced tunnelling on the VNet</td><td><span class="no">No</span></td><td>No hay ese toggle. Forced tunneling = gateway on-prem, no la NVA</td></tr>
+            <tr><td>Route filter en AppSubnet</td><td><span class="no">No</span></td><td>Route filters = comunidades BGP de <strong>ExpressRoute Microsoft peering</strong></td></tr>
+            <tr><td>Service endpoint de Azure Firewall</td><td><span class="no">No</span></td><td>Service endpoints son PaaS (Storage/SQL). Firewall/NVA se alcanzan por UDR</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Variante “elegí dos”: todo el outbound de Data1 y Data2 por la NVA del Edge subnet.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Crear una <strong>route table</strong> con next hop = IP de la NVA</td><td><span class="yes">Sí</span></td><td>UDR <code>0.0.0.0/0</code> → <code>Virtual appliance</code></td></tr>
+            <tr><td><strong>Asociar</strong> la route table a cada subnet de workload (Data1, Data2)</td><td><span class="yes">Sí</span></td><td>“Bind the resource to each subnet”. No a la subnet de la NVA</td></tr>
+            <tr><td>Asociarla a cada NIC</td><td><span class="no">No</span></td><td>Las UDR se asocian a <strong>subnets</strong>, no a NICs</td></tr>
+            <tr><td>Dos ILB entre las tres subnets</td><td><span class="no">No</span></td><td>El LB distribuye, no fuerza el next hop al firewall</td></tr>
+            <tr><td>NSG con regla outbound</td><td><span class="no">No</span></td><td>El NSG permite/niega; no rutea</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>az network route-table create -g rg1 -n rt-app
+az network route-table route create -g rg1 --route-table-name rt-app -n to-nva \
+  --address-prefix 0.0.0.0/0 --next-hop-type VirtualAppliance --next-hop-ip-address 10.0.1.4
+az network vnet subnet update -g rg1 --vnet-name vnet --name AppSubnet --route-table rt-app</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> nunca apliques una UDR <code>0.0.0.0/0</code> apuntando al firewall en la subred <strong><code>AzureFirewallSubnet</code></strong> ni en la <strong><code>GatewaySubnet</code></strong>. En la del firewall creás un loop de ruteo y el firewall pierde su propia salida; en la del gateway rompés el retorno del tráfico VPN/ExpressRoute. Lo mismo aplica al <code>AzureBastionSubnet</code>: una ruta default hacia una NVA rompe las sesiones de Bastion. “Forced tunneling on the VNet”, “route filter”, “service endpoint de Firewall”, “ILB entre subnets” y “bind a cada NIC” son distractores: la NVA se gana con <strong>UDR + asociar la tabla a las subnets de workload</strong>.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Si el next hop es una NVA o una VM que rutea, esa VM necesita <strong>IP forwarding habilitado</strong> en su NIC (además del reenvío a nivel de sistema operativo). Es una opción correcta recurrente en preguntas de "la NVA no reenvía tráfico".</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>Diagnóstico:</strong> <code>Effective routes</code> en la NIC muestra la tabla de ruteo resuelta (system + BGP + UDR) que la VM está usando realmente. <code>Next hop</code> de Network Watcher te dice por dónde saldría un paquete hacia una IP determinada.
+    </div>
+  </div>
+
+  <!-- ══ 6. BASTION ══ -->
+  <div class="section" id="bastion">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(165,180,252,.15)">🖥️</div>
+      <span class="section-title">Azure Bastion</span>
+      <span class="section-tag">Capítulo · /26 sin overlap</span>
+    </div>
+
+    <p>PaaS gestionado que da <strong>RDP y SSH a través del navegador (HTML5) sobre TLS por el puerto 443</strong>, desde el portal de Azure. La VM se conecta por su <strong>IP privada</strong>: no necesita IP pública, ni tener 3389/22 expuestos a internet. Elimina la necesidad de una jump box propia.</p>
+
+    <div class="card">
+      <div class="card-title">Qué pide el examen cuando dice “IP address details”</div>
+      <p>No es la IP pública de Bastion ni la IP de un host. Es el <strong>CIDR de la subnet dedicada</strong> que vas a crear (<code>AzureBastionSubnet</code>) para el change control. La Public IP Standard del host es <em>otro</em> recurso, con otra pregunta.</p>
+      <ul>
+        <li>Nombre <strong>exactamente <code>AzureBastionSubnet</code></strong>.</li>
+        <li>Tamaño <strong>/26 o más grande</strong> (/26 = 64 IPs, /25, /24…). <strong>/27 es chico</strong> (32 IPs). “Larger” = más IPs = prefijo <em>más chico</em> (26, 25, 24), no 27.</li>
+        <li>El rango tiene que <strong>entrar en el address space de la VNet</strong> y <strong>no solaparse</strong> con subnets existentes.</li>
+        <li>Tiene que ser una <strong>dirección de red alineada</strong> al prefijo: <code>10.3.3.0/26</code> sí; <code>10.3.3.50/27</code> no (50 no es borde de /27).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Ejemplo del examen: VNet 10.3.2.0/23, ya hay 10.3.2.0/24</div>
+      <p>Un /23 son <strong>512 IPs</strong>: de <code>10.3.2.0</code> a <code>10.3.3.255</code>. El /24 existente se come <strong>toda la primera mitad</strong>.</p>
+      <div class="flow" style="margin-top:10px">
+        <div class="flow-step">10.3.2.0/23<br><small>VNet · 512 IPs</small></div>
+        <span class="flow-arrow">=</span>
+        <div class="flow-step">10.3.2.0/24<br><small>ocupada</small></div>
+        <span class="flow-arrow">+</span>
+        <div class="flow-step highlight">10.3.3.0/24<br><small>libre</small></div>
+      </div>
+      <p>De lo libre recortás un /26 alineado: <strong><code>10.3.3.0/26</code></strong> = <code>10.3.3.0</code>–<code>10.3.3.63</code>.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td><code>10.3.3.0/26</code></td><td><span class="yes">Sí</span></td><td>En la mitad libre, /26, borde de red</td></tr>
+          <tr><td><code>10.3.2.0/26</code></td><td><span class="no">No</span></td><td>El tamaño está bien, pero <strong>solapa</strong> el /24 existente (todo lo que es 10.3.2.x)</td></tr>
+          <tr><td><code>10.3.3.50/27</code></td><td><span class="no">No</span></td><td>/27 es chico. Además <strong>.50 no es network address</strong> de un /27 (bordes: .0, .32, .64…)</td></tr>
+          <tr><td><code>10.3.5.2/27</code></td><td><span class="no">No</span></td><td><strong>Fuera</strong> del /23 (el VNet termina en 10.3.3.255) y /27 chico</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>az network vnet subnet create -g RG --vnet-name VNet1 \
+  -n AzureBastionSubnet --address-prefixes 10.3.3.0/26
+az network public-ip create -g RG -n pip-bastion --sku Standard --allocation-method Static
+az network bastion create -g RG -n bastion1 --vnet-name VNet1 --public-ip-address pip-bastion \
+  --sku Basic
+
+New-AzVirtualNetworkSubnetConfig -Name AzureBastionSubnet -AddressPrefix 10.3.3.0/26</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <code>10.3.2.0/26</code> “parece Bastion” porque es /26, pero vive <em>adentro</em> del /24 que ya existe. Recortá de la mitad que queda (<code>10.3.3.0/24</code>). “IP address details” ≠ Public IP del Bastion ≠ un host (.50, .2).</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Requisitos (además del CIDR)</div>
+      <ul>
+        <li>Se despliega <strong>por VNet</strong>; con VNet peering, un solo Bastion puede alcanzar VMs de las VNets peereadas.</li>
+        <li>El usuario necesita rol de lectura sobre la VM, la NIC y el recurso de Bastion.</li>
+        <li>La subred de Bastion admite un NSG, pero tiene que permitir el set de puertos que el servicio requiere; si lo configurás mal, el despliegue falla o el servicio deja de funcionar.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Capacidad</th><th>Developer</th><th>Basic</th><th>Standard</th><th>Premium</th></tr></thead>
+        <tbody>
+          <tr><td>Requiere <code>AzureBastionSubnet</code></td><td class="no">No</td><td class="yes">Sí</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td>RDP/SSH desde el portal (HTML5)</td><td class="yes">Sí</td><td class="yes">Sí</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td>Recurso dedicado / VNet propia del cliente</td><td class="no">No (compartido)</td><td class="yes">Sí</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td><strong>Native client</strong> (cliente RDP/SSH local vía CLI)</td><td class="no">No</td><td class="no">No</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td><strong>IP-based connection</strong> (conectar por IP, ej. on-prem)</td><td class="no">No</td><td class="no">No</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td><strong>Host scaling</strong> (ajustar instancias)</td><td class="no">No</td><td class="no">No</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td><strong>Shareable link</strong></td><td class="no">No</td><td class="no">No</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td>Transferencia de archivos (upload/download)</td><td class="no">No</td><td class="no">No</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+          <tr><td>Session recording / despliegue sin IP pública</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Sí</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> Bastion <strong>no reemplaza al NSG de la VM</strong>. Si la subred o la NIC de la VM tienen un NSG, ese NSG tiene que <strong>permitir inbound 3389 (Windows) o 22 (Linux) desde el rango del <code>AzureBastionSubnet</code></strong>. Si el escenario dice "desplegué Bastion y sigo sin poder conectarme", la respuesta es agregar esa regla al NSG de la VM, no reinstalar Bastion.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span>Palabras clave que apuntan a Bastion: "sin exponer puertos de administración a internet", "sin asignar IPs públicas a las VMs", "sin desplegar ni mantener una jump box", "acceso desde el portal". Si además piden usar el cliente RDP nativo, IP-based connection o escalar hosts, la SKU es <strong>Standard</strong>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Bastion a vm1: tres acciones, en orden</div>
+      <p>VNet <code>10.2.0.0/22</code>, ya hay <code>subnet1</code> <code>10.2.0.0/24</code>. vm1 Windows, sin PIP. RDP desde internet vía Bastion.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Paso</th><th>Acción</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Subnet <strong><code>AzureBastionSubnet</code></strong> <code>10.2.1.0/26</code></td><td>Nombre literal, /26, en la mitad libre del /22 (10.2.1.0/24 está libre)</td></tr>
+            <tr><td>2</td><td>Crear el Bastion y asociar esa subnet</td><td>El host PaaS. La PIP Standard es del Bastion, no de la VM</td></tr>
+            <tr><td>3</td><td>Conectar a vm1 desde el <strong>portal en el browser</strong></td><td>HTML5 / TLS 443. No hace falta cliente RDP</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><code>BastionSubnet</code> (sin Azure) es nombre inválido. <code>10.2.0.2/28</code> solapa subnet1 y es chico. PIP en vm1 contradice Bastion. Un VNet nuevo (<code>AzureBastionVNet</code>) no hace falta. El cliente RDP nativo es SKU Standard, no el flujo básico del examen.</p>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> orden = <strong>subnet bien nombrada → Bastion → portal</strong>. “BastionSubnet”, /28, PIP en la VM, VNet aparte y mstsc.exe son carnada. <code>10.2.1.0/26</code> no pisa <code>10.2.0.0/24</code>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Policy: nada de 22 ni 3389; Win + Linux; mín. esfuerzo</div>
+      <p>Dev Team se conectaba por SSH y RDP. Hay que seguir administrando ambas familias sin romper la policy.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Azure Bastion</strong></td><td><span class="yes">Sí</span></td><td>RDP y SSH por el browser en <strong>TLS 443</strong>. Las VMs no exponen 22/3389 a internet</td></tr>
+            <tr><td>Site-to-site VPN</td><td><span class="no">No</span></td><td>Funciona, pero pide gateway + dispositivo on-prem: más esfuerzo</td></tr>
+            <tr><td>Point-to-site VPN</td><td><span class="no">No</span></td><td>Clientes, certificados/VPN profile en cada PC: más esfuerzo</td></tr>
+            <tr><td>NSG Allow RDP desde las IPs públicas de los users</td><td><span class="no">No</span></td><td>Sigue <strong>exponiendo 3389</strong> (y no cubre Linux/22). Viola la policy</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “no longer allows ports 22 and 3389” mata el NSG Allow aunque sea desde IPs conocidas. VPN sirve pero no es “minimize administrative effort”. Bastion cubre Win y Linux en un servicio.</span>
+    </div>
+  </div>
+
+  <!-- ══ 7. JIT ══ -->
+  <div class="section" id="jit">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.12)">⏱️</div>
+      <span class="section-title">Just-in-Time VM access</span>
+      <span class="section-tag">Defender for Cloud</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cómo funciona</div>
+      <ul>
+        <li>Es una función de <strong>Microsoft Defender for Cloud</strong> (requiere el plan de pago de Defender for Servers; no está en el tier gratuito).</li>
+        <li>Los puertos de administración (3389, 22, y los que definas) quedan <strong>cerrados por defecto</strong> con reglas Deny en el NSG.</li>
+        <li>Cuando un usuario pide acceso, Defender <strong>crea reglas NSG temporales</strong> (y de Azure Firewall, si aplica) que permiten el puerto <strong>desde la IP de origen solicitada y por una ventana de tiempo limitada</strong>. Al vencer, las reglas se eliminan solas y el puerto vuelve a estar cerrado.</li>
+        <li>Cada solicitud queda <strong>auditada</strong> en el activity log: quién pidió, para qué VM, desde qué IP y por cuánto tiempo.</li>
+        <li>El permiso para solicitar acceso se controla con RBAC; la VM sigue necesitando una IP pública o conectividad alcanzable.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Escenario</th><th>Respuesta</th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td>"Que las VMs no tengan IP pública y se administren desde el portal"</td><td><span class="chip chip-blue">Bastion</span></td><td>Bastion conecta por IP privada; JIT no elimina la IP pública</td></tr>
+          <tr><td>"Abrir RDP sólo cuando se necesite, por tiempo limitado y con auditoría"</td><td><span class="chip chip-green">JIT</span></td><td>Es literalmente su definición: reglas NSG temporales + registro</td></tr>
+          <tr><td>"Reducir la superficie de ataque de VMs que ya tienen IP pública, sin rediseñar la red"</td><td><span class="chip chip-green">JIT</span></td><td>Se activa encima del NSG existente, sin cambiar el direccionamiento</td></tr>
+          <tr><td>"Acceso administrativo permanente, sin exponer nada, con transferencia de archivos"</td><td><span class="chip chip-blue">Bastion Standard</span></td><td>Sesión persistente por TLS + file transfer</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>No son excluyentes: se pueden combinar. Pero en el examen, <strong>"sin IP pública" → Bastion</strong> y <strong>"por tiempo limitado / bajo demanda / auditado" → JIT</strong>. Es la palabra clave la que decide.</span>
+    </div>
+  </div>
+
+  <!-- ══ 8. DDoS ══ -->
+  <div class="section" id="ddos">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.12)">🌊</div>
+      <span class="section-title">Azure DDoS Protection</span>
+      <span class="section-tag">Capa de plataforma</span>
+    </div>
+
+    <p>Protege contra ataques volumétricos, de protocolo y de agotamiento de recursos sobre <strong>IPs públicas</strong>. El nivel básico está siempre activo y no cuesta nada; los niveles de pago agregan tuning por aplicación, telemetría y soporte.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Nivel</th><th>Costo</th><th>Alcance</th><th>Qué agrega</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Basic / infrastructure</strong></td><td><span class="chip chip-green">Gratis</span></td><td>Habilitado por defecto en toda la plataforma, para todos</td><td>Mitigación siempre activa contra ataques volumétricos a escala de red. Sin configuración, sin telemetría dedicada, sin alertas.</td></tr>
+          <tr><td><strong>DDoS Network Protection</strong></td><td><span class="chip chip-yellow">Pago</span></td><td>Se asocia a una <strong>VNet</strong> — cubre todas las IPs públicas de sus recursos</td><td>Mitigación <strong>adaptativa</strong> (aprende el patrón de tráfico de tu app), telemetría y métricas en tiempo real, alertas, logs de mitigación, acceso al Rapid Response Team y <strong>protección de costos</strong> (créditos por el escalado provocado por un ataque).</td></tr>
+          <tr><td><strong>DDoS IP Protection</strong></td><td><span class="chip chip-yellow">Pago por IP</span></td><td>Se habilita sobre <strong>una IP pública individual</strong></td><td>Las mismas capacidades de mitigación y telemetría, pero facturadas por dirección IP protegida. Pensado para pocas IPs.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cómo se aplica</div>
+      <ul>
+        <li>Un <strong>DDoS protection plan</strong> es un recurso propio que se crea una vez y se puede <strong>asociar a VNets de varias suscripciones</strong> del mismo tenant.</li>
+        <li>Network Protection se habilita a nivel de <strong>VNet</strong>, no de VM ni de subred. Todos los recursos con IP pública de esa VNet quedan cubiertos automáticamente.</li>
+        <li>Sólo protege <strong>IPs públicas</strong>: no hace nada por recursos exclusivamente privados.</li>
+        <li>Es protección de capa 3/4. Para ataques de capa 7 (SQL injection, XSS, OWASP Top 10) el control es <strong>WAF</strong> sobre Application Gateway o Front Door.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span>Si la pregunta menciona <strong>"protección de costos"</strong> o <strong>"créditos por escalado durante un ataque"</strong>, la respuesta es DDoS Network Protection: es la única capacidad que ofrece esa garantía.</span>
+    </div>
+  </div>
+
+  <!-- ══ 9. DECISIÓN ══ -->
+  <div class="section" id="decision">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.22)">🎯</div>
+      <span class="section-title">Qué usar en cada escenario</span>
+      <span class="section-tag">Cierre</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>El escenario pide...</th><th>Servicio</th><th>Detalle</th></tr></thead>
+        <tbody>
+          <tr><td>Filtrar tráfico entre subredes o entre VMs por IP y puerto</td><td><span class="chip chip-blue">NSG</span></td><td>Gratis, L3/L4, en subnet y/o NIC</td></tr>
+          <tr><td>Escribir reglas por rol de aplicación en vez de por IP</td><td><span class="chip chip-blue">NSG + ASG</span></td><td>Mismas VNet para source y destination</td></tr>
+          <tr><td>Permitir salida sólo a Azure Storage o Azure SQL</td><td><span class="chip chip-blue">NSG + service tags</span></td><td><code>Storage</code>, <code>Sql</code>, opcionalmente por región</td></tr>
+          <tr><td>Inspeccionar y loguear la salida a internet de forma <strong>centralizada</strong></td><td><span class="chip chip-red">Azure Firewall</span></td><td>Hub-and-spoke + UDR <code>0.0.0.0/0</code> hacia el firewall</td></tr>
+          <tr><td>Filtrar por <strong>FQDN</strong> o dominio de destino</td><td><span class="chip chip-red">Azure Firewall</span></td><td>Application rules — el NSG no puede</td></tr>
+          <tr><td>Inspección TLS, IDPS, URL filtering, web categories</td><td><span class="chip chip-red">Firewall Premium</span></td><td>Standard no llega</td></tr>
+          <tr><td>Publicar un servicio interno con una IP pública estática</td><td><span class="chip chip-red">Firewall + DNAT</span></td><td>NAT rule: IP pública del FW → IP privada de la VM</td></tr>
+          <tr><td>Forzar que todo el tráfico salga por un punto de inspección</td><td><span class="chip chip-yellow">UDR / forced tunneling</span></td><td><code>0.0.0.0/0</code> → <code>Virtual appliance</code> o <code>Virtual network gateway</code></td></tr>
+          <tr><td>Descartar tráfico hacia un prefijo sin usar NSG</td><td><span class="chip chip-yellow">UDR next hop <code>None</code></span></td><td>Black hole a nivel de ruteo</td></tr>
+          <tr><td>Administrar VMs por RDP/SSH <strong>sin IP pública</strong></td><td><span class="chip chip-purple">Azure Bastion</span></td><td><code>AzureBastionSubnet</code> /26 o mayor + NSG de la VM abierto a Bastion</td></tr>
+          <tr><td>Abrir el puerto de administración <strong>bajo demanda y auditado</strong></td><td><span class="chip chip-green">JIT VM access</span></td><td>Defender for Cloud, reglas NSG temporales</td></tr>
+          <tr><td>Mitigación adaptativa contra ataques volumétricos + protección de costos</td><td><span class="chip chip-purple">DDoS Network Protection</span></td><td>Se asocia a la VNet</td></tr>
+          <tr><td>Proteger una app web de OWASP Top 10 (SQLi, XSS)</td><td><span class="chip chip-green">WAF</span></td><td>Sobre Application Gateway o Front Door — se ve en el archivo de balanceo de carga</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> DDoS Protection y WAF resuelven problemas distintos y el examen los ofrece juntos como distractores. <strong>DDoS es capa 3/4</strong> (volumen, protocolo, IPs públicas, se asocia a la VNet). <strong>WAF es capa 7</strong> (payload HTTP, OWASP, se asocia a Application Gateway o Front Door). Si el ataque es "inundación de paquetes" → DDoS. Si es "inyección SQL" → WAF.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">✅</span>
+      <span><strong>Checklist de troubleshooting "la VM no conecta":</strong> 1) mirá <em>effective security rules</em> en la NIC — resuelve subnet + NIC de una; 2) corré <em>IP flow verify</em> para saber qué regla exacta bloquea; 3) mirá <em>effective routes</em> por si una UDR está mandando el retorno a otro lado; 4) verificá el firewall del sistema operativo dentro de la VM — Azure no lo ve y no aparece en ningún log de red.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Cuál es el rango de prioridad de una regla NSG personalizada y qué número gana?", a: "<strong>100 a 4096</strong>. Gana el <strong>número más bajo</strong>: se evalúa de menor a mayor y la primera regla que matchea se aplica, cortando la evaluación.", cat: "NSG" },
+  { q: "Script: dos reglas inbound (RDP 3389, HTTP 80) y el NSG. ¿RuleConfig, Add- o Set-? ¿Qué crea el NSG?", a: "Las dos reglas: <code>New-AzNetworkSecurityRuleConfig</code> (objeto local). El NSG: <code>New-AzNetworkSecurityGroup -SecurityRules $rule1,$rule2</code>. <code>Add-AzNetworkSecurityRuleConfig</code> es para un NSG ya Get-eado. <code>Set-AzNetworkSecurityGroup</code> empuja cambios, no crea. CLI: <code>az network nsg create</code> + <code>az network nsg rule create</code>.", cat: "NSG" },
+  { q: "Orden de evaluación de NSGs para tráfico ENTRANTE a una VM", a: "Primero el NSG de la <strong>subnet</strong>, después el de la <strong>NIC</strong>. En outbound es al revés: <strong>NIC primero, subnet después</strong>. Los dos tienen que permitir el tráfico.", cat: "NSG" },
+  { q: "Exhibit: NSG1 en subnet de VM1, NSG2 en NIC de VM1, NSG3 en subnet de VM6/VM7. Yes/No de los 3.", a: "Incoming a VM1, NSG1 antes que NSG2 → <strong>Yes</strong> (inbound subnet→NIC). Entre VM1 y VM2 solo NSG2 → <strong>No</strong> (también la subnet). Entre VM6 y VM7 aplica NSG3 → <strong>Yes</strong> (intra-subnet no se salta). Camino VM→VM: NIC orig out → subnet orig out → subnet dest in → NIC dest in. Cmdlet: <code>Get-AzEffectiveNetworkSecurityGroup</code> / <code>az network nic list-effective-nsg</code>.", cat: "NSG" },
+  { q: "Si permito inbound 443 en el NSG, ¿necesito una regla outbound para la respuesta?", a: "<strong>No.</strong> El NSG es <strong>stateful</strong>: el tráfico de retorno de una conexión permitida sale automáticamente sin regla explícita.", cat: "NSG" },
+  { q: "Nombrá las 3 reglas inbound por defecto de un NSG con sus prioridades", a: "<code>AllowVNetInBound</code> <strong>65000</strong>, <code>AllowAzureLoadBalancerInBound</code> <strong>65001</strong>, <code>DenyAllInBound</code> <strong>65500</strong>. No se borran; se sobrescriben con reglas de prioridad menor.", cat: "NSG defaults" },
+  { q: "Reglas outbound por defecto de un NSG y su consecuencia práctica", a: "<code>AllowVnetOutBound</code> <strong>65000</strong>, <code>AllowInternetOutBound</code> <strong>65001</strong>, <code>DenyAllOutBound</code> <strong>65500</strong>. Consecuencia: <strong>la salida a internet está permitida por defecto</strong> y el tráfico intra-VNet también; la entrada desde internet está bloqueada.", cat: "NSG defaults" },
+  { q: "¿Qué restricción tienen los ASG usados como source y destination en una misma regla?", a: "Todas las NICs de ambos ASG deben estar en la <strong>misma VNet</strong>. Los ASG no cruzan VNets ni con peering — ahí hay que usar prefijos IP o service tags.", cat: "ASG" },
+  { q: "ASG01 en VNET01, ASG02 y ASG03 en VNET02. NIC08 está en VNET03. ¿Qué NICs van a cada ASG?", a: "ASG01 = resto de VNET01. ASG02 y ASG03 = resto de VNET02 (una NIC puede estar en los dos). <strong>NIC08 no entra en ninguno</strong>: no hay ASG en VNET03.", cat: "ASG" },
+  { q: "¿Qué incluye el service tag VirtualNetwork?", a: "El espacio de direcciones de la VNet, el de las <strong>VNets peereadas</strong> y los rangos <strong>on-premises</strong> conectados por VPN o ExpressRoute. Por eso el tráfico entre subredes está permitido por defecto.", cat: "Service tags" },
+  { q: "Requisitos de subred de Azure Firewall y de Azure Bastion", a: "Firewall: subred llamada exactamente <code>AzureFirewallSubnet</code>, mínimo <strong>/26</strong>. Bastion: <code>AzureBastionSubnet</code>, <strong>/26 o más grande</strong>. Los nombres son literales, no se pueden cambiar.", cat: "Firewall / Bastion" },
+  { q: "VNet 10.3.2.0/23, ya hay subnet 10.3.2.0/24. Change control de Bastion: ¿qué “IP address details”?", a: "<strong><code>10.3.3.0/26</code></strong>. “IP address details” = CIDR de <code>AzureBastionSubnet</code>, no la Public IP ni un host. El /23 va de 10.3.2.0 a 10.3.3.255; el /24 existente se come 10.3.2.0–.255; lo libre es 10.3.3.0/24. <code>10.3.2.0/26</code> solapa. /27 es chico. <code>10.3.5.2</code> está fuera del VNet. Cmdlet: <code>az network vnet subnet create -n AzureBastionSubnet --address-prefixes 10.3.3.0/26</code>.", cat: "Bastion" },
+  { q: "Orden de procesamiento de reglas en Azure Firewall", a: "<strong>NAT rules → Network rules → Application rules</strong>, siempre. Si una network rule matchea, las application rules <strong>nunca se evalúan</strong>.", cat: "Firewall" },
+  { q: "¿Qué agrega la SKU Premium de Azure Firewall sobre Standard?", a: "<strong>TLS inspection</strong>, <strong>IDPS</strong>, <strong>URL filtering</strong> (URL completa, no sólo FQDN) y <strong>web categories por URL completa</strong> — Standard ya tiene web categories, pero clasificadas sólo por FQDN.", cat: "Firewall" },
+  { q: "Precedencia de rutas en Azure", a: "<strong>UDR &gt; BGP &gt; System routes</strong>. Pero antes de eso gana siempre el <strong>prefijo más específico</strong> (longest prefix match); la precedencia sólo desempata rutas con el mismo prefijo.", cat: "Ruteo" },
+  { q: "Next hop types disponibles en una UDR", a: "<code>Virtual appliance</code> (pide IP privada), <code>Virtual network gateway</code>, <code>Virtual network</code>, <code>Internet</code> y <code>None</code> (descarta el tráfico).", cat: "Ruteo" },
+  { q: "Desplegué Bastion y sigo sin poder hacer RDP a la VM. ¿Qué falta?", a: "El <strong>NSG de la VM</strong> (subnet o NIC) tiene que permitir <strong>inbound 3389 / 22 desde el rango del <code>AzureBastionSubnet</code></strong>. Bastion no reemplaza al NSG.", cat: "Bastion" },
+  { q: "¿Qué hace Just-in-Time VM access y de qué servicio depende?", a: "Depende de <strong>Microsoft Defender for Cloud</strong> (plan de pago). Mantiene los puertos de administración cerrados y, ante una solicitud, crea <strong>reglas NSG temporales</strong> que abren el puerto desde una IP de origen por una ventana de tiempo limitada, con auditoría.", cat: "JIT" },
+  { q: "NVA en FirewallSubnet; AppSubnet sale directo a internet. ¿Forced tunneling en la VNet, UDR 0.0.0.0/0 Virtual appliance, route filter o service endpoint de Firewall?", a: "<strong>UDR <code>0.0.0.0/0</code> en AppSubnet</strong>, next hop <code>Virtual appliance</code> + IP de la NVA. Forced tunneling = gateway on-prem, no hay toggle en la VNet. Route filter = ExpressRoute Microsoft peering. Service endpoint = PaaS, no NVA. CLI: <code>az network route-table route create --next-hop-type VirtualAppliance</code>.", cat: "Ruteo" },
+  { q: "Linux SFTP: SSH solo desde 151.112.10.0/24, sin tocar el NSG de subnet. ¿NIC Allow Internet, NIC Allow el CIDR, NIC Deny 80/443, o subnet solo SSH?", a: "NSG en la <strong>NIC</strong>: Allow SSH desde el <strong>/24</strong>. Allow from Internet es demasiado. Deny HTTP no restringe 22. Cambiar la subnet afecta a los otros servers y está prohibido.", cat: "NSG" },
+  { q: "NVA en Edge; Data1 y Data2 tienen que salir por ella. Elegí 2: ¿ILB, bind a cada subnet, bind a cada NIC, NSG outbound, route table con next-hop?", a: "<strong>Route table</strong> (next hop = IP de la NVA) + <strong>asociarla a cada subnet de workload</strong>. No a las NICs (las UDR van a subnets). ILB no rutea. NSG no pone next hop.", cat: "Ruteo" },
+  { q: "NSG: solo 192.168.2/24, .4/24 y .8/24, mínimas reglas. ¿/22, VirtualNetwork, coma, o tres reglas?", a: "<strong>Los tres CIDR en una regla, separados por coma</strong>. /22 no cubre .4/.8 y mete de más. VirtualNetwork es toda la VNet+on-prem. Tres reglas cumplen el filtro pero no “minimize rules”.", cat: "NSG" },
+  { q: "Policy prohíbe exponer 22 y 3389. Dev Team Win+Linux, mín. esfuerzo. ¿S2S, Bastion, P2S o NSG Allow RDP desde IPs públicas?", a: "<strong>Azure Bastion</strong> (browser TLS 443). S2S/P2S piden más admin (gateway, clientes). El NSG Allow sigue exponiendo 3389 y viola la policy.", cat: "Bastion" },
+  { q: "vnet1 10.2.0.0/22, subnet1 10.2.0.0/24, vm1 sin PIP. Bastion en 3 pasos. ¿BastionSubnet? ¿PIP en la VM? ¿VNet nueva? ¿cliente RDP?", a: "1) <code>AzureBastionSubnet</code> <code>10.2.1.0/26</code> · 2) crear Bastion en esa subnet · 3) conectar desde el <strong>portal</strong>. BastionSubnet es nombre inválido. /28 solapa y es chico. PIP en vm1 contradice Bastion. VNet aparte no hace falta. mstsc no es el flujo Basic.", cat: "Bastion" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

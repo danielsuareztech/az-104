@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Complementario · AKS operativo</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, #b45309, #fbbf24);
+    color: #0d0f18; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--warn);
+    margin-top: 6px; background: rgba(251,191,36,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--warn); background: rgba(251,191,36,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--warn); }
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--warn);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 16px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--warn); background: rgba(251,191,36,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+  .vm-map {
+    font-size: 12.5px; color: var(--muted); background: rgba(139,92,246,.08);
+    border: 1px solid rgba(139,92,246,.25); border-radius: 8px; padding: 10px 14px; margin: 10px 0 0;
+  }
+  .vm-map strong { color: #c4b5fd; }
+  .step-num {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--warn);
+    letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--warn), #b45309); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #3a2a10, #131620); transform: rotateY(180deg); border-color: #5a4418; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(251,191,36,.12); color: var(--warn); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, #b45309, #fbbf24); color: #0d0f18; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">Complementario</div>
+    <div class="nav-title">AKS · fundamentos operativos</div>
+    <div class="nav-sub">No entra en el examen AZ-104</div>
+    <div class="nav-weight">Extra · kubectl</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="09-containers.html"><span class="dot"></span>← 09 · Contenedores</a>
+  <a href="#conexion"><span class="dot"></span>Conexión y contexto</a>
+  <a href="#objetos"><span class="dot"></span>Jerarquía de objetos</a>
+  <a href="#deploy"><span class="dot"></span>Desplegar una app</a>
+  <a href="#config"><span class="dot"></span>ConfigMap y Secret</a>
+  <a href="#rollout"><span class="dot"></span>Actualizar y rollback</a>
+  <a href="#net"><span class="dot"></span>Services y Endpoints</a>
+  <a href="#diag"><span class="dot"></span>Diagnóstico</a>
+  <a href="#mapa"><span class="dot"></span>Mapa AKS ↔ K8s en VMs</a>
+  <a href="#lab"><span class="dot"></span>Ruta hands-on</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Este módulo es COMPLEMENTARIO. No entra en el examen AZ-104.</strong>
+    El skills measured vigente (abril 2026) cubre ACR, ACI y Container Apps. AKS quedó afuera. Este archivo existe para que puedas <strong>operar un cluster AKS entendiendo qué hay debajo</strong> — no para volverte experto en Kubernetes, y no para memorizar de cara al examen.
+  </div>
+  <div class="page-intro" style="border-left-color:var(--accent2); margin-bottom:36px">
+    <strong>El otro objetivo:</strong> si alguien te dice “esto no lo quiero en AKS, lo quiero en Kubernetes sobre VMs”, tenés que poder mapear. AKS no inventa objetos: un Pod, un Service y un Ingress son los mismos. Lo que cambia es <em>quién corre el control plane, quién crea el Load Balancer y de dónde salen las IPs</em>. Cada sección tiene un recuadro violeta <em>En VMs sería…</em>.
+  </div>
+
+  <!-- 1 -->
+  <div class="section" id="conexion">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🔑</div>
+      <span class="section-title">Conexión y contexto</span>
+      <span class="section-tag">kubeconfig</span>
+    </div>
+
+    <p><code>kubectl</code> no “se conecta a Azure”. Habla con el <strong>API server de Kubernetes</strong> usando un archivo de kubeconfig. En AKS, Azure te genera ese archivo; en un cluster sobre VMs, lo copiás vos del control plane.</p>
+
+    <div class="card">
+      <div class="card-title">az aks get-credentials</div>
+      <pre><code>az aks get-credentials -g rg-aks-lab -n aks-lab
+# escribe / mergea en ~/.kube/config y deja ese cluster como contexto actual
+
+az aks get-credentials -g rg-aks-lab -n aks-lab --overwrite-existing
+# pisa una entrada previa del mismo cluster
+
+az aks get-credentials -g rg-aks-lab -n aks-lab --admin
+# credencial de cluster admin (bypass de Entra ID / Kubernetes RBAC de usuarios)</code></pre>
+      <ul>
+        <li>Sin <code>--admin</code>: autenticás con tu identidad de Entra (si el cluster tiene integración). Con <code>--admin</code>: usás el certificado de administrador del cluster. Para un lab personal, cualquiera sirve; en un cluster compartido, <code>--admin</code> es un privilegio que no deberías tener de default.</li>
+        <li>El comando <strong>mergea</strong> en <code>~/.kube/config</code>. Si ya tenías otro cluster (minikube, otro AKS), no lo borra: suma un contexto y te deja parado en el nuevo.</li>
+        <li>Necesitás el rol Azure <strong>Azure Kubernetes Service Cluster User Role</strong> (o Admin) sobre el cluster. Sin eso, <code>get-credentials</code> falla aunque seas Contributor de las VMs.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Contextos: en qué cluster estás parado</div>
+      <p>Un kubeconfig tiene <strong>clusters</strong> (API servers), <strong>users</strong> (credenciales) y <strong>contexts</strong> (la dupla cluster+user, a veces con namespace). <code>kubectl</code> usa el contexto actual para todo.</p>
+      <pre><code>kubectl config get-contexts
+kubectl config current-context
+kubectl config use-context &lt;nombre&gt;
+kubectl cluster-info          # URL del API server y del DNS interno
+kubectl get nodes             # primera prueba de que la auth funciona</code></pre>
+      <ul>
+        <li>El nombre típico del contexto AKS es <code>&lt;cluster&gt;</code> o algo tipo <code>clusterUser_rg-aks-lab_aks-lab</code>.</li>
+        <li>Si un comando “no encuentra recursos” que vos sabés que existen, mirá primero el contexto y el namespace (<code>-n</code> / <code>--all-namespaces</code>). Es el error de operador #1.</li>
+      </ul>
+    </div>
+
+    <div class="vm-map"><strong>En VMs sería:</strong> instalás kubeadm (o k3s, RKE) en VMs, el API server escucha en la IP del control plane, y copiás <code>/etc/kubernetes/admin.conf</code> a tu <code>~/.kube/config</code>. No hay <code>az aks get-credentials</code>: el archivo es el mismo formato, otra forma de obtenerlo. <code>kubectl config</code> y <code>cluster-info</code> no cambian.</div>
+  </div>
+
+  <!-- 2 -->
+  <div class="section" id="objetos">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🧱</div>
+      <span class="section-title">Objetos fundamentales y su jerarquía</span>
+      <span class="section-tag">No toques el ReplicaSet</span>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">Pod<br><small>1+ contenedores</small></div>
+      <span class="flow-arrow">← crea</span>
+      <div class="flow-step">ReplicaSet<br><small>N copias vivas</small></div>
+      <span class="flow-arrow">← posee</span>
+      <div class="flow-step highlight">Deployment<br><small>lo que vos editás</small></div>
+    </div>
+    <div class="flow">
+      <div class="flow-step">Pod<br><small>label app=web</small></div>
+      <span class="flow-arrow">← selecciona</span>
+      <div class="flow-step highlight">Service<br><small>IP estable + DNS</small></div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Objeto</th><th>Para qué existe</th><th>Lo operás vos?</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Pod</strong></td>
+            <td>La unidad que corre. Uno o más contenedores que comparten red y volúmenes (igual que un container group de ACI). Es <strong>efímero</strong>: si el nodo se muere, el Pod se va. No tiene IP estable a lo largo del tiempo.</td>
+            <td><span class="chip chip-red">Casi nunca</span> — un Pod “suelto” no se recrea solo. En producción siempre hay un controlador arriba.</td>
+          </tr>
+          <tr>
+            <td><strong>ReplicaSet</strong></td>
+            <td>Garantiza que haya <em>N</em> Pods con el mismo template y las mismas labels. Si matás un Pod, levanta otro.</td>
+            <td><span class="chip chip-red">No</span> — el Deployment lo crea y lo reemplaza en cada rolling update. Si lo editás a mano, el Deployment te lo pisa.</td>
+          </tr>
+          <tr>
+            <td><strong>Deployment</strong></td>
+            <td>El objeto de aplicación. Declara imagen, réplicas, labels y la estrategia de update. Debajo deja ReplicaSets viejos para poder hacer rollback.</td>
+            <td><span class="chip chip-green">Sí</span> — <code>kubectl apply</code>, <code>scale</code>, <code>set image</code>, <code>rollout</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>Service</strong></td>
+            <td>Una IP virtual (ClusterIP) y un nombre DNS estables. Elige Pods por <strong>selector de labels</strong>, no por nombre. Cuando un Pod se recrea y cambia de IP, el Service sigue apuntando a “los que matchean”.</td>
+            <td><span class="chip chip-green">Sí</span> — es independiente del Deployment. Los une el label, no un parent.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>Por qué no se toca el ReplicaSet:</strong> el Deployment es el que sabe “esta es la revisión 3, la 2 queda por si hay rollback”. Si hacés <code>kubectl scale replicaset/…</code> o le cambiás el selector, el Deployment reconcilia y deshace tu cambio — o peor, dejás dos ReplicaSets peleando por los mismos Pods. Escalá el Deployment. Borrá Pods si querés forzar recreación; el ReplicaSet los vuelve a crear.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Namespace</div>
+      <ul>
+        <li>Caja de nombres. <code>default</code>, <code>kube-system</code> (CoreDNS, metrics-server: no toques) y los que creés vos.</li>
+        <li>Un Service en <code>prod</code> no “ve” Pods de <code>dev</code> aunque las labels coincidan: el selector es <strong>dentro del namespace</strong>.</li>
+        <li><code>kubectl get pods</code> sin <code>-n</code> lista <em>solo</em> el namespace del contexto (casi siempre <code>default</code>). <code>-A</code> es todos.</li>
+      </ul>
+    </div>
+
+    <div class="vm-map"><strong>En VMs sería:</strong> exactamente los mismos objetos y la misma API. AKS no te da un “Deployment de Azure”. La diferencia es que en VMs <em>vos</em> corrés kube-apiserver, etcd, scheduler y kubelet. El YAML no cambia.</div>
+  </div>
+
+  <!-- 3 -->
+  <div class="section" id="deploy">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">📦</div>
+      <span class="section-title">Publicar / desplegar una app</span>
+      <span class="section-tag">apply + rolling</span>
+    </div>
+
+    <p>Manifiesto mínimo de un Deployment. Lo que no puede faltar: <strong>imagen</strong>, <strong>réplicas</strong>, <strong>containerPort</strong>, y <strong>labels = selector</strong> (si no matchean, el ReplicaSet no adopta los Pods y ves 0 ready para siempre).</p>
+
+<pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web          # tiene que coincidir con el selector de arriba
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.27
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  selector:
+    app: web              # tiene que coincidir con las labels del Pod
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP         # default; solo visible dentro del cluster
+</code></pre>
+
+    <div class="card">
+      <div class="card-title">kubectl apply y el rolling update</div>
+      <pre><code>kubectl apply -f web.yaml
+kubectl get deploy,rs,pods,svc -l app=web
+kubectl rollout status deployment/web</code></pre>
+      <ul>
+        <li><code>apply</code> es declarativo: Kubernetes deja el objeto como dice el archivo. Si cambias la imagen o las réplicas y volvés a apply, hace un <strong>rolling update</strong>: levanta Pods nuevos, espera a que estén Ready, baja los viejos. Default: <code>maxUnavailable=25%</code>, <code>maxSurge=25%</code>.</li>
+        <li>No hay downtime si hay al menos 2 réplicas y el probe de readiness está bien (o, sin probe, si el contenedor arranca rápido).</li>
+        <li><code>kubectl create -f</code> falla si el objeto ya existe. En el día a día usá <code>apply</code>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa real de operador:</strong> el selector del Deployment y las labels del template tienen que ser el mismo set. Si el Service dice <code>app: web</code> y el Pod dice <code>app: nginx</code>, el Deployment está “sano” (Pods Running) y el Service tiene <strong>0 endpoints</strong>. La app “no responde” y el YAML “está aplicado”. El diagnóstico está en la sección de Endpoints.</span>
+    </div>
+
+    <div class="vm-map"><strong>En VMs sería:</strong> el mismo <code>kubectl apply -f</code>. La imagen tiene que ser reachable desde los workers (registry privado + imagePullSecrets, o un registry local). AKS te resuelve el pull a ACR con <code>--attach-acr</code>; en VMs eso no existe — configurás auth del kubelet o un Secret <code>kubernetes.io/dockerconfigjson</code>.</div>
+  </div>
+
+  <!-- 4 -->
+  <div class="section" id="config">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">🗂️</div>
+      <span class="section-title">ConfigMap vs Secret</span>
+      <span class="section-tag">env ≠ volumen</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>ConfigMap</th><th>Secret</th></tr></thead>
+        <tbody>
+          <tr><td>Para qué</td><td>Config no sensible: URLs, feature flags, nginx.conf, nivel de log.</td><td>Passwords, connection strings, certificados, tokens.</td></tr>
+          <tr><td>Almacenamiento</td><td>Texto plano en etcd.</td><td>Base64 en etcd (eso <strong>no es cifrado</strong>; es encoding). En AKS se puede envolver con encryption at rest / KMS.</td></tr>
+          <tr><td>Cómo se consume</td><td colspan="2">Variables de entorno <em>o</em> archivos en un volumen montado. Misma mecánica en los dos.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Env var vs volumen montado</div>
+      <ul>
+        <li><strong>Env var:</strong> se inyecta <strong>al crear el contenedor</strong>. Es un snapshot. Cambiar el ConfigMap/Secret <strong>no reinicia el Pod y no actualiza la variable</strong>. El proceso sigue con el valor viejo hasta que el contenedor se recree.</li>
+        <li><strong>Volumen:</strong> kubelet actualiza los archivos en el mount (con delay, orden de segundos). El proceso <em>tiene</em> que releer el archivo: nginx no se entera solo; una app que lee la config una vez al boot tampoco. Para que tome el cambio: <code>kubectl rollout restart deployment/web</code>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>La trampa que te come en producción:</strong> actualizás el ConfigMap, <code>kubectl get configmap</code> ya muestra el valor nuevo, y la app sigue con el viejo. No es un bug de Kubernetes: las env vars no son live. El fix es <code>kubectl rollout restart deployment/&lt;nombre&gt;</code> (recrea Pods, el ReplicaSet nuevo lee el ConfigMap actual). Algunos usan un checksum del ConfigMap como annotation en el Pod para forzar el rolling al hacer apply.</span>
+    </div>
+
+    <pre><code># envFrom: todas las keys del ConfigMap como variables
+envFrom:
+- configMapRef:
+    name: web-config
+
+# una sola key
+env:
+- name: LOG_LEVEL
+  valueFrom:
+    configMapKeyRef:
+      name: web-config
+      key: logLevel
+
+# como archivos en /etc/config
+volumeMounts:
+- name: cfg
+  mountPath: /etc/config
+volumes:
+- name: cfg
+  configMap:
+    name: web-config</code></pre>
+
+    <div class="vm-map"><strong>En VMs sería:</strong> igual. etcd lo corrés vos: protegé el acceso al API server y considerá encryption at rest para Secrets. AKS ya cifra el disco de etcd; el Base64 en <code>kubectl get secret -o yaml</code> se sigue viendo si tenés permiso de leer el objeto.</div>
+  </div>
+
+  <!-- 5 -->
+  <div class="section" id="rollout">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">🔄</div>
+      <span class="section-title">Actualizar la versión de una app</span>
+      <span class="section-tag">set image · undo</span>
+    </div>
+
+    <p>Tres formas de cambiar la imagen: editar el YAML y <code>apply</code>, <code>kubectl edit deploy/web</code>, o el atajo <code>kubectl set image</code>. Las tres disparan un rolling update y dejan una revisión en el historial.</p>
+
+    <pre><code>kubectl set image deployment/web nginx=nginx:1.27.1
+kubectl rollout status deployment/web
+kubectl rollout history deployment/web
+kubectl rollout history deployment/web --revision=3   # qué cambió en esa rev
+kubectl rollout undo deployment/web                   # vuelve a la anterior
+kubectl rollout undo deployment/web --to-revision=2   # a una específica</code></pre>
+
+    <div class="card">
+      <div class="card-title">Qué está pasando debajo</div>
+      <ul>
+        <li>El Deployment crea un <strong>ReplicaSet nuevo</strong> con el template nuevo y escala el viejo a 0. El RS viejo no se borra de inmediato: por eso el undo es instantáneo (vuelve a escalar el RS anterior).</li>
+        <li><code>rollout status</code> se queda esperando hasta que las réplicas nuevas estén Ready, o hasta timeout. Si un Pod nuevo no pasa readiness, el rolling se frena y los viejos siguen sirviendo — es el comportamiento que querés.</li>
+        <li><code>kubectl rollout restart deployment/web</code> recicla Pods <em>sin cambiar la imagen</em>. Sirve para tomar un ConfigMap nuevo o para “apagar y prender” después de un secret rotado.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>El historial tiene un límite (<code>revisionHistoryLimit</code>, default 10). Si hacés undo y “no hay revisión”, es que los ReplicaSets viejos ya se garbage-collectearon. No es un backup de la app: es solo el historial de templates del Deployment.</span>
+    </div>
+
+    <div class="vm-map"><strong>En VMs sería:</strong> idéntico. <code>kubectl set image</code> / <code>rollout</code> son API de Kubernetes, no de Azure. Lo que AKS suma es <code>az aks upgrade</code> (versión del cluster y de los nodos), que es otro plano: no actualiza tu app.</div>
+  </div>
+
+  <!-- 6 -->
+  <div class="section" id="net">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.2)">🌐</div>
+      <span class="section-title">Networking interno y Endpoints</span>
+      <span class="section-tag">El Service no es magia</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Tipo</th><th>Alcance</th><th>Cómo se expone</th><th>Uso típico</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="chip chip-blue">ClusterIP</span> <small>default</small></td>
+            <td>Solo dentro del cluster</td>
+            <td>IP virtual interna + DNS. Nada en internet.</td>
+            <td>Front → API → DB. Siempre el punto de partida. Si no hace falta entrar de afuera, quedate acá.</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-purple">NodePort</span></td>
+            <td>Cada nodo abre un puerto alto (30000–32767)</td>
+            <td><code>&lt;IP-de-cualquier-nodo&gt;:&lt;nodePort&gt;</code></td>
+            <td>Labs, o clusters sin cloud load balancer. En AKS casi no se usa: sale más limpio un LoadBalancer. En VMs on-prem es común (o MetalLB).</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-green">LoadBalancer</span></td>
+            <td>Internet (o red interna, con annotation)</td>
+            <td>El cloud-controller de AKS crea un <strong>Azure Load Balancer</strong> y una Public IP. El campo <code>EXTERNAL-IP</code> tarda 1–2 min en dejar de ser <code>&lt;pending&gt;</code>.</td>
+            <td>Una app, un LB, una IP. Simple. Caro e inmanejable cuando hay muchas apps (una IP pública por Service).</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-yellow">Ingress</span> <small>no es un type de Service</small></td>
+            <td>HTTP/S desde afuera, con ruteo por host/path</td>
+            <td>Un <strong>Ingress Controller</strong> (él sí suele ser un Service LoadBalancer) lee objetos Ingress y rutea L7.</td>
+            <td>Varias apps, un solo IP/FQDN, TLS, path <code>/api</code> vs <code>/app</code>. Es el patrón de producción.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>Ingress no es un cuarto type de Service.</strong> El type es ClusterIP / NodePort / LoadBalancer. Ingress es <em>otro objeto</em> que necesita un controller corriendo en el cluster. Sin controller, el manifiesto Ingress se aplica y no hace nada. En AKS el controller no viene instalado de default (salvo que habilites el add-on de application routing o AGIC).
+    </div>
+
+    <div class="card">
+      <div class="card-title">Endpoints / EndpointSlice — por qué el Service “no rutea”</div>
+      <p>Un Service no manda tráfico a “el Deployment”. Manda tráfico a un objeto <strong>Endpoints</strong> (y su versión moderna, <strong>EndpointSlice</strong>) que lista IPs de Pods Ready cuyo label matchea el selector. Si el selector no matchea, ese objeto existe pero está <strong>vacío</strong>.</p>
+      <pre><code>kubectl get svc web
+kubectl get endpoints web
+kubectl get endpointslices -l kubernetes.io/service-name=web
+kubectl describe svc web
+# mirá las líneas Selector y Endpoints
+# Endpoints: &lt;none&gt;  →  el selector no pega con ningún Pod Ready</code></pre>
+      <ul>
+        <li>Causas clásicas de <code>Endpoints: &lt;none&gt;</code>: typo en el label (<code>app: web</code> vs <code>app: nginx</code>), el Pod está en otro namespace, el Pod no está Ready (readiness probe fallando: el Pod existe, no entra al pool), o el Service es <code>type: ExternalName</code> / sin selector (caso especial).</li>
+        <li>El Deployment puede estar 2/2 Running y el Service igual muerto. Son objetos desacoplados. <strong>Siempre cruzá <code>kubectl get pods --show-labels</code> con el selector del Service.</strong></li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Diagnóstico de oro:</strong> “el LoadBalancer tiene IP pero la app no responde”. No empieces por el NSG. Primero <code>kubectl get endpoints &lt;svc&gt;</code>. Si está vacío, el Azure LB está sano y no tiene a quién mandar el tráfico. Arreglá labels / readiness, no la red de Azure.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">DNS interno del cluster</div>
+      <p>CoreDNS (Pods en <code>kube-system</code>) resuelve nombres de Service:</p>
+      <pre><code>&lt;nombre-del-service&gt;.&lt;namespace&gt;.svc.cluster.local
+# ejemplo: web.default.svc.cluster.local
+
+# atajos que también funcionan:
+web                        # desde el mismo namespace
+web.default                # desde otro namespace
+web.default.svc            # forma intermedia</code></pre>
+      <ul>
+        <li>Ese FQDN apunta a la ClusterIP, no a un Pod puntual. kube-proxy (o eBPF en CNIs modernas) hace el NAT a una de las IPs del EndpointSlice.</li>
+        <li>Para probarlo: <code>kubectl run tmp --rm -it --image=busybox --restart=Never -- wget -qO- http://web.default.svc.cluster.local</code></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Ingress Controller: NGINX vs AGIC vs LoadBalancer directo</div>
+      <ul>
+        <li><strong>LoadBalancer directo:</strong> un Azure LB por app. Cero ruteo HTTP. Lo más simple de entender y lo más caro de operar cuando hay 10 APIs.</li>
+        <li><strong>NGINX Ingress Controller:</strong> un Deployment + un Service LoadBalancer. Los objetos Ingress los interpreta NGINX. Es el mismo controller que pondrías en Kubernetes sobre VMs. Portable. En AKS se instala con Helm o un manifiesto; el add-on “application routing” es una variante gestionada.</li>
+        <li><strong>AGIC (Application Gateway Ingress Controller):</strong> el Ingress no termina en un Pod de NGINX, termina en <strong>Application Gateway</strong> (L7 de Azure, WAF opcional). El controller traduce objetos Ingress a config de App Gateway. Más “Azure”, menos portable a VMs. Útil si ya exigís WAF / App Gateway en el diseño de red.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Pregunta de diseño</th><th>Respuesta</th></tr></thead>
+        <tbody>
+          <tr><td>Una sola app, lab, quiero una IP ya</td><td>Service <code>type: LoadBalancer</code></td></tr>
+          <tr><td>Varias apps HTTP, un FQDN, paths / hosts</td><td>Ingress + controller (NGINX si querés portable; AGIC si el estándar de la empresa es App Gateway)</td></tr>
+          <tr><td>Tráfico no HTTP (Redis, MQTT, gRPC crudo sin L7)</td><td>LoadBalancer (o Ingress TCP si el controller lo soporta). Ingress HTTP no aplica.</td></tr>
+          <tr><td>Solo habla API↔API dentro del cluster</td><td>ClusterIP. No gastes una Public IP.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="vm-map"><strong>En VMs sería:</strong> ClusterIP y DNS interno no cambian. NodePort es más común. LoadBalancer <em>no existe</em> a menos que instales un cloud-controller o MetalLB (IPs de un pool on-prem). Ingress NGINX es el mismo chart. AGIC no existe fuera de Azure: en VMs el equivalente de “WAF adelante” es un reverse proxy / appliance delante del NodePort o de MetalLB.</div>
+  </div>
+
+  <!-- 7 -->
+  <div class="section" id="diag">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.16)">🩺</div>
+      <span class="section-title">Comandos de diagnóstico básico</span>
+      <span class="section-tag">Orden de ataque</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">1. Qué hay y en qué estado</div>
+      <pre><code>kubectl get pods -o wide
+kubectl get svc,endpoints
+kubectl get deploy,rs
+kubectl get ingress
+kubectl get pods -A --field-selector=status.phase!=Running</code></pre>
+      <ul>
+        <li><code>CrashLoopBackOff</code> / <code>Error</code>: el contenedor arranca y se muere → logs.</li>
+        <li><code>ImagePullBackOff</code>: no baja la imagen → ACR / AcrPull / tag mal escrito. En AKS, <code>az aks update --attach-acr</code>.</li>
+        <li><code>Pending</code>: el scheduler no encontró nodo (CPU/memoria, taint, o falta de IPs en Azure CNI).</li>
+        <li>Service con <code>EXTERNAL-IP &lt;pending&gt;</code> eterno: cuota de Public IP, o el identity del cluster no puede crear el LB en el RG <code>MC_*</code>.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2. kubectl describe — eventos, no adivinanzas</div>
+      <pre><code>kubectl describe pod web-7d9c8-xk2f
+kubectl describe svc web
+kubectl describe ingress web</code></pre>
+      <p>Al final de <code>describe</code> está <strong>Events</strong>: FailedScheduling, FailedMount, Pulling/Failed, Unhealthy. Es la fuente #1. <code>get</code> te dice el síntoma; <code>describe</code> te dice el evento.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">3. kubectl logs y exec</div>
+      <pre><code>kubectl logs deploy/web
+kubectl logs -f pod/web-7d9c8-xk2f
+kubectl logs pod/web-7d9c8-xk2f --previous   # el contenedor que crasheó recién
+
+# entrar al Pod
+kubectl exec -it deploy/web -- sh
+
+# probar conectividad a otro Service desde adentro (el test que importa)
+kubectl exec -it deploy/web -- wget -qO- http://api.default.svc.cluster.local:8080/health</code></pre>
+      <ul>
+        <li>Si desde tu laptop no llega pero desde un Pod sí: el problema es exposición (Service type / Ingress / NSG), no la app.</li>
+        <li>Si desde un Pod tampoco llega: el problema es selector/endpoints, DNS, o la app no escucha en <code>targetPort</code>.</li>
+        <li>Un Pod con <code>distroless</code> no tiene <code>sh</code> ni <code>wget</code>: levantá un Pod debug (<code>busybox</code> / <code>nicolaka/netshoot</code>) en el mismo namespace.</li>
+      </ul>
+    </div>
+
+    <div class="rule-box">
+      <strong>Orden que evita vueltas:</strong> <code>get pods</code> (está Running?) → <code>describe</code> (eventos) → <code>logs</code> (la app) → <code>get endpoints</code> (el Service apunta a alguien?) → <code>exec</code> + wget al DNS interno (red de cluster) → recién ahí mirar Azure (LB, NSG, Public IP).
+    </div>
+
+    <div class="vm-map"><strong>En VMs sería:</strong> los mismos cuatro comandos. Lo que cambia después: en vez de “el identity no puede crear el Azure LB”, vas a mirar kube-proxy, iptables/ipvs, MetalLB speaker, o el firewall de la VM. El corte “¿funciona dentro del cluster?” se hace igual, con <code>exec</code>.</div>
+  </div>
+
+  <!-- 8 -->
+  <div class="section" id="mapa">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.18)">🗺️</div>
+      <span class="section-title">Mapa AKS ↔ Kubernetes en VMs</span>
+      <span class="section-tag">Misma API, otro dueño</span>
+    </div>
+
+    <p>Cuando te pidan “esto mismo, pero no en AKS”, no reescribís la app. Reubicás el plano de control y los plugins de cloud.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>En AKS</th><th>En Kubernetes sobre VMs (kubeadm / k3s)</th></tr></thead>
+        <tbody>
+          <tr><td>Control plane gestionado (no lo ves, no hay SSH)</td><td>VMs de control plane: kube-apiserver, etcd, scheduler, controller-manager. Las operás vos (HA, backups de etcd, certificados).</td></tr>
+          <tr><td>System / user node pools (VMSS)</td><td>Worker VMs. kubelet + container runtime (containerd). El “system pool” no existe: vos decidís taints para los daemons.</td></tr>
+          <tr><td>RG <code>MC_*</code> (NICs, discos, NSG, LB)</td><td>Los mismos recursos, creados a mano o por tu cloud-controller. O VMs on-prem, sin RG.</td></tr>
+          <tr><td><code>az aks get-credentials</code></td><td>Copiar <code>/etc/kubernetes/admin.conf</code> (o un kubeconfig de un usuario).</td></tr>
+          <tr><td><code>--attach-acr</code> / AcrPull en la kubelet identity</td><td>imagePullSecret, o config de containerd / cri-o contra el registry. ACR sigue pudiendo ser el registry: la auth es tuya.</td></tr>
+          <tr><td>Service LoadBalancer → Azure LB + Public IP</td><td>MetalLB, kube-vip, o un LB externo (HAProxy, F5) delante de NodePorts. Sin cloud-controller, el Service queda <code>&lt;pending&gt;</code> para siempre.</td></tr>
+          <tr><td>NGINX Ingress Controller</td><td>El mismo. Portable 1:1.</td></tr>
+          <tr><td>AGIC → Application Gateway</td><td>No aplica. App Gateway es Azure. En VMs: NGINX / Traefik / HAProxy + WAF si hace falta.</td></tr>
+          <tr><td>Azure CNI (pod = IP de la VNet) vs kubenet</td><td>Calico, Cilium, Flannel. “Pod con IP de la LAN” es Calico/Cilium en modo BGP o routed; el análogo de kubenet es un overlay (VXLAN) con NAT de salida.</td></tr>
+          <tr><td><code>az aks upgrade</code> / node-image-only</td><td><code>kubeadm upgrade</code> + patch del SO de las VMs, drain por nodo. Misma idea (control plane primero, workers después, nunca workers &gt; control plane).</td></tr>
+          <tr><td>Cluster Autoscaler (suma VMs del VMSS)</td><td>Cluster Autoscaler contra tu cloud, o no hay: agrandás el worker pool a mano. HPA (réplicas) es igual en los dos.</td></tr>
+          <tr><td>Workload Identity / Entra</td><td>Service account de Kubernetes + kubeconfig, o un issuer OIDC que armes vos (SPIFFE, Keycloak). No hay managed identity mágica.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Frase para la conversación: <strong>“El YAML se lleva. El cloud-controller no.”</strong> Deployments, Services ClusterIP, Ingress NGINX, ConfigMaps y el flujo de rollout son portables. LoadBalancer de Azure, AGIC, <code>--attach-acr</code> y node pools son el wrapping de AKS.</span>
+    </div>
+  </div>
+
+  <!-- 9 -->
+  <div class="section" id="lab">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.18)">🧪</div>
+      <span class="section-title">Ruta de práctica hands-on</span>
+      <span class="section-tag">Suscripción sponsored</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Costo:</strong> el control plane Free no se cobra; <strong>el nodo sí</strong> (VM + disco + LB + Public IP). Este lab usa <strong>1 nodo chico</strong>, kubenet (menos IPs) y se borra al final. No lo dejes prendido el fin de semana. Si el tamaño de VM no tiene cuota, probá <code>Standard_D2s_v3</code> o <code>Standard_B2s</code> en otra región.</span>
+    </div>
+
+    <div class="card">
+      <div class="step-num">Paso 0 — Prerrequisitos</div>
+      <pre><code>az login
+az account show                           # confirmá que es la sponsored
+az account set --subscription "&lt;id&gt;"     # si tenés más de una
+
+# kubectl y la CLI de Azure, en local
+az aks install-cli                        # si todavía no tenés kubectl</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="step-num">Paso 1 — Cluster chico</div>
+      <pre><code>az group create -n rg-aks-lab -l eastus
+
+az aks create -g rg-aks-lab -n aks-lab \
+  --node-count 1 \
+  --node-vm-size Standard_B2s \
+  --network-plugin kubenet \
+  --tier free \
+  --generate-ssh-keys
+
+az aks get-credentials -g rg-aks-lab -n aks-lab --overwrite-existing
+kubectl config current-context
+kubectl cluster-info
+kubectl get nodes -o wide</code></pre>
+      <p>Esperá a que el nodo esté <code>Ready</code>. La creación tarda 5–10 min. Si <code>B2s</code> no está disponible, cambialo antes de seguir: recrear el cluster es más barato que pelear con el SKU.</p>
+    </div>
+
+    <div class="card">
+      <div class="step-num">Paso 2 — Deploy de nginx (todavía sin exponer afuera)</div>
+      <pre><code>kubectl create deployment web --image=nginx:1.27 --replicas=2
+kubectl get deploy,rs,pods --show-labels
+kubectl describe deploy web          # mirá el selector y el RS</code></pre>
+      <p>Deberías ver un ReplicaSet y dos Pods Running. No crees Pods sueltos. Si querés el YAML que Kubernetes infirió: <code>kubectl get deploy web -o yaml</code>.</p>
+    </div>
+
+    <div class="card">
+      <div class="step-num">Paso 3 — Exponer como ClusterIP y probar desde adentro</div>
+      <pre><code>kubectl expose deployment web --port=80 --target-port=80 --name=web --type=ClusterIP
+kubectl get svc web
+kubectl get endpoints web            # dos IPs, una por Pod Ready
+
+# DNS interno + HTTP desde un Pod throwaway
+kubectl run curl --rm -it --image=curlimages/curl --restart=Never -- \
+  curl -sS http://web.default.svc.cluster.local | head</code></pre>
+      <p>Si el HTML de nginx aparece, el Service y el DNS funcionan. Todavía <strong>no hay nada publicado a internet</strong>, y está bien.</p>
+    </div>
+
+    <div class="card">
+      <div class="step-num">Paso 4 — Subir a LoadBalancer</div>
+      <pre><code>kubectl patch svc web -p '{"spec":{"type":"LoadBalancer"}}'
+kubectl get svc web -w
+# esperá a que EXTERNAL-IP deje de ser &lt;pending&gt;
+
+curl -sS http://&lt;EXTERNAL-IP&gt; | head</code></pre>
+      <p>Eso crea un Azure Load Balancer + Public IP en el RG <code>MC_rg-aks-lab_aks-lab_eastus</code>. Es el wrapping de AKS: en VMs este paso no existiría. Cuando termines el paso 5, volvé el Service a ClusterIP o borralo para no dejar la IP pública cobrando.</p>
+    </div>
+
+    <div class="card">
+      <div class="step-num">Paso 5 — Ingress con dos apps (una sola IP, dos paths)</div>
+      <p>Instalá el Ingress Controller NGINX (el portable; el mismo que usarías en VMs). Después dos Deployments y un Ingress.</p>
+      <pre><code>helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx --create-namespace
+# si no tenés helm:
+# kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.3/deploy/static/provider/cloud/deploy.yaml
+
+kubectl -n ingress-nginx get svc -w
+# anotás la EXTERNAL-IP del Service ingress-nginx-controller → es TU IP de entrada
+
+kubectl create deployment app1 --image=nginx:1.27
+kubectl create deployment app2 --image=httpd:2.4
+kubectl expose deployment app1 --port=80
+kubectl expose deployment app2 --port=80</code></pre>
+<pre><code>cat &lt;&lt;'EOF' | kubectl apply -f -
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dos-apps
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /app1
+        pathType: Prefix
+        backend:
+          service:
+            name: app1
+            port:
+              number: 80
+      - path: /app2
+        pathType: Prefix
+        backend:
+          service:
+            name: app2
+            port:
+              number: 80
+EOF
+
+kubectl get ingress dos-apps
+curl -sS http://&lt;IP-DEL-INGRESS&gt;/app1 | head
+curl -sS http://&lt;IP-DEL-INGRESS&gt;/app2 | head</code></pre>
+      <p>app1 (nginx) y app2 (httpd) deberían responder distinto en la misma IP. Eso es L7. El Service <code>web</code> del paso 4 ya no hace falta: <code>kubectl delete svc web</code> para soltar esa Public IP extra.</p>
+    </div>
+
+    <div class="card">
+      <div class="step-num">Paso 6 — Romper el selector a propósito</div>
+      <p>Este es el ejercicio que más enseña. Vas a dejar la app “Running” y el Service muerto, y diagnosticarlo como en producción.</p>
+      <pre><code>kubectl get svc app1 -o yaml | grep -A2 selector
+kubectl get pods -l app=app1 --show-labels
+kubectl get endpoints app1
+# anotá: hay IPs
+
+# rompés el selector (ya no matchea las labels de los Pods)
+kubectl patch svc app1 -p '{"spec":{"selector":{"app":"no-existo"}}}'
+
+kubectl get endpoints app1
+# Endpoints vacíos / &lt;none&gt;
+kubectl describe svc app1
+# Selector: app=no-existo
+# Endpoints: &lt;none&gt;
+kubectl get pods -l app=app1
+# los Pods siguen Running. El Deployment no se enteró de nada.
+
+curl -sS -m 5 http://&lt;IP-DEL-INGRESS&gt;/app1
+# timeout o 502/503 — el Ingress llega a un Service sin backends
+
+# arreglo
+kubectl patch svc app1 -p '{"spec":{"selector":{"app":"app1"}}}'
+kubectl get endpoints app1
+curl -sS http://&lt;IP-DEL-INGRESS&gt;/app1 | head</code></pre>
+      <p>La lección: <strong>Service sano ≠ Pods sanos ≠ Endpoints poblados</strong>. El objeto que une a los dos es el selector, y se inspecciona con <code>get endpoints</code>.</p>
+    </div>
+
+    <div class="card">
+      <div class="step-num">Paso 7 — Bonus de rollout (si te queda tiempo)</div>
+      <pre><code>kubectl set image deployment/app1 nginx=nginx:1.27.1
+kubectl rollout status deployment/app1
+kubectl rollout history deployment/app1
+kubectl rollout undo deployment/app1</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="step-num">Paso 8 — Apagar todo (no es opcional)</div>
+      <pre><code>az group delete -n rg-aks-lab --yes --no-wait</code></pre>
+      <p>Borra el cluster, el RG <code>MC_*</code>, los LB y las Public IPs. Confirmá en el portal que no quedó un LB huérfano cobrando. En una sponsored, un cluster de 1 nodo olvidado se come el crédito en silencio.</p>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Si el objetivo es practicar YAML y no pagar nodos, Kind o minikube en tu máquina cubren los pasos 2, 3, 5 (sin LoadBalancer cloud) y 6. El paso 4 es lo único que es “AKS de verdad”. Para el mapa a VMs, Kind es más honesto que AKS: no hay cloud-controller regalado.</span>
+    </div>
+  </div>
+
+  <!-- FLASHCARDS -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>Flashcards</h2></div>
+    <p class="fc-sub">Operación, no examen. Tap en la tarjeta para dar vuelta.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+const FLASHCARDS = [
+  { q: "¿Qué escribe <code>az aks get-credentials</code> y qué es un context?", a: "Mergea un cluster + user en <code>~/.kube/config</code> y deja ese par como <strong>context actual</strong>. <code>kubectl</code> no habla con Azure: habla con el API server de ese context. <code>kubectl config get-contexts</code> / <code>use-context</code> para cambiar.", cat: "Conexión" },
+  { q: "Pod → ReplicaSet → Deployment: ¿quién se edita y por qué no el ReplicaSet?", a: "Editás el <strong>Deployment</strong>. El ReplicaSet solo mantiene N réplicas del template actual; el Deployment crea RS nuevos en cada rolling y guarda los viejos para el undo. Escalar o editar el RS a mano lo pisa el Deployment.", cat: "Objetos" },
+  { q: "Un Deployment está 2/2 Running pero la app no responde por el Service. ¿Primera mirada?", a: "<code>kubectl get endpoints &lt;svc&gt;</code> y <code>describe svc</code>. Si dice <strong>Endpoints: none</strong>, el selector no matchea las labels de los Pods (o no están Ready). El Service no está atado al Deployment: lo une el label.", cat: "Endpoints" },
+  { q: "ConfigMap usado como env var: actualizás el ConfigMap y la app no cambia. ¿Por qué?", a: "Las env vars se inyectan <strong>al crear el contenedor</strong> y no se refrescan. Hay que <code>kubectl rollout restart deployment/…</code>. En volumen los archivos se actualizan, pero el proceso igual tiene que releerlos.", cat: "Config" },
+  { q: "Diferencia de alcance: ClusterIP vs NodePort vs LoadBalancer vs Ingress.", a: "<strong>ClusterIP</strong> solo intra-cluster. <strong>NodePort</strong> puerto alto en cada nodo. <strong>LoadBalancer</strong> (en AKS) crea un Azure LB + Public IP, una app = una IP. <strong>Ingress</strong> no es type de Service: es L7 con un controller, varias apps en una IP.", cat: "Red" },
+  { q: "FQDN interno de un Service llamado api en el namespace pagos.", a: "<code>api.pagos.svc.cluster.local</code>. Desde el mismo namespace alcanza <code>api</code>; desde otro, <code>api.pagos</code>.", cat: "DNS" },
+  { q: "¿Qué comando cambia la imagen y cómo volvés atrás?", a: "<code>kubectl set image deployment/web nginx=nginx:1.27.1</code> → <code>rollout status</code> → <code>rollout history</code> → <code>rollout undo</code> (o <code>--to-revision=N</code>). Debajo: ReplicaSet nuevo, el viejo queda para el undo.", cat: "Rollout" },
+  { q: "NGINX Ingress vs AGIC vs LoadBalancer directo. ¿Cuál se lleva a VMs?", a: "<strong>LoadBalancer directo</strong> = un Azure LB por app, no portable. <strong>NGINX Ingress</strong> = el mismo controller on-prem. <strong>AGIC</strong> traduce Ingress a Application Gateway: solo Azure. Frase: el YAML se lleva, el cloud-controller no.", cat: "Ingress" },
+  { q: "Orden de diagnóstico cuando “no anda”.", a: "<code>get pods</code> → <code>describe</code> (Events) → <code>logs</code> → <code>get endpoints</code> → <code>exec</code> + wget al DNS interno → recién después Azure (LB/NSG). Si endpoints está vacío, no es la red de Azure.", cat: "Diag" },
+  { q: "En Kubernetes sobre VMs, ¿qué reemplaza a <code>az aks get-credentials</code> y al Service LoadBalancer?", a: "Kubeconfig copiado del control plane (<code>admin.conf</code>). LoadBalancer queda Pending sin un cloud-controller: usás <strong>MetalLB / kube-vip / HAProxy delante de NodePorts</strong>. ClusterIP, Ingress NGINX y el YAML de Deployment no cambian.", cat: "Mapa VMs" }
+];
+
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? 'Listo para operar' : pct >= 50 ? 'Casi ahí' : 'Repasá las secciones';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

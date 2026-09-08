@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 · Entra ID · Identidades y Grupos</title>
+<style>
+  :root {
+    --bg: #0d0f18;
+    --surface: #131620;
+    --surface2: #1c2035;
+    --border: #272c45;
+    --accent: #5b8dee;
+    --accent2: #8b5cf6;
+    --text: #dde1f0;
+    --muted: #6b7194;
+    --correct: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.65;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+  }
+  .nav-header { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .nav-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .nav-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nav-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-weight {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    margin-top: 6px; background: rgba(91,141,238,.1); display: inline-block;
+    padding: 1px 7px; border-radius: 4px;
+  }
+  nav a {
+    display: flex; align-items: center; gap: 8px; padding: 7px 18px;
+    font-size: 12.5px; color: var(--muted); text-decoration: none;
+    border-left: 2px solid transparent; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); border-left-color: var(--accent); background: rgba(91,141,238,.07); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .15s; }
+  nav a:hover .dot, nav a.active .dot { background: var(--accent); }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+  .page-intro {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin-bottom: 36px;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .page-intro strong { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 700; }
+  .section-tag {
+    font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12);
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: auto;
+  }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  ul, ol { padding-left: 18px; }
+  ul li, ol li { margin-bottom: 5px; font-size: 13.5px; }
+  ul li::marker, ol li::marker { color: var(--muted); }
+  p { font-size: 13.5px; margin-bottom: 8px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── CHIPS ── */
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .chip-green  { background: rgba(52,211,153,.15); color: var(--correct); }
+  .chip-yellow { background: rgba(251,191,36,.15);  color: var(--warn); }
+  .chip-red    { background: rgba(248,113,113,.15); color: var(--danger); }
+  .chip-blue   { background: rgba(91,141,238,.15);  color: var(--accent); }
+  .chip-purple { background: rgba(139,92,246,.15);  color: #a78bfa; }
+  .yes { color: var(--correct); font-weight: 700; }
+  .no  { color: #3d4460; font-weight: 700; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .callout-warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); }
+  .callout-info { background: rgba(91,141,238,.08); border: 1px solid rgba(91,141,238,.25); }
+  .callout-tip  { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE ── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; color: #a5b4fc; }
+  pre {
+    font-family: var(--mono); font-size: 12px; background: var(--surface2); color: #a5b4fc;
+    padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-align: center; min-width: 100px;
+  }
+  .flow-step.highlight { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,.1); }
+  .flow-step small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .flow-arrow { color: var(--muted); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+  /* ── RULE BOX ── */
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+  .rule-box strong { color: var(--accent); }
+
+  /* ── FLASHCARDS ── */
+  .fc-section { margin-top: 64px; padding-top: 32px; border-top: 2px solid var(--border); }
+  .fc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .fc-head h2 { font-size: 18px; font-weight: 700; }
+  .fc-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .fc-stats { display: flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .fc-stats b { color: var(--text); }
+  .fc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .fc-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .35s ease; }
+  .fc-scene { perspective: 1200px; height: 260px; margin-bottom: 16px; cursor: pointer; }
+  .fc-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 32px 36px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--surface); }
+  .fc-back  { background: linear-gradient(160deg, #182a4a, #131620); transform: rotateY(180deg); border-color: #2c3f66; }
+  .fc-meta { position: absolute; top: 14px; left: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .fc-num  { position: absolute; top: 14px; right: 18px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .fc-cat  { position: absolute; bottom: 14px; left: 18px; font-family: var(--mono); font-size: 10px; padding: 2px 9px; border-radius: 20px; background: rgba(91,141,238,.12); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .fc-q { font-size: 16.5px; font-weight: 600; line-height: 1.45; color: #fff; }
+  .fc-hint { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fc-a { font-size: 14px; line-height: 1.6; color: #c9d6f5; }
+  .fc-a strong { color: #fff; }
+  .fc-a code { background: rgba(255,255,255,.08); color: #fff; }
+  .fc-controls { display: flex; gap: 10px; justify-content: center; }
+  .fc-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 22px;
+    border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--text); transition: all .15s;
+  }
+  .fc-btn:active { transform: scale(.97); }
+  .fc-btn.ok   { background: rgba(52,211,153,.1);  color: var(--correct); border-color: rgba(52,211,153,.3); }
+  .fc-btn.bad  { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+  .fc-btn.next { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+  .fc-done { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .fc-done h3 { font-size: 18px; margin-bottom: 6px; }
+  .fc-done p { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .fc-missed { text-align: left; margin-top: 18px; }
+  .fc-missed div { font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .fc-missed div:last-child { border-bottom: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    nav { display: none; }
+    main { padding: 20px 16px 60px; }
+    .fc-scene { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="sideNav">
+  <div class="nav-header">
+    <div class="nav-badge">AZ-104</div>
+    <div class="nav-title">Entra ID · Identidades y Grupos</div>
+    <div class="nav-sub">Usuarios, grupos, dispositivos y licencias</div>
+    <div class="nav-weight">Dominio 1 · 20–25%</div>
+  </div>
+  <a href="00-indice.html"><span class="dot"></span>← Índice</a>
+  <a href="#tenant"><span class="dot"></span>Tenant · Subscription · MG</a>
+  <a href="#usuarios"><span class="dot"></span>Usuarios: Member y Guest</a>
+  <a href="#grupos"><span class="dot"></span>Grupos y membresía dinámica</a>
+  <a href="#b2b"><span class="dot"></span>Colaboración B2B</a>
+  <a href="#bulk"><span class="dot"></span>Operaciones bulk (CSV)</a>
+  <a href="#au"><span class="dot"></span>Administrative Units</a>
+  <a href="#devices"><span class="dot"></span>Dispositivos</a>
+  <a href="#sspr"><span class="dot"></span>SSPR</a>
+  <a href="#licencias"><span class="dot"></span>Licencias Free / P1 / P2</a>
+  <a href="#entitlement"><span class="dot"></span>Entitlement Management</a>
+  <a href="#flashcards"><span class="dot"></span>Flashcards</a>
+</nav>
+
+<main>
+
+  <div class="page-intro">
+    <strong>Qué se pregunta acá:</strong> el examen casi nunca te pide una definición. Te da un escenario ("necesitás que el helpdesk de Buenos Aires resetee passwords solo de su gente, con el mínimo privilegio") y te obliga a elegir <strong>la feature correcta y la licencia mínima</strong>. Las tres preguntas eternas de este dominio: ¿esto es P1 o P2?, ¿este grupo puede ser dinámico?, ¿este dispositivo es <em>joined</em> o <em>registered</em>? Usuarios de otra empresa con SSO y sin costo: <strong>invitar guests B2B</strong> (no B2C, no ADFS, no crear cuentas en tu AD). Entitlement Management + Graph: lo primero es el <strong>ID del catálogo General</strong>. Si un script de Graph falla con <code>MutuallyExclusiveViolation</code>, es conflicto de service plans, no falta de licencias.
+  </div>
+
+  <!-- ══════════ 1 ══════════ -->
+  <div class="section" id="tenant">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🏢</div>
+      <span class="section-title">Tenant, Subscription y Management Groups</span>
+      <span class="section-tag">Fundacional</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">La relación de confianza</div>
+      <ul>
+        <li>El <strong>tenant</strong> (también llamado <strong>directory</strong>) es una instancia dedicada de Microsoft Entra ID. Guarda <strong>identidades</strong>, no recursos. Se identifica por un GUID (Tenant ID) y por al menos un dominio <code>*.onmicrosoft.com</code>.</li>
+        <li>La <strong>subscription</strong> es el contenedor de facturación de recursos de Azure. Cada subscription <strong>confía en exactamente un tenant</strong> para autenticar.</li>
+        <li>Relación: <strong>1 tenant → N subscriptions</strong>. Nunca al revés: una subscription no puede estar en dos tenants al mismo tiempo.</li>
+        <li>Los <strong>Management Groups</strong> viven dentro del tenant y agrupan subscriptions para aplicar <strong>Azure Policy</strong> y <strong>RBAC</strong> heredados hacia abajo.</li>
+      </ul>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step highlight">Root MG<br><small>= Tenant ID</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Management Group<br><small>hasta 6 niveles</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Subscription</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Resource Group</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Resource</div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Contenedor</th><th>Qué contiene</th><th>Alcance</th><th>Dato de examen</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Tenant / Directory</strong></td><td>Usuarios, grupos, apps, dispositivos</td><td>Global</td><td>Es un límite de seguridad. Los objetos no cruzan tenants.</td></tr>
+          <tr><td><strong>Management Group</strong></td><td>Subscriptions y otros MG</td><td>Dentro del tenant</td><td>Jerarquía de hasta <strong>6 niveles</strong> de profundidad, sin contar el root ni las subscriptions. Cada MG y cada subscription tiene <strong>un solo padre</strong>.</td></tr>
+          <tr><td><strong>Subscription</strong></td><td>Resource groups</td><td>Confía en 1 tenant</td><td>Es el límite de facturación y de muchas quotas.</td></tr>
+          <tr><td><strong>Resource Group</strong></td><td>Recursos</td><td>1 subscription, 1 región de metadata</td><td>Un recurso vive en <strong>un solo</strong> RG, pero puede estar en otra región que el RG.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Mover una subscription a otro tenant</div>
+      <ul>
+        <li>Se hace desde la subscription → <strong>Change directory</strong>. Necesitás rol <strong>Owner</strong> sobre la subscription y ser usuario existente en el tenant destino.</li>
+        <li>Los <strong>recursos no se mueven ni se borran</strong>: siguen en la misma subscription, con las mismas IDs.</li>
+        <li>Lo que <strong>sí se pierde</strong>: todas las asignaciones de <strong>Azure RBAC</strong> (hay que rehacerlas), los administradores clásicos, y se rompen las <strong>system-assigned managed identities</strong> (se deshabilitan y rehabilitan para recrearlas).</li>
+        <li>Los <strong>Key Vaults</strong> quedan apuntando al tenant viejo: hay que actualizarles el tenant ID y rehacer las access policies.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <strong>Global Administrator no es Owner de las subscriptions</strong>. Un Global Admin administra identidades, no recursos de Azure. Para tomar control necesita ir a <em>Entra ID → Properties → Access management for Azure resources → Yes</em> (<strong>elevate access</strong>), lo que le da <strong>User Access Administrator</strong> en el scope raíz <code>/</code>. Si la pregunta dice "el Global Admin no ve la subscription", la respuesta es elevar acceso, no crear otro rol.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 2 ══════════ -->
+  <div class="section" id="usuarios">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.15)">👤</div>
+      <span class="section-title">Usuarios: Member vs Guest, cloud vs synced</span>
+      <span class="section-tag">Identidades</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Los dos ejes que tenés que separar</div>
+      <ul>
+        <li><strong>Eje 1 — <code>userType</code>:</strong> <span class="chip chip-blue">Member</span> o <span class="chip chip-purple">Guest</span>. Define los <strong>permisos por defecto sobre el directorio</strong>.</li>
+        <li><strong>Eje 2 — Source (origen):</strong> <span class="chip chip-green">Microsoft Entra ID</span> (cloud-only) o <span class="chip chip-yellow">Windows Server AD</span> (sincronizado con Entra Connect) o <span class="chip chip-purple">External Azure AD</span> (invitado B2B).</li>
+        <li>Son independientes: podés tener un guest cloud-only, y un member sincronizado. El examen mezcla los dos ejes a propósito.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>Member</th><th>Guest</th></tr></thead>
+        <tbody>
+          <tr><td>Origen típico</td><td>Creado en el tenant o sincronizado desde AD DS</td><td>Invitado B2B desde otro tenant o cuenta social</td></tr>
+          <tr><td>Puede enumerar el directorio</td><td><span class="yes">Sí</span> (por defecto)</td><td><span class="no">Limitado</span> según External collaboration settings</td></tr>
+          <tr><td>Se le pueden asignar roles de Entra</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span></td></tr>
+          <tr><td>Se le puede asignar RBAC de Azure</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span></td></tr>
+          <tr><td>Miembro de grupos</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span></td></tr>
+          <tr><td>Se puede convertir al otro tipo</td><td colspan="2"><span class="yes">Sí</span> — <code>userType</code> es editable (Guest ↔ Member). No cambia el UPN <code>#EXT#</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">UPN y dominios</div>
+      <ul>
+        <li>El <strong>UPN</strong> (User Principal Name) es el identificador de inicio de sesión: <code>usuario@dominio</code>. El dominio tiene que ser un <strong>verified domain</strong> del tenant.</li>
+        <li>Para verificar un dominio custom se agrega un registro <strong>TXT o MX</strong> en el DNS público del dominio.</li>
+        <li>El dominio <code>*.onmicrosoft.com</code> inicial <strong>no se puede eliminar</strong>. Sí se puede cambiar cuál es el <em>primary domain</em>.</li>
+        <li>El UPN tiene que ser <strong>único en el tenant</strong>, y sigue reservado mientras el usuario esté en la papelera.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Operación</th><th>Usuario cloud-only</th><th>Usuario sincronizado (Entra Connect)</th></tr></thead>
+        <tbody>
+          <tr><td>Editar nombre, departamento, manager</td><td><span class="yes">En el portal</span></td><td><span class="no">Solo on-premises</span> — en el portal está en solo lectura</td></tr>
+          <tr><td>Resetear password</td><td><span class="yes">En el portal</span></td><td>Requiere <strong>password writeback</strong> (P1 + Entra Connect)</td></tr>
+          <tr><td>Borrar el usuario</td><td><span class="yes">En el portal</span></td><td>Se borra/mueve la cuenta <strong>on-prem</strong>; si no, vuelve en el próximo ciclo de sync</td></tr>
+          <tr><td>Asignar licencias y roles</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span> — licencias y roles siempre se manejan en la nube</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> borrar un usuario <strong>no lo elimina</strong>: lo manda a <em>Deleted users</em> por <strong>30 días</strong>, y en ese período se puede <strong>restaurar</strong> con sus grupos, licencias y roles. Después de los 30 días la eliminación es permanente e irreversible. Ojo con el corolario: el UPN y las proxy addresses <strong>siguen ocupados</strong> mientras el objeto esté en la papelera, así que no podés recrear al usuario con el mismo UPN sin antes hacer <em>Delete permanently</em>.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>El rol mínimo para crear, editar y borrar usuarios es <strong>User Administrator</strong>. Para resetear passwords de usuarios sin privilegios alcanza con <strong>Password Administrator</strong> o <strong>Helpdesk Administrator</strong>.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 3 ══════════ -->
+  <div class="section" id="grupos">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.15)">👥</div>
+      <span class="section-title">Grupos: Security vs M365, Assigned vs Dynamic</span>
+      <span class="section-tag">Alta frecuencia</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>Security group</th><th>Microsoft 365 group</th></tr></thead>
+        <tbody>
+          <tr><td>Para qué</td><td>Dar permisos: RBAC de Azure, licencias, Conditional Access, acceso a apps</td><td>Colaboración: buzón compartido, SharePoint, Teams, calendario</td></tr>
+          <tr><td>Miembros posibles</td><td>Usuarios, <strong>dispositivos</strong>, otros grupos, service principals</td><td><strong>Solo usuarios</strong> (sin dispositivos ni grupos anidados)</td></tr>
+          <tr><td>Anidamiento</td><td><span class="yes">Sí</span></td><td><span class="no">No</span></td></tr>
+          <tr><td>Tipos de membresía</td><td>Assigned, Dynamic User, Dynamic Device</td><td>Assigned, Dynamic User</td></tr>
+          <tr><td>Genera dirección de correo</td><td><span class="no">No</span> (salvo mail-enabled heredado)</td><td><span class="yes">Sí</span>, obligatoria</td></tr>
+          <tr><td>Al borrarlo</td><td>Eliminación <strong>permanente</strong></td><td>Papelera de <strong>30 días</strong>, restaurable</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Membership type</th><th>Cómo entran los miembros</th><th>Licencia</th><th>Detalle clave</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip chip-blue">Assigned</span></td><td>A mano, uno por uno</td><td><span class="chip chip-green">Free</span></td><td>Único tipo disponible con licencia Free</td></tr>
+          <tr><td><span class="chip chip-purple">Dynamic User</span></td><td>Regla evaluada sobre atributos <code>user.*</code></td><td><span class="chip chip-yellow">P1</span></td><td>No podés agregar ni sacar miembros a mano</td></tr>
+          <tr><td><span class="chip chip-purple">Dynamic Device</span></td><td>Regla sobre atributos <code>device.*</code></td><td><span class="chip chip-yellow">P1</span></td><td>Solo en <strong>security groups</strong>, nunca en M365</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Sintaxis de las reglas de membresía</div>
+      <pre><code>user.department -eq "Sales"
+user.country -eq "AR" -and user.jobTitle -startsWith "Sales"
+user.userType -eq "Guest"
+(user.department -eq "IT") -or (user.department -eq "Ops")
+user.assignedPlans -any (assignedPlan.servicePlanId -eq "...")
+
+device.deviceOSType -eq "Windows"
+device.displayName -startsWith "LAP-"</code></pre>
+      <ul>
+        <li>Operadores más preguntados: <code>-eq</code>, <code>-ne</code>, <code>-startsWith</code>, <code>-contains</code>, <code>-match</code>, <code>-in</code> / <code>-notIn</code>, <code>-any</code> / <code>-all</code>, y los booleanos <code>-and</code> / <code>-or</code> / <code>-not</code>.</li>
+        <li>Los valores van entre <strong>comillas dobles</strong> y el nombre del atributo es <strong>case-sensitive</strong> (<code>user.department</code>, no <code>User.Department</code>).</li>
+        <li>Solo se pueden usar atributos que existen en Entra ID. Extensiones sí, pero con el formato de extension attribute.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> un grupo dinámico es <strong>o de usuarios o de dispositivos, nunca los dos</strong>. Al crearlo elegís <em>Dynamic User</em> o <em>Dynamic Device</em> y la regla solo admite el prefijo correspondiente. Si el escenario pide "un grupo con todas las laptops de Marketing y sus dueños", la respuesta es <strong>dos grupos</strong>. Segunda trampa del mismo combo: una vez que el grupo es dinámico, <strong>no podés agregar miembros manualmente</strong> — y si cambiás el tipo de Assigned a Dynamic, se pierden los miembros cargados a mano.</span>
+    </div>
+
+    <div class="rule-box">
+      <strong>Role-assignable groups:</strong> para asignar <strong>roles de Entra ID a un grupo</strong> hay que crearlo con la opción <em>"Microsoft Entra roles can be assigned to the group" = Yes</em>. Esa opción <strong>solo se define al crear el grupo y no se puede cambiar después</strong>. Además el grupo tiene que ser <strong>Security</strong> con membresía <strong>Assigned</strong> (un grupo dinámico no puede ser role-assignable) y requiere <strong>P1</strong>. Ojo: esto es distinto de asignar <strong>RBAC de Azure</strong> a un grupo, que funciona con cualquier security group.
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span><strong>Group-based licensing</strong> requiere <strong>P1</strong> y <strong>no procesa grupos anidados</strong>: la licencia se aplica solo a los miembros directos del grupo. Y una licencia heredada de un grupo <strong>no se puede quitar en el usuario</strong> — hay que sacarlo del grupo. Los errores de asignación (<code>MutuallyExclusiveViolation</code>, <code>CountViolation</code>, etc.) se detallan en <a href="#licencias">Licencias</a>.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 4 ══════════ -->
+  <div class="section" id="b2b">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🤝</div>
+      <span class="section-title">Colaboración B2B y guests</span>
+      <span class="section-tag">Externos</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué pasa cuando invitás a alguien</div>
+      <ul>
+        <li>Se crea un <strong>objeto de usuario guest en TU tenant</strong>, con <code>userType = Guest</code> y UPN del tipo <code>ana_contoso.com#EXT#@tutenant.onmicrosoft.com</code>.</li>
+        <li>Ese objeto <strong>no tiene credenciales propias</strong>: la autenticación la hace el <strong>home tenant</strong> del invitado (o su cuenta Microsoft / Google / one-time passcode por email). Las passwords y la MFA del invitado viven en su tenant, no en el tuyo.</li>
+        <li>Mientras no acepte la invitación queda en estado <strong>PendingAcceptance</strong>, pero el objeto ya existe y <strong>ya se le pueden asignar grupos, roles y RBAC</strong>.</li>
+        <li>Para sacarle el acceso, <strong>borrás el objeto guest de tu tenant</strong>. La cuenta original en el tenant de origen no se toca.</li>
+      </ul>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>External collaboration setting</th><th>Opciones</th><th>Qué te preguntan</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Guest user access restrictions</strong></td><td>1) Mismo acceso que los members · 2) Acceso limitado a propiedades y membresías (<strong>default</strong>) · 3) Restringido a sus propios objetos (<strong>más restrictivo</strong>)</td><td>La opción 3 es la respuesta cuando piden "que el guest no pueda enumerar usuarios ni grupos".</td></tr>
+          <tr><td><strong>Guest invite settings</strong></td><td>Cualquiera incluidos guests · Members y roles específicos (<strong>default</strong>) · Solo roles específicos · <strong>Nadie</strong></td><td>"Nadie" bloquea las invitaciones incluso para Global Admin.</td></tr>
+          <tr><td><strong>Collaboration restrictions</strong></td><td><strong>Allow list</strong> de dominios o <strong>Deny list</strong> de dominios</td><td>Son <strong>mutuamente excluyentes</strong>: o una o la otra, nunca las dos a la vez.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Roles y mínimo privilegio</div>
+      <ul>
+        <li><strong>Guest Inviter</strong>: el rol de mínimo privilegio para invitar guests sin poder tocar nada más del directorio. Es la respuesta correcta cuando el escenario pide "que puedan invitar externos pero no administrar usuarios".</li>
+        <li><strong>User Administrator</strong> también puede invitar, pero es más privilegio del necesario.</li>
+        <li>Las <strong>Cross-tenant access settings</strong> controlan por tenant partner qué se permite en inbound/outbound, e incluyen la opción de <strong>confiar en la MFA del tenant de origen</strong> para no pedirle al guest doble MFA.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">B2B vs B2C vs ADFS: qué es cada uno</div>
+      <p>El examen mezcla estos nombres. Son productos distintos, no sinónimos de “login externo”.</p>
+      <ul>
+        <li><strong>B2B (Business-to-Business)</strong> — colaboración entre <em>organizaciones</em>. Invitás a empleados de otro tenant (o una cuenta Microsoft) como <strong>guest</strong> en el tuyo. Ellos siguen autenticándose en su <strong>home tenant</strong> con su UPN de siempre (<code>user@company2.com</code>). Tu tenant solo guarda el objeto guest. Incluido en Entra ID, <strong>rápido y sin costo extra</strong> para este escenario. Es el camino correcto cuando piden SSO con las credenciales que ya tienen.</li>
+        <li><strong>B2C (Business-to-Consumer)</strong> — ahora parte de <em>Entra External ID</em> para clientes. Es un <strong>tenant aparte</strong> pensado para <em>consumidores</em> de una app pública: se registran con email, one-time passcode o redes (Google, Facebook, Apple). No es para que cinco empleados de Company2 entren a las apps internas de Company1. Tiene <strong>facturación por MAU</strong> y el signup no usa el UPN corporativo de Company2 como IdP de la empresa.</li>
+        <li><strong>ADFS (Active Directory Federation Services)</strong> — rol de <strong>Windows Server on-prem</strong>. Es un Security Token Service (STS): el usuario llega a la app en la nube, Entra lo redirige a tus servidores ADFS, ADFS valida contra AD DS y emite un token SAML/WS-Fed. También se puede federar con el AD de otra empresa. Requiere granja ADFS + <strong>Web Application Proxy</strong> en DMZ, certificados, HA y parches. <strong>Ni rápido ni gratis</strong>.</li>
+        <li><strong>Cuentas en el AD de Company1</strong> — identidades <em>nuevas</em> que Entra Connect sincroniza. Tendrían password (y UPN) de Company1, no SSO con <code>company2.com</code>. Es el anti-patrón de “usar las credenciales que ya tienen”.</li>
+      </ul>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">user@company2.com<br><small>abre la app de Company1</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Entra Company1<br><small>ve el objeto guest</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">Entra Company2<br><small>SSO con su password/MFA</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Token<br><small>entra a la app</small></div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>B2B (guests)</th><th>B2C / External ID</th><th>ADFS</th></tr></thead>
+        <tbody>
+          <tr><td>Para quién</td><td>Empleados de un <strong>partner</strong></td><td><strong>Clientes</strong> de una app pública</td><td>Usuarios de <strong>tu AD DS</strong> (o federación clásica entre bosques)</td></tr>
+          <tr><td>Dónde autenticán</td><td>Su <strong>home tenant</strong></td><td>El tenant B2C (cuenta local o social)</td><td>Servidores ADFS → AD DS on-prem</td></tr>
+          <tr><td>Qué objeto hay en tu directorio</td><td>Guest <code>#EXT#</code></td><td>Usuario consumidor en un tenant <em>distinto</em></td><td>Usuario de tu AD (federado con Entra)</td></tr>
+          <tr><td>SSO con UPN del partner</td><td><span class="yes">Sí</span></td><td><span class="no">No</span> (email/social)</td><td>Solo si armás un trust (lento, on-prem)</td></tr>
+          <tr><td>Costo / tiempo</td><td>Incluido, minutos</td><td>Pago por MAU + tenant B2C</td><td>Servidores, certs, WAP, semanas</td></tr>
+          <tr><td>Entra Connect</td><td><span class="no">No hace falta</span></td><td><span class="no">No aplica</span></td><td>Opción de auth <em>Federation</em> (la más pesada; PHS/PTA son más simples)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">“What should you do first”: 5 users de Company2, SSO, ya, sin costo</div>
+      <p>Company1 ya sincroniza su AD con Entra Connect. Company2 tiene su propio tenant. Cinco usuarios de Company2 necesitan las apps de Company1 con sus credenciales <code>company2.com</code>.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Opción</th><th></th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td>Invitar los UPN de Company2 como <strong>guest users</strong> en el tenant Company1</td><td><span class="yes">Yes — lo primero</span></td><td>B2B: SSO en el home tenant, sin servidores, sin costo. Después les asignás las apps.</td></tr>
+          <tr><td>Enable <strong>B2C</strong> para que usen outlook.com</td><td><span class="no">No</span></td><td>B2C es para consumidores, no partners. outlook.com ≠ UPN de Company2. Tiene costo.</td></tr>
+          <tr><td>Configurar <strong>ADFS</strong> en Company1 y federar contra el AD de Company2</td><td><span class="no">No</span></td><td>Infra on-prem, certs, WAP. Ni rápido ni gratis. Company1 ya tiene Connect; no hace falta federación.</td></tr>
+          <tr><td>Crear cuentas en el <strong>AD on-prem de Company1</strong></td><td><span class="no">No</span></td><td>Identidades nuevas (password de Company1). No es SSO con <code>company2.com</code>.</td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>Connect-MgGraph -Scopes "User.Invite.All"
+New-MgInvitation -InvitedUserEmailAddress "user@company2.com" `
+  -InviteRedirectUrl "https://myapps.microsoft.com" -SendInvitationMessage
+
+# Portal: Entra ID → Users → New user → Invite external user
+# Bulk: Users → Bulk operations → Bulk invite (CSV: email + redirection URL)</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “otra empresa + SSO con <em>sus</em> credenciales + rápido + sin costo” = <strong>invitar guests B2B</strong>. <strong>B2C</strong> = clientes/consumidores (email social, tenant aparte, pago). <strong>ADFS</strong> = servidores on-prem (lento y caro). Crear usuarios en tu AD/Entra les da una cuenta <em>tuya</em>, no la de ellos. <code>New-MgUser</code> crea un <strong>member</strong>; para el partner es <code>New-MgInvitation</code>.</span>
+    </div>
+
+  <!-- ══════════ 5 ══════════ -->
+  <div class="section" id="bulk">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(248,113,113,.15)">📄</div>
+      <span class="section-title">Operaciones bulk con CSV</span>
+      <span class="section-tag">Operativo</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Qué se puede hacer en bulk desde el portal</div>
+      <ul>
+        <li><strong>Bulk create</strong> usuarios · <strong>Bulk invite</strong> guests · <strong>Bulk delete</strong> usuarios · <strong>Download users</strong></li>
+        <li>En grupos: <strong>Bulk import members</strong> (agregar), <strong>Bulk remove members</strong>, <strong>Download members</strong> y <strong>Download groups</strong>.</li>
+        <li>El flujo siempre es el mismo: <strong>descargar el template CSV → completarlo → subirlo → esperar</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">Download<br><small>template CSV</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Completar filas</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Upload</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step highlight">Bulk operation<br>results<br><small>asincrónico</small></div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Operación</th><th>Columnas obligatorias del CSV</th><th>Rol mínimo</th></tr></thead>
+        <tbody>
+          <tr><td>Bulk create</td><td>Name (display name), User principal name, Initial password, Block sign in (Yes/No)</td><td>User Administrator</td></tr>
+          <tr><td>Bulk invite</td><td>Email address to invite, Redirection URL</td><td>Guest Inviter</td></tr>
+          <tr><td>Bulk delete</td><td>Solo el <strong>User principal name</strong></td><td>User Administrator</td></tr>
+          <tr><td>Bulk add/remove members</td><td>UPN u <strong>Object ID</strong> del miembro</td><td>Groups Administrator</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el CSV descargado trae <strong>dos filas de encabezado</strong> (la fila de versión y la fila de nombres de columna) y <strong>no se pueden modificar ni borrar</strong>; los datos arrancan recién en la tercera fila. Además la operación es <strong>asincrónica</strong>: el portal no te dice fila por fila qué pasó, tenés que ir a <strong>Bulk operation results</strong> y descargar el CSV de resultados para ver qué filas fallaron. Y si una fila falla, <strong>las demás igual se procesan</strong> — no hay rollback.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Bulk create <strong>no sirve para actualizar</strong> usuarios existentes: si el UPN ya existe, esa fila falla. Para modificaciones masivas de atributos vas a PowerShell (<code>Microsoft.Graph</code>) o a Graph API.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 6 ══════════ -->
+  <div class="section" id="au">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.22)">🗂️</div>
+      <span class="section-title">Administrative Units (AU)</span>
+      <span class="section-tag">Delegación</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Para qué existen</div>
+      <ul>
+        <li>Una AU es un <strong>contenedor lógico para acotar el scope de administración delegada</strong>. Es el equivalente conceptual de una OU de AD DS, pero <strong>solo para delegar permisos</strong>: no sirve para aplicar Group Policy ni para organizar objetos jerárquicamente.</li>
+        <li>Puede contener <strong>usuarios, grupos y dispositivos</strong>. Un mismo objeto <strong>puede pertenecer a varias AUs</strong>.</li>
+        <li>Membresía <strong>asignada</strong> o <strong>dinámica</strong> (con reglas iguales a las de grupos dinámicos, y con la misma limitación: usuarios <em>o</em> dispositivos, no ambos).</li>
+        <li>Requiere <strong>Entra ID P1</strong>. Crear o borrar AUs pide <strong>Global Administrator</strong> o <strong>Privileged Role Administrator</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Roles que se pueden asignar con scope de AU</div>
+      <ul>
+        <li><strong>User Administrator</strong> · <strong>Groups Administrator</strong> · <strong>Helpdesk Administrator</strong> · <strong>Password Administrator</strong> · <strong>Authentication Administrator</strong> · <strong>License Administrator</strong> · <strong>Cloud Device Administrator</strong> (para dispositivos).</li>
+        <li>El patrón de pregunta: "el helpdesk de la sucursal X tiene que resetear passwords <strong>solo</strong> de la gente de X" → <strong>AU con los usuarios de X + Helpdesk (o Password) Administrator con scope de esa AU</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <strong>Global Administrator no se limita con una AU</strong>. Los roles que ya son tenant-wide siguen viendo todo el directorio; meterlos en una AU no los recorta. La AU restringe <strong>al administrador delegado</strong>, no al objeto: si le asignás a alguien User Administrator a nivel tenant <em>y además</em> con scope de AU, gana el permiso más amplio. Para achicar de verdad hay que <strong>quitar la asignación tenant-wide</strong>.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Si además necesitás que <strong>ni siquiera los Global Admins</strong> toquen esos objetos sin activar permisos explícitos, eso es <strong>Restricted Management Administrative Units</strong>, que requiere <strong>P1</strong> (una licencia P1 por cada administrador de la AU; los miembros solo necesitan Free).</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 7 ══════════ -->
+  <div class="section" id="devices">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.22)">💻</div>
+      <span class="section-title">Dispositivos: registered, joined e hybrid</span>
+      <span class="section-tag">Muy preguntado</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>Entra <strong>registered</strong></th><th>Entra <strong>joined</strong></th><th><strong>Hybrid</strong> Entra joined</th></tr></thead>
+        <tbody>
+          <tr><td>Caso de uso</td><td><strong>BYOD</strong> / dispositivo personal</td><td>Corporativo <strong>solo nube</strong></td><td>Corporativo con <strong>AD DS on-prem</strong> existente</td></tr>
+          <tr><td>Propiedad</td><td>Del usuario</td><td>De la organización</td><td>De la organización</td></tr>
+          <tr><td>Cómo inicia sesión el usuario</td><td>Cuenta local, MSA o cuenta personal; la cuenta de trabajo se "agrega"</td><td>Con la cuenta de <strong>Entra ID</strong></td><td>Con la cuenta de <strong>AD DS on-prem</strong></td></tr>
+          <tr><td>Sistemas operativos</td><td>Windows 10/11, iOS, Android, macOS, Linux</td><td>Windows 10/11 (y Windows Server 2019+ en VMs de Azure)</td><td>Windows 10/11 y versiones anteriores de Windows / Windows Server</td></tr>
+          <tr><td>Requiere Entra Connect</td><td><span class="no">No</span></td><td><span class="no">No</span></td><td><span class="yes">Sí</span></td></tr>
+          <tr><td>Dónde se une</td><td>Settings → Add work or school account</td><td>OOBE o Settings → Join Entra ID</td><td>Automático vía GPO/Entra Connect, ya unido al dominio</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Device settings (Entra ID → Devices → Device settings)</div>
+      <ul>
+        <li><strong>Users may join devices to Microsoft Entra ID</strong>: <code>All</code> / <code>Selected</code> (usuarios o grupos) / <code>None</code>. Aplica solo al <strong>join</strong>, no al register.</li>
+        <li><strong>Users may register their devices</strong>: <code>All</code> / <code>None</code>. Queda forzado en <code>All</code> si tenés Intune o MAM habilitado.</li>
+        <li><strong>Require Multifactor Authentication to register or join devices</strong>: <code>Yes</code> / <code>No</code>. Microsoft recomienda hacerlo con <strong>Conditional Access</strong> en lugar de este toggle.</li>
+        <li><strong>Maximum number of devices per user</strong>: valores <code>5, 10, 20, 50, 100, Unlimited</code>, con <strong>50 por defecto</strong>. Cuenta dispositivos <strong>Entra joined y Entra registered juntos</strong>. Los <strong>hybrid Entra joined no cuentan</strong> hacia este límite.</li>
+        <li><strong>Local administrators on Microsoft Entra joined devices</strong>: por defecto son admin local el <strong>Global Administrator</strong> y el <strong>Device Administrator</strong> (rol "Microsoft Entra joined device local administrator"), más el usuario que unió el equipo. Agregar admins locales adicionales requiere <strong>P1</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el límite de <strong>Maximum number of devices per user</strong> se evalúa al momento del join/register, y <strong>borrar o deshabilitar un dispositivo en el portal no lo saca del equipo</strong>: la máquina sigue funcionando localmente, lo que pierde es el acceso SSO a recursos y el token. La otra confusión clásica: <strong>join no es lo mismo que enroll</strong> — unir el dispositivo a Entra ID no lo inscribe en Intune salvo que configures el <em>automatic enrollment</em>.</span>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span>Regla mnemotécnica para elegir: <strong>personal → registered</strong>; <strong>corporativo sin on-prem → joined</strong>; <strong>corporativo con dominio AD DS → hybrid joined</strong>. Si el escenario menciona "ya tenemos Active Directory" y "las apps usan autenticación integrada de Windows", es <strong>hybrid</strong> sí o sí.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 8 ══════════ -->
+  <div class="section" id="sspr">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,.22)">🔐</div>
+      <span class="section-title">Self-Service Password Reset (SSPR)</span>
+      <span class="section-tag">Clásico</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Scope: las únicas tres opciones</div>
+      <ul>
+        <li><span class="chip chip-red">None</span> — SSPR deshabilitado (default).</li>
+        <li><span class="chip chip-yellow">Selected</span> — habilitado para <strong>un solo grupo</strong>. No podés elegir dos grupos: si necesitás varios conjuntos de usuarios, armás un grupo que los contenga (podés anidar security groups).</li>
+        <li><span class="chip chip-green">All</span> — todos los usuarios del tenant.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Yes/No: SSPR en híbrido + cloud-only</div>
+      <p>Cuentas sincronizadas (Entra + AD DS) y algunas solo en la nube. Hay que desplegar SSPR.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>SSPR está soportado para todos, <strong>incluidos los cloud-only</strong></td><td><span class="yes">Yes</span></td><td>Cloud-only resetean en Entra. Los híbridos además necesitan <strong>password writeback</strong> para que el cambio llegue al AD</td></tr>
+            <tr><td>Podés configurar el registro para todos, por grupo, o por <strong>usuario individual</strong></td><td><span class="no">No</span></td><td>Scope = None / Selected / All. Selected = <strong>grupos</strong>, no un picker de usuarios sueltos</td></tr>
+            <tr><td>Métodos soportados: SMS y llamadas de voz</td><td><span class="yes">Yes</span></td><td>Mobile phone = texto o voz. Office phone = solo voz. También Authenticator, email, security questions (no admins)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> el Yes/No que mete “<strong>individual user</strong>” en el scope de SSPR es <strong>No</strong>. Selected no asigna usuarios uno a uno. Cloud-only <strong>sí</strong> usan SSPR; writeback es solo para los sincronizados.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Orden: SSPR para un subconjunto + un dato extra</div>
+      <p>Hay que poder agregar/sacar usuarios del SSPR y pedir <strong>un dato extra</strong> (método de autenticación) antes del reset.</p>
+      <ol>
+        <li><strong>Crear un grupo</strong> de Entra y meter a esos usuarios</li>
+        <li>Habilitar SSPR con <strong>Selected</strong></li>
+        <li><strong>Elegir ese grupo</strong> en Selected</li>
+        <li><strong>Registrar un método</strong> (móvil, email, etc.)</li>
+      </ol>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Enable <strong>All</strong></td><td><span class="no">No</span></td><td>Es toda la org, no un subset. No podés sacar gente fácil</td></tr>
+            <tr><td>“Add users to the SSPR list”</td><td><span class="no">No</span></td><td>No existe una lista de usuarios sueltos. Scope = grupos</td></tr>
+            <tr><td>Grupo → Selected → elegir grupo → registrar método</td><td><span class="yes">Sí</span></td><td>Add/remove = membresía del grupo. El método es el “additional piece of personal information”</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> subset + alta/baja fácil = <strong>grupo + Selected</strong>, no All ni “SSPR list”. El método de autenticación va <strong>al final</strong> (sin eso no hay el dato extra). El grupo se crea <em>antes</em> de poder seleccionarlo.</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Método de autenticación</th><th>Sirve para SSPR</th><th>Nota de examen</th></tr></thead>
+        <tbody>
+          <tr><td>Mobile app notification (Authenticator)</td><td><span class="yes">Sí</span></td><td>Método fuerte, recomendado</td></tr>
+          <tr><td>Mobile app code (OATH TOTP)</td><td><span class="yes">Sí</span></td><td>—</td></tr>
+          <tr><td>Email</td><td><span class="yes">Sí</span></td><td>Usa el <strong>Authentication email</strong>, no el buzón principal</td></tr>
+          <tr><td>Mobile phone (SMS o llamada)</td><td><span class="yes">Sí</span></td><td>—</td></tr>
+          <tr><td>Office phone</td><td><span class="yes">Sí</span></td><td><strong>Solo llamada</strong>, nunca SMS</td></tr>
+          <tr><td>Security questions</td><td><span class="yes">Sí</span></td><td><strong>Exclusivo de SSPR</strong> — no sirve para MFA y <strong>no está disponible para administradores</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>Number of methods required to reset:</strong> <code>1</code> o <code>2</code>. Son las únicas dos opciones.<br>
+      <strong>Security questions:</strong> se configura cuántas se <em>registran</em> y cuántas se <em>responden</em> para resetear, con preguntas predefinidas o personalizadas.<br>
+      <strong>Registration:</strong> <em>Require users to register when signing in</em> = Yes, y <em>Number of days before users are asked to reconfirm their authentication information</em> con <strong>180 días por defecto</strong>.
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>Password <strong>change</strong></th><th>Password <strong>reset</strong></th><th>Reset por <strong>admin</strong></th></tr></thead>
+        <tbody>
+          <tr><td>El usuario sabe la password actual</td><td><span class="yes">Sí</span></td><td><span class="no">No</span> (la olvidó o está bloqueado)</td><td>No aplica</td></tr>
+          <tr><td>Requiere licencia</td><td><span class="no">No</span> — el <em>change</em> de usuarios cloud es Free</td><td>P1 (o Microsoft 365 Business Standard/Premium) incluso para usuarios cloud-only; el writeback híbrido además exige Entra Connect. Con Free solo hay password <em>change</em></td><td><span class="no">No</span></td></tr>
+          <tr><td>Fuerza cambio en el próximo login</td><td><span class="no">No</span></td><td><span class="no">No</span></td><td><span class="yes">Sí</span> — genera password temporal</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> la configuración de SSPR (scope, cantidad de métodos, security questions) <strong>solo aplica a usuarios sin privilegios</strong>. Para las cuentas con roles administrativos, SSPR está <strong>siempre habilitado, exige 2 métodos, no admite security questions y no se puede desactivar</strong>. Si la pregunta dice "puse el scope en None pero los admins igual resetean", eso es el comportamiento esperado, no un bug.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span><strong>Password writeback</strong> escribe el cambio de vuelta al AD DS on-prem. Requiere <strong>Entra ID P1</strong> (o un SKU que lo incluya: M365 Business <em>Premium</em>, EMS) y <strong>Entra Connect</strong> (o cloud sync) con writeback habilitado. <strong>Microsoft 365 Business Standard no alcanza</strong>. MFA no es prerequisito del writeback (sí de <em>usar</em> SSPR). Sin writeback, un usuario sincronizado que resetea en la nube <strong>queda con dos passwords distintas</strong>.</span>
+    </div>
+    <div class="card">
+      <div class="card-title">Yes/No: prerequisitos de password writeback</div>
+      <p>Licencia actual: Microsoft 365 Business Standard. SSPR ya configurado. Híbrido + writeback al AD DS.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Afirmación</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td>Hay que subir a <strong>Entra ID P1</strong></td><td><span class="yes">Yes</span></td><td>Business Standard no trae P1. Writeback es feature Premium</td></tr>
+            <tr><td>Instalar y configurar <strong>Entra Connect</strong></td><td><span class="yes">Yes</span></td><td>El agente (o cloud sync) escribe el hash de vuelta al AD</td></tr>
+            <tr><td>Habilitar <strong>MFA</strong></td><td><span class="no">No</span></td><td>No es prereq del canal de writeback. MFA/métodos son para que el user <em>pruebe identidad</em> al resetear</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “writeback” ≠ “SSPR en general”. P1 + Connect. MFA es carnada porque SSPR lo usa para autenticar, no para sincronizar al AD. Business Standard ≠ Business Premium.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Londres híbrido: SSPR en All Users y siguen los tickets</div>
+      <p>Sync on-prem. P1 asignada. SSPR habilitado al grupo All Users. Los de Londres (objetos híbridos) siguen pidiendo cambio de password al helpdesk.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Causa</th><th></th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Password writeback no está habilitado</strong></td><td><span class="yes">Sí</span></td><td>El reset en la nube no vuelve al AD. El origen de verdad sigue on-prem</td></tr>
+            <tr><td>All Users no incluye híbridos</td><td><span class="no">No</span></td><td>All Users cubre cloud-only y sincronizados</td></tr>
+            <tr><td>Les falta la licencia</td><td><span class="no">No</span></td><td>El enunciado les da <strong>Entra ID P1</strong></td></tr>
+            <tr><td>SSPR no soporta usuarios híbridos</td><td><span class="no">No</span></td><td>Sí los soporta, con writeback en Connect</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> SSPR “on” + All Users + P1 y el híbrido sigue sin resetear = falta <strong>password writeback</strong> en Entra Connect. No es el grupo, ni la licencia, ni “SSPR no es para híbridos”.</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 9 ══════════ -->
+  <div class="section" id="licencias">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.22)">🎫</div>
+      <span class="section-title">Licencias: Free vs P1 vs P2</span>
+      <span class="section-tag">Decisivo</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Feature</th><th>Free</th><th>P1</th><th>P2</th></tr></thead>
+        <tbody>
+          <tr><td>SSO, grupos <strong>Assigned</strong>, MFA con Security Defaults</td><td><span class="yes">✔</span></td><td><span class="yes">✔</span></td><td><span class="yes">✔</span></td></tr>
+          <tr><td>Self-service password <strong>change</strong> (cloud)</td><td><span class="yes">✔</span></td><td><span class="yes">✔</span></td><td><span class="yes">✔</span></td></tr>
+          <tr><td><strong>Dynamic groups</strong> (user y device)</td><td><span class="no">✘</span></td><td><span class="yes">✔</span></td><td><span class="yes">✔</span></td></tr>
+          <tr><td><strong>Group-based licensing</strong> y self-service group management</td><td><span class="no">✘</span></td><td><span class="yes">✔</span></td><td><span class="yes">✔</span></td></tr>
+          <tr><td><strong>Administrative Units</strong></td><td><span class="no">✘</span></td><td><span class="yes">✔</span></td><td><span class="yes">✔</span></td></tr>
+          <tr><td><strong>Conditional Access</strong></td><td><span class="no">✘</span></td><td><span class="yes">✔</span></td><td><span class="yes">✔</span></td></tr>
+          <tr><td><strong>SSPR con password writeback</strong> (híbrido)</td><td><span class="no">✘</span></td><td><span class="yes">✔</span></td><td><span class="yes">✔</span></td></tr>
+          <tr><td>Application Proxy · Entra Connect Health · custom banned password list</td><td><span class="no">✘</span></td><td><span class="yes">✔</span></td><td><span class="yes">✔</span></td></tr>
+          <tr><td><strong>PIM</strong> (Privileged Identity Management)</td><td><span class="no">✘</span></td><td><span class="no">✘</span></td><td><span class="yes">✔</span></td></tr>
+          <tr><td><strong>Identity Protection</strong> y Conditional Access <strong>basado en riesgo</strong></td><td><span class="no">✘</span></td><td><span class="no">✘</span></td><td><span class="yes">✔</span></td></tr>
+          <tr><td><strong>Access Reviews</strong> y Entitlement Management</td><td><span class="no">✘</span></td><td><span class="no">✘</span></td><td><span class="yes">✔</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <strong>Atajo mental:</strong> si la feature <em>administra</em> identidades a escala (dinámico, delegación, acceso condicional, writeback) → <strong>P1</strong>. Si la feature <em>gobierna o detecta riesgo</em> (PIM, Identity Protection, Access Reviews, Entitlement Management) → <strong>P2</strong> / Entra ID Governance.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Mecánica de asignación</div>
+      <ul>
+        <li>Las licencias de Entra ID son <strong>por usuario</strong>. Se asignan al usuario directamente o a través de un grupo (group-based licensing, que ya es P1).</li>
+        <li>El usuario necesita <strong>Usage location</strong> configurada <strong>antes</strong> de poder recibir una licencia. Sin usage location la asignación falla.</li>
+        <li>Una licencia heredada de un grupo <strong>no se puede quitar desde el usuario</strong>: se saca al usuario del grupo o se quita la licencia del grupo.</li>
+        <li>La edición <strong>Free</strong> tiene cuota por defecto de <strong>50.000 objetos</strong> de directorio (<strong>300.000</strong> si el tenant tiene un dominio verificado). El 500.000 de la página de precios es un techo que se pide por soporte; P1/P2 no eliminan esta cuota.</li>
+        <li><strong>Microsoft 365 E3</strong> incluye Entra ID <strong>P1</strong>; <strong>Microsoft 365 E5</strong> incluye <strong>P2</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Errores de group-based licensing (Graph)</div>
+      <p>Cuando un script de Microsoft Graph PowerShell falla al asignar licencias por grupo, el código no es genérico: cada nombre mapea a una causa. El examen te tira el error y cuatro definiciones; tenés que emparejarlas.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Error en Graph</th><th>Causa</th><th>Qué hacés</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>MutuallyExclusiveViolation</code></td>
+            <td>Un producto del grupo trae un <strong>service plan que choca</strong> con otro plan que el usuario ya tiene por otro producto (p. ej. Exchange Plan 1 y Plan 2).</td>
+            <td>Sacar al usuario de uno de los grupos, o <strong>deshabilitar el plan en conflicto</strong> en una de las asignaciones.</td>
+          </tr>
+          <tr>
+            <td><code>CountViolation</code></td>
+            <td><strong>No hay licencias suficientes</strong> para un producto del grupo.</td>
+            <td>Comprar más SKUs o recuperar licencias no usadas.</td>
+          </tr>
+          <tr>
+            <td><code>DependencyViolation</code></td>
+            <td>Un service plan del grupo <strong>exige otro plan habilitado</strong> (en el mismo u otro producto) para funcionar.</td>
+            <td>Habilitar el plan dependiente; no deshabilitar el prerequisito.</td>
+          </tr>
+          <tr>
+            <td><code>ProhibitedInUsageLocationViolation</code></td>
+            <td>El producto <strong>no está disponible en la usage location</strong> del usuario por leyes locales. También falla si el usuario <strong>no tiene usage location</strong>.</td>
+            <td>Corregir <code>usageLocation</code> o no asignar ese SKU a esa geografía.</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Microsoft Graph PowerShell — asignar y diagnosticar</div>
+<pre><code>Connect-MgGraph -Scopes "User.Read.All","Group.ReadWrite.All","Organization.Read.All"
+
+# Usage location (obligatoria antes de licenciar)
+Update-MgUser -UserId ana@contoso.com -UsageLocation "AR"
+
+# SKUs del tenant: id, consumidas, disponibles
+Get-MgSubscribedSku | Select-Object SkuPartNumber, SkuId, ConsumedUnits
+
+# Asignar el SKU al grupo (group-based licensing)
+Set-MgGroupLicense -GroupId $groupId -AddLicenses @{SkuId = $skuId} -RemoveLicenses @()
+
+# Miembros del grupo cuya licencia quedó en error  ← cmdlet clave
+Get-MgGroupMemberWithLicenseError -GroupId $groupId
+
+# Causa exacta: State + Error por usuario
+Get-MgUser -UserId ana@contoso.com -Property LicenseAssignmentStates |
+  Select-Object -ExpandProperty LicenseAssignmentStates |
+  Format-Table SkuId, State, Error, AssignedByGroup
+
+# Planes ya asignados al usuario (para ver el conflicto)
+Get-MgUserLicenseDetail -UserId ana@contoso.com</code></pre>
+      <ul>
+        <li><code>Set-MgUserLicense</code> es asignación <strong>directa al usuario</strong>. Group-based usa <code>Set-MgGroupLicense</code>. El error vive igual en <code>licenseAssignmentStates</code> del usuario.</li>
+        <li><code>AssignedByGroup</code> distinto de <code>$null</code> = la licencia vino del grupo. <code>$null</code> = asignación directa.</li>
+        <li><code>State</code> en error: <code>Error</code> o <code>ActiveWithError</code>. El campo <code>Error</code> trae el nombre (<code>MutuallyExclusiveViolation</code>, etc.).</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “el script de Graph falla con <code>MutuallyExclusiveViolation</code>”. <strong>No</strong> es falta de licencias (<code>CountViolation</code>), ni un plan que depende de otro (<code>DependencyViolation</code>), ni restricción geográfica (<code>ProhibitedInUsageLocationViolation</code>). Es un <strong>service plan del grupo que choca con otro plan que el usuario ya tiene por un producto distinto</strong>. Para verlo: <code>Get-MgGroupMemberWithLicenseError</code> y después <code>LicenseAssignmentStates.Error</code> del usuario.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Para features que se licencian "por quien la usa": en <strong>dynamic groups</strong> se necesita P1 <strong>por cada usuario miembro</strong> del grupo; en <strong>Administrative Units</strong>, P1 <strong>por cada administrador</strong> con scope de AU. El examen rara vez lo pregunta al detalle, pero explica por qué la respuesta nunca es "una sola licencia P1 para el tenant".</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 10 ══════════ -->
+  <div class="section" id="entitlement">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(139,92,246,.18)">📦</div>
+      <span class="section-title">Entitlement Management (Identity Governance)</span>
+      <span class="section-tag">P2 · Graph</span>
+    </div>
+
+    <p>No es Azure RBAC ni “meter gente a un grupo a mano”. Es el motor de <strong>Entra ID Governance</strong> para dar (y sacar) un paquete de accesos a escala: grupos, apps y sitios de SharePoint, con solicitud, aprobación y vencimiento. Licencia: <strong>Entra ID P2</strong> o <strong>Entra ID Governance</strong>. En Graph: módulo <code>Microsoft.Graph.Identity.Governance</code> y permiso <code>EntitlementManagement.ReadWrite.All</code>.</p>
+
+    <div class="card">
+      <div class="card-title">Las cuatro piezas (de afuera hacia adentro)</div>
+      <div class="flow" style="flex-wrap:wrap">
+        <div class="flow-step">Catálogo<br><small>General u otro</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Recursos<br><small>grupo, app, sitio</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Access package<br><small>el paquete que se pide</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Policy<br><small>quién, aprobación, caduca</small></div>
+      </div>
+      <ul>
+        <li><strong>Catálogo:</strong> caja que contiene los recursos que <em>podés</em> meter en paquetes. El tenant trae uno llamado <strong>General</strong> (no lo creás). Podés crear catálogos extra para delegar (Marketing maneja el suyo). Todo access package vive <em>dentro</em> de un catálogo.</li>
+        <li><strong>Recurso del catálogo:</strong> un grupo/app/sitio que ya agregaste a esa caja. El ID que usa Entitlement Management <strong>no es</strong> el object ID de Entra del grupo: es el ID del recurso <em>dentro del catálogo</em>.</li>
+        <li><strong>Access package:</strong> el “combo” que el usuario pide o que un admin le asigna. Adentro van roles de esos recursos (p. ej. <em>Member</em> del grupo Sales, no Owner).</li>
+        <li><strong>Assignment policy:</strong> quién puede pedirlo (empleados, guests, un grupo), si hace falta aprobación, cuántos días dura el acceso. Sin policy el paquete existe pero nadie entra.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Por qué Graph siempre empieza por el ID del catálogo</div>
+      <p>Casi todos los cmdlets piden <code>-AccessPackageCatalogId</code> (o un body con <code>catalog.id</code>). Si la política dice “usá el catálogo General”, el primer comando es <strong>buscar ese objeto y guardar su <code>Id</code></strong>. Recién después: agregar el grupo Sales, listar recursos, listar roles, crear el access package.</p>
+      <div class="tbl-wrap" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Orden</th><th>Qué hacés</th><th>Cmdlet</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1 · primero</strong></td><td>Obtener el ID de <strong>General</strong></td><td><code>Get-MgEntitlementManagementCatalog</code></td></tr>
+          <tr><td>2</td><td>Agregar Sales al catálogo (como recurso)</td><td><code>New-MgEntitlementManagementResourceRequest</code></td></tr>
+          <tr><td>3</td><td>Listar recursos del catálogo</td><td><code>Get-MgEntitlementManagementCatalog</code> <code>-ExpandProperty resources</code></td></tr>
+          <tr><td>4</td><td>Roles del recurso (Member / Owner)</td><td><code>Get-MgEntitlementManagementCatalogResourceRole</code> (o equivalente)</td></tr>
+          <tr><td>5</td><td>Crear access package + policy</td><td><code>New-MgEntitlementManagementAccessPackage</code></td></tr>
+        </tbody>
+      </table>
+      </div>
+<pre><code>Connect-MgGraph -Scopes "EntitlementManagement.ReadWrite.All","Group.ReadWrite.All"
+
+# Paso 1 — SIEMPRE primero
+$catalog = Get-MgEntitlementManagementCatalog -Filter "displayName eq 'General'"
+$catalog.Id
+
+# Paso 2 — el grupo Sales como recurso del catálogo
+$g = Get-MgGroup -Filter "displayName eq 'Sales'"
+New-MgEntitlementManagementResourceRequest -BodyParameter @{
+  requestType = "adminAdd"
+  resource    = @{ originId = $g.Id; originSystem = "AadGroup" }
+  catalog     = @{ id = $catalog.Id }
+}</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> “Graph PowerShell, grupo Sales, catálogo General, ¿qué hacés <em>primero</em>?”. <strong>Retrieve the catalog identifier.</strong> No “add the Sales group” ni “retrieve catalog resources” ni “retrieve resource roles”: todos esos cmdlets <strong>necesitan el ID del catálogo</strong>. General ya existe; no lo creás. PIM es otra feature (roles privilegiados just-in-time), no este flujo.</span>
+    </div>
+  </div>
+
+  <!-- ══ FLASHCARDS ══ -->
+  <div class="fc-section" id="flashcards">
+    <div class="fc-head"><h2>🃏 Flashcards</h2></div>
+    <p class="fc-sub">Datos duros del tema. Tap en la tarjeta para dar vuelta, después marcá si lo sabías.</p>
+    <div class="fc-stats">
+      <span>✓ <b id="fcOk">0</b> sabidas</span>
+      <span>✗ <b id="fcBad">0</b> a repasar</span>
+      <span><b id="fcPos">1</b> / <b id="fcTot">0</b></span>
+    </div>
+    <div class="fc-bar-wrap"><div class="fc-bar" id="fcBar"></div></div>
+    <div id="fcLive">
+      <div class="fc-scene" id="fcScene">
+        <div class="fc-card" id="fcCard">
+          <div class="fc-face fc-front">
+            <span class="fc-meta">Pregunta</span><span class="fc-num" id="fcNumF"></span>
+            <div class="fc-q" id="fcQ"></div>
+            <div class="fc-hint">— tap para ver la respuesta —</div>
+            <span class="fc-cat" id="fcCat"></span>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="fc-meta">Respuesta</span><span class="fc-num" id="fcNumB"></span>
+            <div class="fc-a" id="fcA"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-controls" id="fcJudge" style="display:none">
+        <button class="fc-btn bad" id="fcBtnBad">✗ No la sabía</button>
+        <button class="fc-btn ok" id="fcBtnOk">✓ La sabía</button>
+      </div>
+      <div class="fc-controls" id="fcNextWrap" style="display:none">
+        <button class="fc-btn next" id="fcBtnNext">Siguiente →</button>
+      </div>
+    </div>
+    <div class="fc-done" id="fcDone">
+      <h3 id="fcDoneTitle"></h3>
+      <p id="fcDoneScore"></p>
+      <div class="fc-missed" id="fcMissed"></div>
+      <div class="fc-controls" style="margin-top:20px">
+        <button class="fc-btn next" id="fcRestart">↺ Repetir ronda</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+/* ── FLASHCARDS: llenar este array. cat = categoría corta. a admite HTML. ── */
+const FLASHCARDS = [
+  { q: "¿Qué licencia necesitás para crear Dynamic Groups?", a: "<strong>Entra ID P1</strong> como mínimo, y se licencia <strong>por cada usuario miembro</strong>. Con la licencia Free solo hay grupos de membresía <strong>Assigned</strong>.", cat: "Licencias" },
+  { q: "¿Puede un grupo dinámico contener usuarios y dispositivos a la vez?", a: "<strong>No.</strong> Al crearlo elegís <code>Dynamic User</code> o <code>Dynamic Device</code> y la regla solo admite el prefijo <code>user.</code> o <code>device.</code>. Si necesitás las dos cosas, son <strong>dos grupos</strong>.", cat: "Grupos" },
+  { q: "Borrás un usuario por error. ¿Qué pasa y cuánto tiempo tenés?", a: "Va a <strong>Deleted users</strong> y es restaurable durante <strong>30 días</strong> con sus grupos, licencias y roles. Pasados los 30 días la eliminación es <strong>permanente</strong>. Mientras esté en la papelera, su <strong>UPN sigue ocupado</strong>.", cat: "Usuarios" },
+  { q: "¿Qué se pierde al mover una subscription a otro tenant?", a: "Todas las asignaciones de <strong>Azure RBAC</strong>, los administradores clásicos, y se rompen las <strong>system-assigned managed identities</strong>. Los <strong>recursos NO se borran ni se mueven</strong>. Los Key Vault quedan apuntando al tenant viejo.", cat: "Tenant" },
+  { q: "Un Global Administrator no ve ninguna subscription en el portal. ¿Qué falta?", a: "<strong>Elevate access</strong>: Entra ID → Properties → <em>Access management for Azure resources</em> = Yes. Le da <strong>User Access Administrator</strong> en el scope raíz <code>/</code>. Global Admin administra identidades, <strong>no recursos</strong>.", cat: "Tenant" },
+  { q: "Sintaxis de una regla dinámica para el departamento de ventas", a: "<code>user.department -eq \"Sales\"</code><br>Valores entre comillas dobles, atributo <strong>case-sensitive</strong>. Otros operadores: <code>-ne</code>, <code>-startsWith</code>, <code>-contains</code>, <code>-match</code>, <code>-in</code>, <code>-any</code>.", cat: "Grupos" },
+  { q: "¿Qué requisitos tiene un grupo para poder recibir roles de Entra ID (role-assignable)?", a: "Tiene que ser <strong>Security</strong>, con membresía <strong>Assigned</strong> (nunca dinámico), creado con <em>\"Entra roles can be assigned to the group\" = Yes</em>. Esa opción <strong>solo se define al crear</strong> y no se puede cambiar después. Requiere <strong>P1</strong>.", cat: "Grupos" },
+  { q: "¿Cuál es el rol de mínimo privilegio para invitar guests B2B?", a: "<strong>Guest Inviter</strong>. User Administrator también puede, pero es más privilegio del necesario. Si <em>Guest invite settings</em> está en <strong>\"No one\"</strong>, ni el Global Admin puede invitar.", cat: "B2B" },
+  { q: "¿Dónde vive la password de un usuario guest B2B invitado a tu tenant?", a: "En su <strong>home tenant</strong> (o su cuenta Microsoft/Google/one-time passcode). Tu tenant solo tiene el <strong>objeto guest</strong> con UPN <code>user_dominio.com#EXT#@tutenant.onmicrosoft.com</code>. Borrar ese objeto le saca el acceso sin tocar su cuenta original.", cat: "B2B" },
+  { q: "5 users de Company2 necesitan las apps de Company1 con SSO, ya y sin costo. ¿Qué hacés primero?", a: "<strong>Invitarlos como guest users B2B</strong> en el tenant de Company1 (<code>New-MgInvitation</code> / Invite external user). No B2C (eso es para consumidores), no ADFS (servidores on-prem), no crear cuentas en el AD de Company1 (serían identidades nuevas, no su UPN).", cat: "B2B" },
+  { q: "B2B vs B2C vs ADFS: ¿para quién es cada uno y dónde autentican?", a: "<strong>B2B:</strong> empleados de un partner; autentican en su home tenant (guest <code>#EXT#</code> en el tuyo).<br><strong>B2C:</strong> clientes de una app pública; tenant aparte, email/social, pago por MAU.<br><strong>ADFS:</strong> STS on-prem (Windows Server + WAP); Entra redirige ahí y ADFS valida contra AD DS. Ni rápido ni gratis.", cat: "B2B" },
+  { q: "Subiste un CSV de bulk create y no ves resultados en pantalla. ¿Por qué?", a: "La operación es <strong>asincrónica</strong>: los resultados están en <strong>Bulk operation results</strong>, con CSV descargable de las filas que fallaron. Ojo: las <strong>dos primeras filas</strong> del template (versión + encabezados) <strong>no se tocan</strong>.", cat: "Bulk" },
+  { q: "¿Un Global Administrator queda limitado si lo asignás con scope de una Administrative Unit?", a: "<strong>No.</strong> Global Admin es tenant-wide y ve todo el directorio igual. Las AU acotan roles delegados como <strong>User / Groups / Helpdesk / Password / Authentication / License Administrator</strong>. Las AU requieren <strong>P1</strong>.", cat: "AU" },
+  { q: "BYOD personal, corporativo cloud-only, corporativo con AD DS: ¿qué tipo de dispositivo va en cada uno?", a: "BYOD → <strong>Entra registered</strong>.<br>Corporativo solo nube → <strong>Entra joined</strong>.<br>Corporativo con dominio on-prem → <strong>Hybrid Entra joined</strong> (el único que requiere <strong>Entra Connect</strong>).", cat: "Dispositivos" },
+  { q: "¿Cuál es el valor por defecto de \"Maximum number of devices per user\" y qué cuenta?", a: "<strong>50</strong>. Opciones: 5, 10, 20, 50, 100 o <code>Unlimited</code>. Cuenta <strong>Entra joined + Entra registered</strong>. Los <strong>hybrid joined no cuentan</strong> hacia este límite.", cat: "Dispositivos" },
+  { q: "Ponés el scope de SSPR en \"None\", pero los administradores igual pueden resetear su password. ¿Bug?", a: "<strong>No, es el comportamiento esperado.</strong> Para cuentas con roles administrativos SSPR está <strong>siempre habilitado, exige 2 métodos, no admite security questions y no se puede desactivar</strong>. El scope (None / Selected / All) solo aplica a usuarios sin privilegios.", cat: "SSPR" },
+  { q: "Un script de Graph de group-based licensing falla con MutuallyExclusiveViolation. ¿Causa?", a: "Un producto del grupo trae un <strong>service plan que choca</strong> con otro plan que el usuario ya tiene por <strong>otro producto</strong>. No es falta de licencias (<code>CountViolation</code>), ni dependencia de plan (<code>DependencyViolation</code>), ni usage location (<code>ProhibitedInUsageLocationViolation</code>).", cat: "Licencias" },
+  { q: "Entitlement Management + Graph. Catálogo General, grupo Sales. ¿Qué hacés primero?", a: "<strong>Retrieve the catalog identifier</strong>: <code>Get-MgEntitlementManagementCatalog -Filter \"displayName eq 'General'\"</code>. Después recién agregás el grupo, listás recursos o roles. General ya existe. Licencia P2 / Entra ID Governance. Scope: <code>EntitlementManagement.ReadWrite.All</code>.", cat: "Governance" },
+  { q: "¿Con qué cmdlets ves quién falló al licenciar por grupo y el nombre del error?", a: "<code>Get-MgGroupMemberWithLicenseError -GroupId</code> lista los miembros en error. En el usuario: <code>Get-MgUser -Property LicenseAssignmentStates</code> → campos <code>Error</code>, <code>State</code>, <code>AssignedByGroup</code>. Planes actuales: <code>Get-MgUserLicenseDetail</code>. Asignar al grupo: <code>Set-MgGroupLicense</code> (al usuario directo: <code>Set-MgUserLicense</code>).", cat: "Licencias" },
+  { q: "SSPR híbrido + cloud-only. Yes/No: ¿todos (incl. cloud-only)? ¿All / grupo / usuario individual? ¿SMS y voz?", a: "<strong>Yes / No / Yes</strong>. Cloud-only sí usan SSPR (híbridos necesitan writeback para el AD). Scope = None / Selected / All: Selected es <strong>grupos</strong>, no usuarios sueltos. Mobile phone = SMS o llamada; office phone = solo voz.", cat: "SSPR" },
+  { q: "SSPR para un subset, alta/baja fácil, un dato extra al resetear. ¿Cuatro pasos? ¿All? ¿Lista de usuarios?", a: "1) <strong>Crear grupo</strong> y meter usuarios · 2) Enable <strong>Selected</strong> · 3) <strong>Elegir el grupo</strong> · 4) <strong>Registrar un método</strong>. All cubre a toda la org. No existe “SSPR list” de usuarios sueltos.", cat: "SSPR" },
+  { q: "M365 Business Standard, SSPR on, writeback al AD. Yes/No: ¿subir a P1? ¿Entra Connect? ¿MFA?", a: "<strong>Yes / Yes / No</strong>. Writeback pide <strong>Entra ID P1</strong> (Business Standard no lo trae) + <strong>Entra Connect</strong> (o cloud sync). MFA no es prereq del canal de sync; es para probar identidad al resetear.", cat: "SSPR" },
+  { q: "Híbridos Londres, P1, SSPR en All Users, siguen tickets de password. ¿Grupo, licencia, SSPR no soporta híbridos, o writeback off?", a: "<strong>Password writeback no está habilitado</strong> en Connect. All Users sí incluye sync. P1 ya está. SSPR sí soporta híbridos, pero el cambio no vuelve al AD sin writeback.", cat: "SSPR" }
+];
+
+/* ── motor (no tocar) ── */
+(function(){
+  let i = 0, flipped = false, ok = 0, bad = 0, missed = [];
+  const $ = id => document.getElementById(id);
+  $('fcTot').textContent = FLASHCARDS.length;
+
+  function render(){
+    const c = FLASHCARDS[i];
+    $('fcQ').innerHTML = c.q; $('fcA').innerHTML = c.a; $('fcCat').textContent = c.cat || '';
+    const n = String(i+1).padStart(2,'0') + ' / ' + String(FLASHCARDS.length).padStart(2,'0');
+    $('fcNumF').textContent = n; $('fcNumB').textContent = n;
+    $('fcPos').textContent = i+1;
+    $('fcBar').style.width = (i / FLASHCARDS.length * 100) + '%';
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'none';
+  }
+  $('fcScene').addEventListener('click', () => {
+    if (flipped) return;
+    flipped = true;
+    $('fcCard').classList.add('flipped');
+    $('fcJudge').style.display = 'flex';
+  });
+  function judge(good){
+    if (good) { ok++; $('fcOk').textContent = ok; }
+    else { bad++; $('fcBad').textContent = bad; missed.push(FLASHCARDS[i].q); }
+    $('fcJudge').style.display = 'none'; $('fcNextWrap').style.display = 'flex';
+  }
+  $('fcBtnOk').addEventListener('click', () => judge(true));
+  $('fcBtnBad').addEventListener('click', () => judge(false));
+  $('fcBtnNext').addEventListener('click', () => {
+    i++;
+    if (i >= FLASHCARDS.length) return finish();
+    flipped = false; $('fcCard').classList.remove('flipped'); render();
+  });
+  function finish(){
+    $('fcLive').style.display = 'none';
+    $('fcBar').style.width = '100%';
+    const pct = Math.round(ok / FLASHCARDS.length * 100);
+    $('fcDoneTitle').textContent = pct >= 80 ? '🎉 Dominado' : pct >= 50 ? '💪 Casi ahí' : '📚 A repasar';
+    $('fcDoneScore').textContent = ok + ' sabidas · ' + bad + ' a repasar · ' + pct + '%';
+    $('fcMissed').innerHTML = missed.length
+      ? '<div style="color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">⚠ Para repasar</div>' + missed.map(q => '<div>' + q + '</div>').join('')
+      : '';
+    $('fcDone').style.display = 'block';
+  }
+  $('fcRestart').addEventListener('click', () => {
+    i = 0; flipped = false; ok = 0; bad = 0; missed = [];
+    $('fcOk').textContent = 0; $('fcBad').textContent = 0;
+    $('fcCard').classList.remove('flipped');
+    $('fcDone').style.display = 'none'; $('fcLive').style.display = 'block';
+    render();
+  });
+  render();
+})();
+
+/* ── nav activo al scrollear ── */
+(function(){
+  const links = document.querySelectorAll('nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const l = document.querySelector('nav a[href="#' + e.target.id + '"]');
+        if (l) l.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.section, .fc-section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>
