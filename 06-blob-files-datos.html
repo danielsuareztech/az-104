@@ -221,6 +221,7 @@
   <a href="#sec-inmutable"><span class="dot"></span>Immutable storage (WORM)</a>
   <a href="#sec-lifecycle"><span class="dot"></span>Lifecycle management</a>
   <a href="#sec-orep"><span class="dot"></span>Object replication</a>
+  <a href="#sec-caminos"><span class="dot"></span>Dos caminos de acceso</a>
   <a href="#sec-files"><span class="dot"></span>Azure Files</a>
   <a href="#sec-auth"><span class="dot"></span>Autenticación en Files</a>
   <a href="#sec-sync"><span class="dot"></span>Azure File Sync</a>
@@ -311,6 +312,28 @@ Set-AzStorageBlobContent -Container $containerName `
       <span class="callout-icon">⚠️</span>
       <span><strong>Trampa del examen:</strong> si la pregunta dice "quiero organizar los blobs en carpetas y poder renombrar un directorio completo" o menciona "ACLs por directorio" / "analytics con Data Lake", la respuesta es <strong>habilitar hierarchical namespace</strong>, y solo se puede <strong>en el momento de crear la cuenta</strong> (la migración de una cuenta existente es una operación aparte, no un checkbox del panel de propiedades).</span>
     </div>
+
+    <div class="card">
+      <div class="card-title">Modelo de bloques: stage y después COMMIT</div>
+      <p>Un block blob grande no se sube de un saque. Se parece a una transacción: los bloques quedan en staging hasta que alguien hace commit de la lista completa.</p>
+      <div class="flow">
+        <div class="flow-step">Put Block<br><small>staging, uncommitted</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step highlight">Put Block List<br><small>COMMIT de la lista</small></div>
+        <span class="flow-arrow">=</span>
+        <div class="flow-step">Blob commiteado</div>
+      </div>
+      <ul>
+        <li><strong>Put Block</strong> sube un bloque y lo deja <em>uncommitted</em>. Todavía no es el blob. <strong>No crea versión.</strong></li>
+        <li><strong>Put Block List</strong> commitea la lista entera. Recién ahí el blob existe o se reemplaza, y versioning genera versión.</li>
+        <li>Bloques que nadie commitea se descartan a los <strong>7 días</strong>.</li>
+        <li><strong>Put Blob</strong> es el write de una sola vez, para archivos chicos. El material clásico del examen lo corta en <strong>256 MB</strong>.</li>
+      </ul>
+    </div>
+    <div class="callout callout-info">
+      <span class="callout-icon">⚖️</span>
+      <span><strong>Matiz real vs examen:</strong> la REST actual de block blob acepta <strong>Put Blob hasta 5000 MiB</strong>. El examen sigue usando 256 MB como techo de Put Blob y Put Block / Put Block List para lo que pasa de ahí. Los 7 días de los bloques uncommitted no cambiaron.</span>
+    </div>
   </div>
 
   <!-- ══ 2 ══ -->
@@ -361,6 +384,9 @@ Set-AzStorageBlobContent -Container $containerName `
           <tr><td>Put Page</td><td><span class="no">No</span></td><td>Escribe un rango de un <strong>page blob</strong> (VHD). Snapshot manual si hace falta</td></tr>
           <tr><td>Append Block</td><td><span class="no">No</span></td><td>Agrega al final de un <strong>append blob</strong> (logs)</td></tr>
           <tr><td>Put Blob From URL</td><td><span class="no">No</span></td><td>Crea un block blob leyendo de una URL. Parece Copy/Put Blob; <strong>no</strong> entra en la lista</td></tr>
+          <tr><td>Set Blob Properties</td><td><span class="no">No</span></td><td>No está entre las cuatro. En el servicio no devuelve version id</td></tr>
+          <tr><td>Set Blob Tier</td><td><span class="no">No</span></td><td>Cambia el tier. Learn: no actualiza el ETag</td></tr>
+          <tr><td>Set Blob Tags</td><td><span class="no">No</span></td><td>Subrecurso. No cambia contenido, ETag ni last-modified</td></tr>
         </tbody>
       </table>
       </div>
@@ -375,6 +401,11 @@ az storage blob metadata update -c data -n file.bin --metadata env=prod       # 
     <div class="callout callout-warn">
       <span class="callout-icon">⚠️</span>
       <span><strong>Trampa del examen:</strong> “cada write crea versión” es demasiado amplio. Las cuatro: <strong>Put Blob, Put Block List, Copy Blob, Set Blob Metadata</strong>. Put Blob From URL parece Copy y está mal. Put Page / Append Block son writes incrementales de page/append y tampoco. Put Block (sin List) tampoco: solo stagea.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">⚖️</span>
+      <span><strong>Matiz real vs examen:</strong> el overview de Learn dice que, en block blobs, todo write crea versión <em>excepto Put Block</em>. En la misma página la lista concreta es solo Put Blob, Put Block List, Copy Blob y Set Blob Metadata. <strong>Set Blob Properties, Set Blob Tier y Set Blob Tags no están en esa lista</strong> (Tier no cambia el ETag; Tags no cambian el contenido). Si el drop-down no las nombra entre las cuatro, no las marques.</span>
     </div>
 
     <div class="card">
@@ -596,6 +627,9 @@ Set-AzStorageAccountManagementPolicy -ResourceGroupName $rgName `
         <li>Las reglas se definen a nivel de <strong>container</strong> (origen → destino), con filtros de <strong>prefijo</strong> opcionales y un timestamp opcional para replicar solo lo creado/modificado desde entonces.</li>
         <li>Origen y destino pueden estar en <strong>regiones, suscripciones o tenants distintos</strong>.</li>
         <li>En el container destino <strong>no se permiten escrituras directas</strong> de usuarios (responden <code>409 Conflict</code>). <strong>Lectura y delete sí</strong>. Solo la policy de replicación escribe blobs.</li>
+        <li>Solo <strong>block blobs</strong>. Append y page no entran. Cuentas GPv2 o premium block blob, en los dos lados.</li>
+        <li>Si el blob de origen <strong>o</strong> de destino pasa a <strong>Archive</strong>, la replicación de ese blob falla. Rehidratar no la dispara: tiene que haber un write nuevo. Hot, Cool y Cold sí se replican, aunque origen y destino estén en tiers distintos.</li>
+        <li>Cross-tenant exige <code>AllowCrossTenantReplication = true</code> en las cuentas que cruzan tenant. En cuentas creadas desde el <strong>15 dic 2023</strong> el default es <code>false</code>.</li>
       </ul>
     </div>
 
@@ -672,6 +706,34 @@ az storage account blob-service-properties update -n destino -g RG \
     <div class="callout callout-info">
       <span class="callout-icon">💡</span>
       <span>Si el escenario dice "los usuarios en Europa necesitan leer localmente los mismos blobs que produce la app en East US" → <strong>object replication</strong>. Si dice "necesito que los datos sobrevivan a la caída de una región completa, sin elegir cuál" → <strong>GRS/GZRS</strong>.</span>
+    </div>
+  </div>
+
+  <!-- ══ caminos ══ -->
+  <div class="section" id="sec-caminos">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(91,141,238,.15)">🛤️</div>
+      <span class="section-title">Los dos caminos de acceso a un file share</span>
+      <span class="section-tag">Antes de la auth</span>
+    </div>
+
+    <p>El mismo share se alcanza por dos protocolos que no comparten autenticación. <strong>Primero identificá el camino, después la credencial.</strong> Un SAS no arregla un <code>net use</code>, y una identity de SMB no autentica un AzCopy.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th></th><th>SMB / NFS (montar)</th><th>REST / HTTPS</th></tr></thead>
+        <tbody>
+          <tr><td>Quién lo usa</td><td><code>net use</code>, Finder, <code>mount</code></td><td>AzCopy, portal, Storage Explorer, PowerShell de data plane</td></tr>
+          <tr><td>Endpoint</td><td><code>\\cuenta.file.core.windows.net\share</code></td><td><code>https://cuenta.file.core.windows.net/share</code></td></tr>
+          <tr><td>Puerto</td><td><strong>445</strong> (NFS: 2049)</td><td><strong>443</strong></td></tr>
+          <tr><td>Auth</td><td>Account key, o identity-based (AD DS / Entra DS / Entra Kerberos). <strong>Nunca SAS.</strong></td><td>SAS, account key o Entra OAuth</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> si el enunciado dice montar, mapear o “system error 67”, estás en SMB y el SAS no existe como respuesta. Si dice AzCopy, portal o Storage Explorer, estás en REST.</span>
     </div>
   </div>
 
@@ -761,6 +823,21 @@ az storage share restore --account-name cuenta --deleted-share-name configs --de
       <span><strong>Trampa del examen:</strong> <code>EnableShareDeleteRetentionPolicy $false</code> = <strong>apagar la feature</strong>. No es undelete ni “borrar permanente ahora”. Para recuperar: <code>az storage share restore</code>. Para que expire el soft-deleted, esperás la retención o lo dejás morir; este cmdlet no lo púrga.</span>
     </div>
 
+    <div class="card">
+      <div class="card-title">Soft delete es del share, no del archivo</div>
+      <p>Protege el <strong>share entero</strong>. Un archivo borrado adentro no pasa por esta papelera: para eso están los <strong>share snapshots</strong> (“Versiones anteriores”) o Azure Backup. Mnemotecnia: <strong>DeleteRetention = soft delete</strong> (<code>EnableShareDeleteRetentionPolicy</code> + <code>ShareRetentionDays</code>, 1–365; default 7 en cuentas nuevas).</p>
+<pre><code>Get-AzRmStorageShare -ResourceGroupName $rg -StorageAccountName $sa -IncludeDeleted
+
+# Borrado permanente de uno que ya está soft-deleted (Learn):
+# 1) restaurar  2) apagar soft delete  3) borrar de nuevo
+Restore-AzRmStorageShare -ResourceGroupName $rg -StorageAccountName $sa `
+  -Name docs -DeletedShareVersion $version
+Update-AzStorageFileServiceProperty -ResourceGroupName $rg -StorageAccountName $sa `
+  -EnableShareDeleteRetentionPolicy $false
+Remove-AzRmStorageShare -ResourceGroupName $rg -StorageAccountName $sa -Name docs -Force</code></pre>
+      <p>Después de purgar, volvé a prender soft delete si el resto de los shares tiene que seguir protegido. Apagar la policy <strong>no</strong> borra los que ya estaban en la papelera: por eso el paso 1 existe.</p>
+    </div>
+
     <div class="tbl-wrap">
       <table>
         <thead><tr><th>Opción</th><th>Versiones de archivos</th><th>Share borrado</th><th>Costo / overhead</th></tr></thead>
@@ -781,8 +858,10 @@ az storage share restore --account-name cuenta --deleted-share-name configs --de
     <div class="card">
       <div class="card-title">Montaje SMB on-premises: el puerto 445</div>
       <p>Montar el share <strong>directamente</strong> desde la oficina por SMB 3.x (Premium FileStorage o Standard) es tráfico <strong>TCP 445 saliente</strong> hacia <code>&lt;cuenta&gt;.file.core.windows.net</code>. El 443 es HTTPS/REST (portal, AzCopy, FileREST), no el protocolo de montaje.</p>
-<pre><code># ¿El 445 llega a Azure?
+<pre><code># ¿El 445 llega a Azure?  (443 abierto no implica 445 abierto)
 Test-NetConnection &lt;cuenta&gt;.file.core.windows.net -Port 445
+nc -vz cuenta.file.core.windows.net 445    # macOS / Linux
+nc -vz cuenta.file.core.windows.net 443    # REST: suele andar aunque el 445 esté tapado
 
 # Windows: guardar credencial y mapear
 cmdkey /add:&lt;cuenta&gt;.file.core.windows.net /user:localhost\&lt;cuenta&gt; /pass:&lt;key&gt;
@@ -831,6 +910,11 @@ sudo mount -t cifs //cuenta.file.core.windows.net/share /mnt/share \
     <div class="callout callout-warn">
       <span class="callout-icon">⚠️</span>
       <span><strong>Trampa del examen (esta sale tal cual):</strong> cuenta FileStorage premium, montar el share <strong>directo on-prem por SMB 3.0</strong>, minimizar esfuerzo. La respuesta es <strong>abrir TCP 445</strong> en el firewall de Internet on-premises. ExpressRoute funciona pero no es mínimo esfuerzo. File Sync no es un montaje directo. El 443 no sirve para SMB.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <span><strong>Fuera de examen — montar en macOS:</strong> Finder → Conectarse al servidor, o <code>mount_smbfs</code>, contra <code>smb://cuenta.file.core.windows.net/share</code>. La key va en el Keychain; si tiene <code>+</code>, <code>/</code> o <code>=</code> hay que URL-encodearla en la URL. Sigue siendo SMB: si el ISP tapa el 445, Finder tampoco entra. El examen no pregunta el Finder.</span>
     </div>
 
     <div class="card">
@@ -918,6 +1002,7 @@ net use Z: \\cuenta.file.core.windows.net\share /user:AZURE\cuenta &lt;key&gt;</
 $key = (Get-AzStorageAccountKey -ResourceGroupName RG -Name stfiles01)[0].Value
 $ctx = New-AzStorageContext -StorageAccountName stfiles01 -StorageAccountKey $key
 New-AzStorageShare -Name resources -Context $ctx
+# Control plane (RBAC, sin key): New-AzRmStorageShare -ResourceGroupName RG -StorageAccountName stfiles01 -Name resources
 
 # En cada VM Windows (persistente):
 cmdkey /add:stfiles01.file.core.windows.net /user:AZURE\stfiles01 /pass:$key
@@ -938,6 +1023,22 @@ New-PSDrive -Name Z -PSProvider FileSystem -Root '\\stfiles01.file.core.windows.
     <div class="callout callout-warn">
       <span class="callout-icon">⚠️</span>
       <span><strong>Trampa del examen:</strong> el orden es rígido: <strong>cuenta → keys → context → share → CMDKEY → New-PSDrive</strong>. Context <em>antes</em> del share; CMDKEY <em>antes</em> del drive (si invertís esos dos, monta ahora y se cae al reboot). <code>New-</code> vs <code>Get-</code>/<code>Set-</code> en la cuenta: el enunciado dice “new storage account”. Persistencia = <code>CMDKEY</code>, no un segundo <code>New-AzStorageShare</code>.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><code>New-AzRmStorageShare</code> vs <code>New-AzStorageShare</code></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th></th><th><code>New-AzRmStorageShare</code></th><th><code>New-AzStorageShare</code></th></tr></thead>
+          <tbody>
+            <tr><td>Plano</td><td>Control plane (ARM)</td><td>Data plane (File REST)</td></tr>
+            <tr><td>Auth</td><td>RBAC de quien corre el cmdlet. No pide key</td><td>Storage context con account key (o token de datos)</td></tr>
+            <tr><td>Lock ReadOnly en la cuenta</td><td><span class="no">Falla</span> — el create ARM es escritura</td><td><span class="yes">Sigue</span> si ya tenés la key. El lock no frena el data plane</td></tr>
+            <tr><td>CLI</td><td><code>az storage share-rm create</code></td><td><code>az storage share create</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El pipeline de las seis acciones de arriba usa el data plane a propósito: por eso el context va antes del share. Si el enunciado no te da la key y sí un rol de ARM, el cmdlet es el <code>Rm</code>.</p>
     </div>
   </div>
 
@@ -995,6 +1096,17 @@ New-PSDrive -Name Z -PSProvider FileSystem -Root '\\stfiles01.file.core.windows.
     <div class="callout callout-warn">
       <span class="callout-icon">⚠️</span>
       <span><strong>Trampa del examen:</strong> “hybrid + over the internet + no line-of-sight to DCs” = <strong>Entra Kerberos</strong>. AD DS y Entra DS piden ver un DC. Linux Kerberos no es el escenario general.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Identity-based para SMB: el orden</div>
+      <ol>
+        <li><strong>Habilitar una fuente</strong> en la cuenta: AD DS, Entra DS o Entra Kerberos. Una sola.</li>
+        <li>Asignar el rol de share: <em>Storage File Data SMB Share Reader</em>, <em>Contributor</em> o <em>Elevated Contributor</em> (el único que modifica ACLs NTFS).</li>
+        <li>Poner las <strong>ACL NTFS</strong> desde un cliente Windows unido a esa fuente.</li>
+        <li>El cliente Windows tiene que estar unido (dominio, Entra DS o Entra / hybrid join, según la fuente).</li>
+      </ol>
+      <p><strong>Default share-level permissions</strong> es el atajo de la cuenta: un rol SMB (Reader o Contributor, no Elevated) para toda identidad autenticada, y NTFS hace el recorte fino. Sigue siendo el camino SMB: <strong>Entra Kerberos también necesita el puerto 445</strong>. No es REST y no acepta SAS.</p>
     </div>
 
     <div class="card">
@@ -1352,6 +1464,13 @@ const FLASHCARDS = [
   { q: "AVD + FSLogix: perfil temporal; el admin monta el share en el mismo host. ¿Local profiles, firewall, network settings o permisos?", a: "<strong>Faltan permisos</strong> del usuario en el Azure file share (RBAC SMB + NTFS). El admin monta ⇒ red/firewall OK. Temporary ≠ perfil local viejo.", cat: "Permisos" },
   { q: "share1 (source) y share2 con temporales. Espejo, mín. costo/tiempo. ¿Explorer, share3, copy full, o sync --delete-destination?", a: "<code>azcopy sync</code> share1→share2 <code>--delete-destination=true</code>. Explorer es manual. share3 es overkill. Borrar dest + <code>copy</code> es full, no delta.", cat: "Transferencia" },
   { q: "Files SMB: identidades híbridas Entra, acceso por internet, sin línea de vista a DCs. ¿Linux Kerberos, Entra Kerberos, Entra DS o AD DS on-prem?", a: "<strong>Kerberos para identidades híbridas</strong> (Entra Kerberos). AD DS y Entra DS piden ver un DC. Linux Kerberos es otro caso.", cat: "Azure Files" },
+  { q: "File share: ¿qué auth va por SMB/445 y cuál por REST/443? ¿El SAS monta?", a: "<strong>SMB/NFS:</strong> <code>\\\\cuenta.file.core.windows.net\\share</code>, puerto 445, account key o identity-based. <strong>Nunca SAS.</strong> <strong>REST:</strong> puerto 443, SAS, key o Entra. Primero el camino, después la credencial.", cat: "Azure Files" },
+  { q: "Identity-based SMB: ¿qué habilitás, qué roles, y Entra Kerberos necesita el 445?", a: "Fuente en la cuenta (AD DS, Entra DS o Entra Kerberos) → rol <em>Storage File Data SMB Share Reader/Contributor/Elevated Contributor</em> → ACL NTFS → cliente Windows unido. <strong>Default share-level permissions</strong> da un rol SMB a toda identidad autenticada. Entra Kerberos sigue siendo SMB: puerto <strong>445</strong>.", cat: "Azure Files" },
+  { q: "Soft delete de shares: ¿protege un archivo? ¿Cómo se borra para siempre uno ya soft-deleted?", a: "Solo el <strong>share</strong>. Mnemotecnia: DeleteRetention = soft delete (<code>EnableShareDeleteRetentionPolicy</code> + <code>ShareRetentionDays</code>). Listar: <code>Get-AzRmStorageShare -IncludeDeleted</code>. Permanente: <code>Restore-AzRmStorageShare</code> → apagar soft delete → <code>Remove-AzRmStorageShare</code>. Apagar la policy no púrga lo ya borrado.", cat: "Azure Files" },
+  { q: "Versioning on. ¿Set Blob Properties, Set Blob Tier o Set Blob Tags crean versión?", a: "<strong>No.</strong> Las cuatro que sí: Put Blob, Put Block List, Copy Blob, Set Blob Metadata. Tier no cambia el ETag. Tags son un subrecurso. Properties no devuelve version id.", cat: "Versioning" },
+  { q: "Put Block vs Put Block List vs Put Blob. ¿Cuándo se tiran los bloques sin commit?", a: "Put Block = staging uncommitted (no versiona). Put Block List = <strong>COMMIT</strong> de la lista completa. Sin commit, se descartan a los <strong>7 días</strong>. Put Blob = un solo write; el examen lo corta en 256 MB (la REST actual llega a 5000 MiB).", cat: "Blob" },
+  { q: "Object replication: ¿Archive se replica? ¿El destino se escribe? ¿Cross-tenant?", a: "Solo <strong>block blobs</strong>. El container destino rechaza writes (<strong>409</strong>); read y delete sí. <strong>Archive no se replica</strong> (origen o destino). Cross-tenant: <code>AllowCrossTenantReplication</code> (default <code>false</code> desde el 15 dic 2023).", cat: "Replicación" },
+  { q: "¿Cómo diferenciás 443 de 445 y qué cmdlet crea el share si hay un ReadOnly lock?", a: "Windows: <code>Test-NetConnection -Port 445</code>. macOS/Linux: <code>nc -vz host 445</code> y compará con 443. <code>New-AzRmStorageShare</code> es control plane y el ReadOnly lo frena. <code>New-AzStorageShare</code> es data plane con key y el lock no lo frena.", cat: "Azure Files" },
   { q: "AzCopy a DevStore. Blob vs Files. ¿Entra+SAS, SAS only, o keys?", a: "<strong>Blob: Entra ID y SAS</strong>. <strong>Files: SAS only</strong>. El examen no da Entra para Files en AzCopy. Tener la key no cambia el combo si las opciones agrupan Entra/SAS.", cat: "Transferencia" }
 ];
 

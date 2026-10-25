@@ -12,7 +12,7 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AZ-104 · 134 ejercicios por frecuencia de examen</title>
+<title>AZ-104 · 160 labs en el portal, por frecuencia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -208,7 +208,7 @@
 
   <header>
     <p class="eyebrow">AZ-104 · Microsoft Azure Administrator</p>
-    <h1>134 labs en el portal, por frecuencia</h1>
+    <h1>160 labs en el portal, por frecuencia</h1>
     <p class="sub">Ranking basado en el peso oficial por dominio (Networking y Compute 20-25%, Identity/Storage 15-20%, Monitor 10-15%) cruzado con las anotaciones "why this matters" de cada módulo de tu guía. Módulo 1 = el que más se pregunta.</p>
     <div class="legend">
       <span class="tier t1">Muy alta</span>
@@ -223,7 +223,7 @@
   <div class="progress-card">
     <div class="progress-top">
       <span class="label">Progreso total</span>
-      <span class="value" id="totalLabel">0 / 134</span>
+      <span class="value" id="totalLabel">0 / 160</span>
     </div>
     <div class="bar-track"><div class="bar-fill" id="totalBar"></div></div>
   </div>
@@ -468,6 +468,43 @@ const MODULES = [
 { tier:'t6', dom:'rev', title:'Repaso final de Exam Traps', why:'No es contenido nuevo — es la verificación de que ya cubriste cada trampa del examen con un lab real.',
   items:[
    'Recorrer la tabla completa de Exam Traps y, por cada uno, señalar en qué laboratorio de esta lista lo comprobaste vos mismo. Si algún trap no tiene lab asociado, es un gap — volvé al módulo correspondiente'
+]},
+
+{ tier:'t2', dom:'store', title:'Rotación de keys contra un App Service', why:'El drop-down del examen es el orden de los índices. Hay que ver el app setting entre medio, no solo correr renew.',
+  items:[
+   'Crear una storage account y un App Service. App setting STORAGE_ACCOUNT_KEY = key1 (az storage account keys list --query "[0].value" -o tsv). Anotar el valor y confirmar que la app lee el storage',
+   'En zsh, con comillas: key=$(az storage account keys list -g RG -n storage1 --query "[1].value" -o tsv). Actualizar el app setting a esa secondary y verificar que la app sigue respondiendo',
+   'az storage account keys renew -g RG -n storage1 --key key1. Verificar que el app setting (todavía key2) sigue válido y que el valor viejo de key1 ya no autentica',
+   'Leer [0].value con -o tsv, actualizar el app setting a la key1 nueva y verificar la app otra vez',
+   'az storage account keys renew --key key2. Verificar que la app, ya en la key1 nueva, no se corta. No existe key3'
+]},
+{ tier:'t2', dom:'store', title:'Stored access policy en un file share', why:'Set Share ACL es Files, no Container ACL. El mismo SAS tiene que pasar de 200 a 403.',
+  items:[
+   'New-AzStorageShareStoredAccessPolicy en un share: permiso Read y expiry a futuro. Es Set Share ACL por PowerShell',
+   'New-AzStorageShareSASToken -Policy y comprobar que la URL responde (no 403)',
+   'Set-AzStorageShareStoredAccessPolicy con expiry en el pasado. Esperar ~30 segundos y comprobar 403 con el mismo SAS',
+   'Anotar el contraste: un SAS sin policy no se revoca así. Hay que rotar la account key que lo firmó'
+]},
+{ tier:'t2', dom:'store', title:'Soft delete de file shares', why:'Apagar la policy no purga lo ya borrado. El portal lo muestra con Show deleted shares.',
+  items:[
+   'Update-AzStorageFileServiceProperty -EnableShareDeleteRetentionPolicy -ShareRetentionDays 7',
+   'Borrar un share. En el portal: File shares → Show deleted shares. Confirmar que aparece',
+   'Undelete desde el portal, o Restore-AzRmStorageShare con la version de Get-AzRmStorageShare -IncludeDeleted',
+   'Borrado permanente: restaurar → EnableShareDeleteRetentionPolicy $false → Remove-AzRmStorageShare. Apagar soft delete solo no purga lo que ya estaba borrado'
+]},
+{ tier:'t2', dom:'store', title:'Firewall de storage: endpoint, Deny y Bypass', why:'El service endpoint se escribe en la subnet y después hay que guardar la VNet. Deny sin Bypass deja afuera al vault.',
+  items:[
+   'Portal: service endpoint Microsoft.Storage en la subnet, VNet rule en la cuenta, default action Deny y excepción Allow trusted Azure services',
+   'PowerShell: Set-AzVirtualNetworkSubnetConfig -ServiceEndpoint Microsoft.Storage y después Set-AzVirtualNetwork. El Config solo queda en memoria',
+   'Update-AzStorageAccountNetworkRuleSet -DefaultAction Deny -Bypass AzureServices y Add-AzStorageAccountNetworkRule -VirtualNetworkResourceId',
+   'Probar desde una VM de esa subnet (entra) y desde fuera de la VNet (no entra)'
+]},
+{ tier:'t3', dom:'store', title:'Gotchas de CLI y del shell', why:'El mismo comando “correcto” falla en zsh o imprime la key con comillas. No es una pregunta de Azure: es por qué el lab no coincide con el drop-down.',
+  items:[
+   'En zsh, poner comillas en --query "[0].value". Sin comillas el shell parte el argumento',
+   'Agregar -o tsv para obtener el valor pelado, sin comillas de JSON',
+   'az login y Connect-AzAccount son sesiones separadas: el token de una no abre la otra',
+   'En bash/zsh, escribir $VAR ejecuta el valor como comando. Para verlo, echo "$VAR"'
 ]}
 ];
 

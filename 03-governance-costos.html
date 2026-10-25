@@ -939,6 +939,26 @@ Update-AzTag -ResourceId $resource.Id -Tag $tags -Operation Merge</code></pre>
       <span><strong>Trampa del examen:</strong> alertas “unnecessary” de un budget viejo = <strong>Cost Analysis + retocar el budget</strong>. Anomaly/Advisor/Billing Reader son herramientas reales, pero no arreglan el umbral desactualizado.</span>
     </div>
 
+    <div class="callout callout-info">
+      <span class="callout-icon">⚖️</span>
+      <span><strong>Matiz real vs examen:</strong> en Learn el budget se <strong>evalúa cada 24 horas</strong>. Cuando el costo cruza un umbral, se genera <strong>una notificación</strong> (el mail sale dentro de la hora de esa evaluación), no un cron que reenvíe el mismo umbral todos los días. El tipo es <strong>Actual</strong> (ya gastado) o <strong>Forecasted</strong> (proyección). La API admite hasta <strong>5 Actual y 5 Forecasted</strong>; el tutorial del portal habla de hasta 5 umbrales en un budget. El escenario de “mails todos los días” de más arriba es el enunciado de práctica: la respuesta sigue siendo Cost Analysis + ajustar el budget. Asignar un rol no lo arregla si el problema no es de acceso.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cost Management Reader vs Billing Reader</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th></th><th>Cost Management Reader</th><th>Billing Reader</th></tr></thead>
+          <tbody>
+            <tr><td>Costos y usage</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span></td></tr>
+            <tr><td>Budgets (ver, no editar con el rol de lectura)</td><td><span class="yes">Sí</span></td><td>Según el scope de facturación</td></tr>
+            <tr><td>Facturación (invoices, datos de billing)</td><td><span class="no">No</span></td><td><span class="yes">Sí</span> — es el extra</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Los dos <strong>ven costos</strong>. Billing Reader además ve la facturación. En un budget desactualizado, asignar cualquiera de los dos no cambia el monto ni apaga la alerta.</p>
+    </div>
+
     <div class="tbl-wrap">
       <table>
         <thead><tr><th></th><th>Budget</th><th>Spending limit</th></tr></thead>
@@ -1069,6 +1089,31 @@ az provider register --namespace Microsoft.Compute
 az provider show --namespace Microsoft.Compute --query registrationState</code></pre>
     </div>
 
+    <div class="card">
+      <div class="card-title">Cómo enruta ARM, y qué no es un control de seguridad</div>
+      <p>Un <strong>resource provider</strong> es un namespace (<code>Microsoft.Compute</code>) que publica <strong>resource types</strong>, las <strong>operaciones</strong> de cada tipo y las <strong>API versions</strong>. ARM autentica contra Entra ID, autoriza con RBAC, evalúa Policy y locks, y recién ahí despacha la request al provider que figura en la URL (<code>.../providers/Microsoft.Storage/...</code>) usando el <code>api-version</code> del query.</p>
+      <ul>
+        <li>Si la suscripción no tiene ese namespace en <strong>Registered</strong>, la llamada falla con <code>MissingSubscriptionRegistration</code> (también aparece como <code>NoRegisteredProviderFound</code>).</li>
+        <li>El <strong>portal</strong> suele registrar el provider al crear el primer recurso, si quien hace clic tiene permiso. <strong>Azure CLI, Terraform y un service principal con permisos acotados no</strong>: el despliegue llega al provider apagado y se cae.</li>
+        <li>Registrar exige <code>*/register/action</code>. La traen <strong>Owner</strong> y <strong>Contributor</strong>. Un rol de solo lectura no.</li>
+        <li><strong>Desregistrar no es un control de seguridad.</strong> No borra lo que ya existe, y quien tenga <code>*/register/action</code> (o el portal) lo vuelve a registrar. Para impedir tipos de recurso se usa Azure Policy: <em>Allowed resource types</em> o <em>Not allowed resource types</em>.</li>
+      </ul>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th></th><th><code>az provider register</code></th><th><code>az feature register</code></th></tr></thead>
+          <tbody>
+            <tr><td>Qué prende</td><td>El <strong>namespace entero</strong> (<code>Microsoft.Compute</code>)</td><td>Una <strong>feature</strong> de preview dentro de un provider (<code>--namespace Microsoft.Compute --name EncryptionAtHost</code>)</td></tr>
+            <tr><td>Sin esto</td><td>No se crea ningún resource type de ese namespace</td><td>El provider puede estar Registered y la feature igual en <em>NotRegistered</em></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span><code>az feature register</code> no reemplaza a <code>az provider register</code>. Primero el namespace, después la feature. Muchas features piden registrar el provider otra vez cuando pasan a <em>Registered</em>.</span>
+    </div>
+
     <div class="callout callout-warn">
       <span class="callout-icon">⚠️</span>
       <span><strong>Trampa del examen:</strong> si el escenario dice que la creación de un tipo de recurso <strong>falla en una subscription nueva pero funciona en otra</strong>, la causa más probable es que el <strong>resource provider no está registrado</strong> en esa subscription — no un problema de RBAC ni de cuota. Y ojo con el otro clásico: un despliegue en modo <strong>Complete</strong> <strong>borra</strong> los recursos del RG que no figuran en el template.</span>
@@ -1094,6 +1139,12 @@ Register-AzResourceProvider -ProviderNamespace Microsoft.PolicyInsights</code></
     <div class="callout callout-warn">
       <span class="callout-icon">⚠️</span>
       <span><strong>Trampa del examen:</strong> Global Administrator es carnada de “faltan permisos / elevate access”. En sub nueva + CLI, Policy que “no funciona” = <strong><code>Microsoft.PolicyInsights</code> no registrado</strong>. (LAW = OperationalInsights; no los mezcles.)</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Resource Policy Contributor</div>
+      <p>Rol built-in para <strong>crear y asignar</strong> policy (definitions, set definitions, assignments, exemptions) sin ser Owner. Incluye <code>Microsoft.PolicyInsights/*</code>, así que también puede <strong>registrar ese provider</strong> (<code>Microsoft.PolicyInsights/register/action</code>). No trae <code>*/register/action</code> genérico: no registra <code>Microsoft.Compute</code> ni asigna roles.</p>
+      <p>Escenario: suscripción nueva, el rol correcto ya está, el CLI está al día, y la policy igual no evalúa. El problema no es el rol ni la versión del CLI: <strong><code>Microsoft.PolicyInsights</code> no está registrado</strong>. Tener el rol no lo registra solo.</p>
     </div>
 
     <div class="callout callout-tip">
@@ -1187,7 +1238,11 @@ const FLASHCARDS = [
   { q: "CLI 2.62, GA + Contributor en una sub nueva: Policy no aplica. ¿Falta rol, CLI viejo, sin acceso, o PolicyInsights?", a: "<strong><code>Microsoft.PolicyInsights</code> no registrado</strong>. GA es carnada de permisos. 2.62 no es viejo. El enunciado ya te da rol en la sub. <code>az provider register --namespace Microsoft.PolicyInsights</code>.", cat: "Providers" },
   { q: "Mover Vault1 (RSV, Backup on) de Sub1 a Sub2, mín. downtime. ¿Export-AzResourceGroup, Move-AzResource, Set-AzResource o New-AzResource?", a: "<code>Move-AzResource</code> (el vault vivo). Export- = template, no mueve data. Set- cambia properties en el mismo scope. New- crea vacío (data loss).", cat: "Resource Groups" },
   { q: "Nadie borra devtestrg ni lo de adentro, sin lock en la sub, mín. esfuerzo. ¿Delete en un recurso, Delete en el RG, ReadOnly en un recurso o ReadOnly en la sub?", a: "<strong>CanNotDelete en el resource group</strong>. Se hereda. Un recurso suelto no cubre el grupo. ReadOnly bloquea updates. Lock en la sub está prohibido en el enunciado.", cat: "Locks" },
-  { q: "Policy: deny si Environment no es dev/qa/prod; solo recursos con tags. ¿mode, field, operador, effect?", a: "<code>mode: Indexed</code> · <code>tags['Environment']</code> · <strong>notIn</strong> [dev, qa, prod] · <code>deny</code>. All evalúa tipos sin tags. <code>in</code> denegaría los válidos. Audit no bloquea.", cat: "Policy" }
+  { q: "Policy: deny si Environment no es dev/qa/prod; solo recursos con tags. ¿mode, field, operador, effect?", a: "<code>mode: Indexed</code> · <code>tags['Environment']</code> · <strong>notIn</strong> [dev, qa, prod] · <code>deny</code>. All evalúa tipos sin tags. <code>in</code> denegaría los válidos. Audit no bloquea.", cat: "Policy" },
+  { q: "¿Qué es un resource provider y qué error tira si la suscripción no lo tiene? ¿Desregistrarlo asegura algo?", a: "Namespace con resource types, operaciones y API versions. ARM lo elige por la URL. Error: <code>MissingSubscriptionRegistration</code>. Registrar = <code>*/register/action</code> (Owner/Contributor). El portal suele registrarlo; CLI, Terraform o un SPN acotado, no. <strong>Unregister no es control de seguridad</strong> (Policy de allowed/not allowed resource types). <code>az feature register</code> prende una preview, no el namespace.", cat: "Providers" },
+  { q: "¿Qué permite Resource Policy Contributor y por qué una policy falla en una sub nueva si el rol y el CLI están bien?", a: "Crear y asignar policies, con <code>Microsoft.PolicyInsights/*</code> (puede registrar <em>ese</em> provider, no cualquier namespace). Si igual no evalúa, el RP <strong>no está registrado</strong>: el rol no lo registra solo.", cat: "Providers" },
+  { q: "¿Cada cuánto se evalúa un budget y qué diferencia Actual de Forecasted?", a: "Learn: evaluación <strong>cada 24 h</strong> y <strong>una notificación al cruzar</strong> el umbral, no un mail diario del mismo umbral. <strong>Actual</strong> = ya gastado. <strong>Forecasted</strong> = proyección. API: hasta 5 de cada tipo.", cat: "Costos" },
+  { q: "Cost Management Reader vs Billing Reader. ¿Cuál arregla un budget desactualizado?", a: "Los dos <strong>ven costos</strong>. Billing Reader además ve <strong>facturación</strong>. Ninguno arregla el budget: el arreglo es Cost Analysis + ajustar el monto. Un rol no resuelve un problema que no es de acceso.", cat: "Costos" }
 ];
 
 /* ── motor (no tocar) ── */

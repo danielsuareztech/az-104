@@ -305,6 +305,26 @@
       </ul>
     </div>
 
+    <div class="card">
+      <div class="card-title">Conversiones de cuenta: qué se puede y qué no</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Cambio</th><th></th><th>Cómo</th></tr></thead>
+          <tbody>
+            <tr><td>GPv1 → GPv2</td><td><span class="yes">Sí</span></td><td>In-place, sin downtime, <strong>irreversible</strong></td></tr>
+            <tr><td>BlobStorage → GPv2</td><td><span class="yes">Sí</span></td><td>In-place, también irreversible</td></tr>
+            <tr><td>Standard ↔ Premium</td><td><span class="no">No</span></td><td>Cuenta nueva y migrar los datos</td></tr>
+            <tr><td>GPv2 → FileStorage o BlockBlobStorage</td><td><span class="no">No</span></td><td>El kind se elige al crear. No hay upgrade</td></tr>
+            <tr><td>Cambiar redundancia</td><td><span class="yes">Sí</span>, con matices</td><td>Misma familia es directo; cruzar a ZRS es conversión. Detalle en <a href="#sec6">Cambiar redundancia</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> un premium file share no sale de convertir la GPv1 o la GPv2. Hay que <strong>crear una cuenta <code>FileStorage</code> nueva y migrar</strong>.</span>
+    </div>
+
     <div class="callout callout-warn">
       <span class="callout-icon">⚠️</span>
       <span><strong>Trampa del examen:</strong> "necesitamos un file share con NFS 4.1" no se resuelve con GPv2 Standard. NFS en Azure Files exige una cuenta <strong>Premium file shares (FileStorage)</strong>. Análogamente, "necesitamos un file share sobre SMB, barato" sí es GPv2 Standard. El protocolo es el que decide, no el tamaño.</span>
@@ -879,7 +899,8 @@ const FLASHCARDS = [
   { q: "Azure Files NFSv4.1 en LRS → ZRS. ¿Portal, PowerShell, live migration o manual?", a: "<strong>Migración manual</strong> (cuenta/share ZRS + copiar). Portal y live migration <strong>no</strong> soportan NFSv4.1 LRS→ZRS. PowerShell cambia LRS↔GRS, no ese salto de NFS.", cat: "Migración" },
   { q: "FileStorage, solo UK South, optimizar availability. ¿LRS, ZRS, GRS o GZRS?", a: "<strong>ZRS</strong>. GRS/GZRS copian a otra región (violan “solo UK South”) y Premium no tiene geo. LRS cabe en la región pero no protege zonas.", cat: "Premium" },
   { q: "Premium file shares. Storage1/3 = GPv2, Storage2 = GPv1. ¿Convertir 1 y 3? ¿Cuenta nueva? ¿Convertir 2?", a: "<strong>No / Yes / No</strong>. Standard→Premium no existe. Hay que <strong>crear FileStorage</strong>. GPv1→GPv2 no da SSD de Files.", cat: "Premium" },
-  { q: "az storage account create: Hot/Cool/Archive + lifecycle + falla de región, mín. costo. ¿kind y sku?", a: "<code>--kind StorageV2 --sku Standard_GRS</code>. Storage (GPv1) no tiene tiers/lifecycle. LRS/ZRS no son geo. RA-GRS y GZRS cubren la región pero salen más caros.", cat: "Tipos de cuenta" }
+  { q: "az storage account create: Hot/Cool/Archive + lifecycle + falla de región, mín. costo. ¿kind y sku?", a: "<code>--kind StorageV2 --sku Standard_GRS</code>. Storage (GPv1) no tiene tiers/lifecycle. LRS/ZRS no son geo. RA-GRS y GZRS cubren la región pero salen más caros.", cat: "Tipos de cuenta" },
+  { q: "¿Qué conversiones de storage account existen? GPv1, BlobStorage, Standard↔Premium, GPv2→FileStorage.", a: "<strong>GPv1 → GPv2</strong> y <strong>BlobStorage → GPv2</strong>: in-place, irreversibles. <strong>Standard ↔ Premium</strong> no. <strong>GPv2 → FileStorage / BlockBlobStorage</strong> no. Redundancia sí, con matices. Premium Files = cuenta <code>FileStorage</code> nueva y migrar.", cat: "Migración" }
 ];
 
 /* ── motor (no tocar) ── */

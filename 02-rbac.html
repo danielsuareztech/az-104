@@ -558,6 +558,11 @@ New-AzRoleAssignment -SignInName user@contoso.com -RoleDefinitionName "User Acce
       <span class="callout-icon">🔒</span>
       <span>No confundas deny assignments con <strong>resource locks</strong> (<code>CanNotDelete</code> / <code>ReadOnly</code>). Los locks aplican a <em>todos</em> los principals por igual y son parte de ARM, no de RBAC; incluso un Owner queda bloqueado hasta que borre el lock (y borrar un lock requiere <code>Microsoft.Authorization/locks/*</code>, que tienen Owner y User Access Administrator).</span>
     </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> las role assignments son <strong>aditivas</strong>. Ningún rol te saca permisos: “tener Reader” no es la causa del error. La causa es la <strong>ausencia</strong> de la acción que falta (o un deny assignment). Lo que sí actúa como deny —bloquea aunque el rol alcance— son los <strong>resource locks</strong>. Detalle de CanNotDelete / ReadOnly y de <code>listKeys</code> en <a href="03-governance-costos.html#locks">03 · Locks</a>.</span>
+    </div>
   </div>
 
   <!-- ══════════ 7 ══════════ -->
@@ -720,6 +725,31 @@ az role definition update --role-definition @vm-operator.json</code></pre>
       <span><strong>Trampa del examen:</strong> “scoped to the groups of which UserA is a member” = <code>--include-groups</code>. <code>--include-inherited</code> es otra pregunta (roles que bajan del padre). <code>az role assignment show</code> no lista por usuario.</span>
     </div>
 
+    <div class="card">
+      <div class="card-title">Flags de <code>az role assignment list</code></div>
+      <p>Sin flags, el comando mira el scope de la <strong>suscripción actual</strong> y solo las assignments <strong>directas</strong> de ese scope. Un usuario que “no tiene rol” en esa salida puede tenerlo igual por grupo, por un management group o por un resource group.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Flag</th><th>Qué agrega</th><th>Si lo omitís</th></tr></thead>
+          <tbody>
+            <tr><td><code>--include-groups</code></td><td>Assignments de los <strong>grupos</strong> de los que el usuario es miembro (transitivo)</td><td>No ves el rol heredado por grupo. Parece que no tiene acceso</td></tr>
+            <tr><td><code>--include-inherited</code></td><td>Assignments de scopes <strong>padres</strong> (MG → suscripción)</td><td>No ves lo que baja desde arriba</td></tr>
+            <tr><td><code>--all</code></td><td>Todos los scopes <strong>debajo</strong> de la suscripción (RG y recurso)</td><td>Solo el scope de suscripción, no los hijos</td></tr>
+          </tbody>
+        </table>
+      </div>
+<pre><code>az role assignment list --assignee ana@contoso.com \
+  --include-groups --include-inherited --all --output table
+
+# Equivalente del flag de grupos
+Get-AzRoleAssignment -SignInName ana@contoso.com -ExpandPrincipalGroups</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> sin <code>--include-groups</code> la lista no muestra roles que llegan por grupo y el usuario parece sin acceso. <code>-ExpandPrincipalGroups</code> es el switch de PowerShell para ese mismo hueco; va con <code>-SignInName</code>.</span>
+    </div>
+
     <div class="callout callout-tip">
       <span class="callout-icon">📜</span>
       <span>Para auditar "¿quién le dio Owner a este tipo?", la respuesta es el <strong>Activity Log</strong> de la subscription (operación <em>Create role assignment</em>), no el log de Entra ID.</span>
@@ -792,7 +822,9 @@ const FLASHCARDS = [
   { q: "Least privilege: gestionar el acceso de otros a recursos Azure. ¿User Access Administrator, User Administrator, Contributor, Owner o Co-Administrator?", a: "<strong>User Access Administrator</strong> (RBAC: asigna roles, no opera recursos). <strong>User Administrator</strong> es Entra (usuarios/grupos), no IAM de VMs. Contributor no asigna roles. Owner y Co-Administrator (clásico) sobran privilegio. <code>az role assignment create --role \"User Access Administrator\"</code>.", cat: "Built-in" },
   { q: "CLI: ver roles de UserA incluyendo los de sus grupos. ¿list o show? ¿--include-groups o --include-inherited?", a: "<code>az role assignment list --include-groups --assignee UserA@...</code>. <code>show</code> pide un assignment ID. <code>--include-inherited</code> es jerarquía de scope (MG/sub/RG), no membresía de grupo.", cat: "Operación" },
   { q: "SalesDepartment: leer RG1+RG2, crear solo en RG1, no asignar roles, no crear RGs. Elegí 2.", a: "<strong>Contributor en RG1</strong> + <strong>Reader en RG2</strong>. Owner en RG1 asigna permisos. Contributor/Reader en la subscription tocan RG3 y (Contributor) crea RGs. Contributor en RG1 ya lee RG1.", cat: "Built-in" },
-  { q: "New-AzRoleAssignment VM Contributor, ObjectType ServicePrincipal, scope medicine-sales. Yes/No: ¿es un user? ¿scope el RG? ¿el rol toca VNet/storage?", a: "<strong>No / Yes / Yes</strong> (el rol <em>no</em> toca VNet/storage: la tercera es verdadera). ObjectType = SP, no User. Scope = RG. VM Contributor = la VM, no la red ni la cuenta de storage.", cat: "Built-in" }
+  { q: "New-AzRoleAssignment VM Contributor, ObjectType ServicePrincipal, scope medicine-sales. Yes/No: ¿es un user? ¿scope el RG? ¿el rol toca VNet/storage?", a: "<strong>No / Yes / Yes</strong> (el rol <em>no</em> toca VNet/storage: la tercera es verdadera). ObjectType = SP, no User. Scope = RG. VM Contributor = la VM, no la red ni la cuenta de storage.", cat: "Built-in" },
+  { q: "az role assignment list: ¿qué agregan --include-groups, --include-inherited y --all? ¿El equivalente PowerShell de los grupos?", a: "<code>--include-groups</code> = roles de los grupos del usuario. <code>--include-inherited</code> = scopes padres. <code>--all</code> = RG y recursos debajo de la suscripción (sin eso, solo el scope de suscripción). PowerShell: <code>Get-AzRoleAssignment -SignInName ... -ExpandPrincipalGroups</code>. Sin <code>--include-groups</code> parece que no tiene acceso.", cat: "Operación" },
+  { q: "El usuario tiene Reader y una operación falla. ¿Reader es la causa? ¿Qué sí actúa como deny?", a: "<strong>No.</strong> RBAC de roles es aditivo: ningún rol quita permisos. La causa es la <strong>ausencia</strong> de la acción que falta. Los <strong>resource locks</strong> sí bloquean aunque el rol alcance (no son deny assignments).", cat: "Herencia" }
 ];
 
 /* ── motor (no tocar) ── */

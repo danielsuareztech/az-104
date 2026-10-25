@@ -283,6 +283,25 @@
     </div>
 
     <div class="card">
+      <div class="card-title">AzCopy: qué autorización acepta</div>
+      <p>AzCopy no es el portal. La cuenta puede tener key, Entra y SAS, y el comando igual rechaza lo que el servicio no lista.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th></th><th>Entra ID (rol de data plane)</th><th>SAS</th><th>Account key directa</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Blob</strong> (<code>azcopy copy</code>)</td><td><span class="yes">Sí</span> — Blob Data Reader / Contributor</td><td><span class="yes">Sí</span></td><td><span class="no">No</span></td></tr>
+            <tr><td><strong>Files</strong> (respuesta de examen)</td><td><span class="no">No</span> en el drop-down</td><td><span class="yes">Sí</span></td><td><span class="no">No</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La account key <strong>no se pasa a AzCopy</strong> para Blob ni Files. Sirve para <strong>generar el SAS</strong> y pegar esa URL. Data Lake (ADLS) es el caso aparte: el help de <code>azcopy copy</code> sí lista Shared Key ahí. No es el combo de Blob/Files del examen.</p>
+    </div>
+    <div class="callout callout-info">
+      <span class="callout-icon">⚖️</span>
+      <span><strong>Matiz real vs examen:</strong> el examen quiere <strong>Files = SAS</strong>. En AzCopy reciente, un <code>copy</code> a un <strong>archivo o directorio</strong> de Azure Files también acepta Entra ID (rol <em>Storage File Data Privileged Reader</em> / Contributor) y podés omitir el SAS. Sigue haciendo falta SAS si el comando apunta <strong>solo al share o a la cuenta</strong> (<code>azcopy make</code>, copy de la URL del share). <code>azcopy list</code> de Files sigue pidiendo SAS. Para el drop-down, no marques Entra en Files.</span>
+    </div>
+
+    <div class="card">
       <div class="card-title">Rotación de access keys — el patrón de las dos claves</div>
       <p>La cuenta tiene <strong>exactamente dos</strong> keys (<code>key1</code> / <code>key2</code>), no tres. Cualquiera de las dos da acceso total. Existen dos para poder rotar <strong>sin cortar el servicio</strong>: siempre hay una “de recambio” que nadie está usando.</p>
       <p><strong>Regla:</strong> nunca regenerés la key que las apps están usando. Regenerar invalida esa clave <em>al instante</em> → las connection strings viejas mueren.</p>
@@ -334,6 +353,34 @@ az storage account keys renew -g rg1 -n storage1 --key secondary</code></pre>
     <div class="callout callout-warn">
       <span class="callout-icon">⚠️</span>
       <span><strong>Trampa del examen:</strong> drop-down = <code>[1].value</code> → <code>--key primary</code> → <code>[0].value</code> → <code>--key secondary</code>. Si renovás primary mientras la app todavía lo usa, hay corte.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Nombres: primary = key1 = [0], secondary = key2 = [1]</div>
+      <p>Son <strong>las mismas dos claves</strong>. <code>az storage account keys list</code> devuelve un array: índice <code>[0]</code> es primary/key1, <code>[1]</code> es secondary/key2. La REST API regenera con <code>keyName</code> <code>key1</code> o <code>key2</code>.</p>
+      <div class="callout callout-info">
+        <span class="callout-icon">⚖️</span>
+        <span><strong>Matiz real vs examen:</strong> <code>az storage account keys renew --key</code> acepta <code>key1</code>, <code>key2</code>, <code>primary</code> y <code>secondary</code> (azure-cli-latest). El examen y varios dumps tratan <code>primary</code>/<code>secondary</code> como deprecados a favor de <code>key1</code>/<code>key2</code>. En la prueba, si el drop-down dice <code>primary</code>, es key1. No inventes key3.</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Rotación estándar (4 pasos) vs ambas comprometidas (5)</div>
+      <p><strong>Estándar</strong> — las apps usan key1 y key2 no está filtrada. No hace falta regenerar el recambio antes de saltar: ya es un backup limpio.</p>
+<pre><code># zsh/bash: las comillas evitan que el shell parta el query
+key=$(az storage account keys list -g rg1 -n storage1 --query "[1].value" -o tsv)
+az webapp config appsettings set -g rg1 -n app1 --settings STORAGE_ACCOUNT_KEY="$key"
+az storage account keys renew -g rg1 -n storage1 --key key1
+key=$(az storage account keys list -g rg1 -n storage1 --query "[0].value" -o tsv)
+az webapp config appsettings set -g rg1 -n app1 --settings STORAGE_ACCOUNT_KEY="$key"
+az storage account keys renew -g rg1 -n storage1 --key key2</code></pre>
+      <ol>
+        <li>Leer <strong>secondary</strong> (<code>[1].value</code>, <code>-o tsv</code> saca el valor sin comillas) y apuntar el app setting.</li>
+        <li>Regenerar <strong>key1</strong>. La app ya no la usa.</li>
+        <li>Leer la key1 nueva (<code>[0].value</code>) y volver el app setting.</li>
+        <li>Regenerar <strong>key2</strong>. Queda de backup, sin uso.</li>
+      </ol>
+      <p><strong>Ambas comprometidas</strong> son <strong>5 pasos</strong>, no estos 4: primero se regenera key2 (nadie la usa) y recién ahí se salta. El orden de más arriba está en el escenario de leak. Si saltás a key2 sin regenerarla, producís con una key filtrada.</p>
     </div>
 
     <div class="callout callout-warn">
@@ -537,6 +584,22 @@ az storage account keys renew -g rg1 -n storage1 --key secondary</code></pre>
     <div class="callout callout-warn">
       <span class="callout-icon">⚠️</span>
       <span><strong>Trampa del examen:</strong> la stored access policy <strong>no se puede combinar con lo que ya está en el SAS</strong>. Si un parámetro (permisos o expiry) está definido en la policy, el SAS <strong>no puede especificarlo también</strong>: la request falla con error 400. O lo definís en la policy o en el token, nunca en los dos.</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">File share: crear la policy, el SAS, vencerla</div>
+      <p>Todo esto es <strong>data plane</strong> (context con key). La operación REST equivalente es <strong>Set Share ACL</strong>.</p>
+<pre><code>$ctx = New-AzStorageContext -StorageAccountName $sa -StorageAccountKey $key
+New-AzStorageShareStoredAccessPolicy -ShareName docs -Policy lectores `
+  -Permission r -ExpiryTime (Get-Date).AddDays(7) -Context $ctx
+$sas = New-AzStorageShareSASToken -ShareName docs -Policy lectores -Context $ctx -FullUri
+Invoke-WebRequest -Uri $sas   # 200: el SAS hereda la policy
+
+Set-AzStorageShareStoredAccessPolicy -ShareName docs -Policy lectores `
+  -ExpiryTime (Get-Date).AddDays(-1) -Context $ctx
+Start-Sleep -Seconds 30
+Invoke-WebRequest -Uri $sas   # el mismo SAS ahora falla</code></pre>
+      <p>Learn dice que borrar o modificar la policy afecta a los SAS que la referencian. En el laboratorio la propagación puede tardar <strong>hasta ~30 segundos</strong>: si probás al toque, todavía puede responder 200. Un Service SAS <strong>sin</strong> policy no se revoca así: hay que <strong>rotar la account key</strong> que lo firmó, y eso tumba todo lo demás firmado con esa key.</p>
     </div>
 
     <div class="card">
@@ -918,6 +981,16 @@ Update-AzStorageAccountNetworkRuleSet -ResourceGroupName RG01 -Name storage01 `
       <span class="callout-icon">⚠️</span>
       <span><strong>Trampa del examen:</strong> Contributor <em>en la cuenta</em> no alcanza para que Explorer arme el árbol de la subscription. El error nombra <strong>List/Get Storage Account(s)</strong> → control plane de la sub → <strong>Reader</strong>. Blob Data Reader es el distractor de “storage”.</span>
     </div>
+
+    <div class="card">
+      <div class="card-title">Storage Explorer: “Unable to list resources…”</div>
+      <p>Texto típico: <em>Permission to list containers or to list account keys is required.</em> Explorer, por defecto, entra a los datos con las <strong>account keys</strong> (<code>listKeys</code>), no con Entra.</p>
+      <ul>
+        <li><code>listKeys</code> es <strong>POST</strong>. <strong>Reader</strong> no la tiene. Un lock <strong>ReadOnly</strong> la bloquea incluso a un Owner. <strong>CanNotDelete</strong> no la bloquea.</li>
+        <li>Los locks no tocan el data plane. Con <strong>Storage Blob Data Reader</strong> y login de Entra se sigue pudiendo navegar blobs, aunque <code>listKeys</code> falle.</li>
+      </ul>
+      <p>La misma tabla de causas está en <a href="03-governance-costos.html#locks">03 · Locks</a>.</p>
+    </div>
       <ol>
         <li>¿Quién accede? Identidad de Entra ID → <strong>RBAC de datos</strong>. Tercero sin identidad → <strong>SAS</strong>.</li>
         <li>Si es SAS: ¿tiene que ser revocable sin rotar keys? → <strong>User delegation</strong> (blob, ≤7 días) o <strong>Service SAS + stored access policy</strong>.</li>
@@ -999,7 +1072,11 @@ const FLASHCARDS = [
   { q: "SAS ad hoc a un blob nuevo, sin portal. Seis pasos. ¿RG? ¿Stored access policy?", a: "Storage Explorer → connect a la cuenta → crear container → upload del blob → Get SAS (start/expiry + permisos) → dar la URL HTTPS. No creás RG (la cuenta existe). No stored access policy: eso no es ad hoc.", cat: "SAS" },
   { q: "SAS inmediato, best practice. Yes/No: ¿stored access policy? ¿start time = now? ¿validar writes? ¿revoke borrando la policy?", a: "<strong>Yes / No / Yes / Yes</strong>. Policy sí. Start = now falla por clock skew (omití st o 15 min atrás). Validá lo que escribe el cliente. Borrar la policy revoca sin rotar keys.", cat: "SAS" },
   { q: "CLI: app1 usa key de storage1. Rotar sin corte. ¿query [0] o [1] primero? ¿renew primary o secondary primero?", a: "List <code>[1].value</code> (secondary) → app setting → <code>keys renew --key primary</code> → list <code>[0].value</code> → app setting → <code>renew --key secondary</code>. [0]=primary, [1]=secondary.", cat: "Keys" },
-  { q: "storage01: App Services + Backup vault + Event Hub, solo Azure. PS: ¿endpoint? ¿Add- qué? ¿Update- qué? ¿-Bypass?", a: "<code>Microsoft.Storage</code> · <code>Add-AzStorageAccountNetworkRule</code> · <code>Update-AzStorageAccountNetworkRuleSet</code> · <code>-Bypass AzureServices</code>. El endpoint es del storage, no de Web/EventHub. Sin AzureServices el vault y el hub no pasan el firewall.", cat: "Red" }
+  { q: "storage01: App Services + Backup vault + Event Hub, solo Azure. PS: ¿endpoint? ¿Add- qué? ¿Update- qué? ¿-Bypass?", a: "<code>Microsoft.Storage</code> · <code>Add-AzStorageAccountNetworkRule</code> · <code>Update-AzStorageAccountNetworkRuleSet</code> · <code>-Bypass AzureServices</code>. El endpoint es del storage, no de Web/EventHub. Sin AzureServices el vault y el hub no pasan el firewall.", cat: "Red" },
+  { q: "AzCopy: ¿Entra, SAS o account key para Blob y para Files?", a: "<strong>Blob:</strong> Entra ID (rol de data plane) y SAS. <strong>Files, respuesta de examen:</strong> SAS. La account key no se le pasa a AzCopy en esos dos: sirve para armar el SAS. Entra en Files existe en AzCopy reciente para archivos/directorios; el drop-down no la toma.", cat: "AzCopy" },
+  { q: "Storage Explorer: unable to list containers or account keys. ¿Reader, ReadOnly, CanNotDelete? ¿El data plane sigue?", a: "Explorer usa <strong>keys</strong> por defecto. <code>listKeys</code> es POST: Reader no la tiene y un <strong>ReadOnly</strong> lock la bloquea hasta a un Owner. CanNotDelete no. Los locks no frenan el data plane: Blob Data Reader + Entra sigue navegando. Ver <a href=\"03-governance-costos.html#locks\">03 · Locks</a>.", cat: "RBAC" },
+  { q: "primary, key1 y [0] son lo mismo. Rotación estándar vs ambas comprometidas.", a: "<strong>primary = key1 = [0]</strong>, <strong>secondary = key2 = [1]</strong>. Estándar, 4 pasos: <code>--query \"[1].value\" -o tsv</code> → app setting → <code>renew --key key1</code> → <code>[0].value</code> → app setting → <code>renew --key key2</code>. Ambas comprometidas = <strong>5 pasos</strong> y se regenera key2 primero. CLI acepta primary/secondary y key1/key2.", cat: "Keys" },
+  { q: "Stored access policy de un file share: ¿qué cmdlets, cuánto tarda en morir el SAS y cómo se revoca uno sin policy?", a: "<code>New-AzStorageShareStoredAccessPolicy</code> → <code>New-AzStorageShareSASToken -Policy</code> → <code>Set-AzStorageShareStoredAccessPolicy</code> con expiry pasada. El mismo SAS deja de funcionar; la propagación puede tardar <strong>~30 s</strong>. Sin policy, la única revocación es <strong>rotar la key</strong>. REST = Set Share ACL.", cat: "Policies" }
 ];
 
 /* ── motor (no tocar) ── */

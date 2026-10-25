@@ -207,7 +207,7 @@
 
 <div class="totals">
   <div class="stat"><div class="stat-num">17</div><div class="stat-lbl">módulos de repaso</div></div>
-  <div class="stat"><div class="stat-num">427</div><div class="stat-lbl">flashcards</div></div>
+  <div class="stat"><div class="stat-num">464</div><div class="stat-lbl">flashcards</div></div>
   <div class="stat"><div class="stat-num">324</div><div class="stat-lbl">tablas comparativas</div></div>
   <div class="stat"><div class="stat-num">305</div><div class="stat-lbl">trampas de examen</div></div>
 </div>
@@ -231,13 +231,13 @@
       <div class="topic-top"><span class="topic-file">02-rbac.html</span><span class="badge b-core">Núcleo</span></div>
       <div class="topic-name">Azure RBAC</div>
       <div class="topic-desc">Los tres componentes de una asignación, jerarquía de scopes, roles built-in (Contributor RG1 + Reader RG2; Owner asigna roles; scope subscription se come RG3; VM Contributor = VM no VNet/storage; ObjectType ServicePrincipal ≠ user), control plane vs data plane, roles custom, deny assignments, <code>az role assignment list --include-groups</code> y RBAC vs roles de Entra.</div>
-      <div class="topic-meta"><span>9 secciones</span><span>18 flashcards</span></div>
+      <div class="topic-meta"><span>9 secciones</span><span>20 flashcards</span></div>
     </a>
     <a class="topic" href="03-governance-costos.html" style="border-left-color:var(--core)">
       <div class="topic-top"><span class="topic-file">03-governance-costos.html</span><span class="badge b-core">Núcleo</span></div>
       <div class="topic-name">Governance y costos</div>
       <div class="topic-desc">Management groups (hierarchy protection = <code>managementGroups/write</code>; mover sub = Remove- + New-AzManagementGroupSubscription), resource groups y move (Vault1 cross-sub = <code>Move-AzResource</code>, no Export-/New-; managed SSL se borra; Standard LB no cruza sub; peering se saca; VNet RG→RG sí; cross-sub: RBAC del recurso orphaned), locks (CanNotDelete en el RG, no en un recurso ni ReadOnly ni en la sub si el enunciado lo prohíbe), tags (vacío = <code>New-AzTag</code>; existentes = <code>Update-AzTag -Operation Merge</code>, no Replace), Azure Policy (<code>mode: Indexed</code> + <code>tags['Environment']</code> <code>notIn</code> + <code>deny</code>; VMs solo en regiones = Allowed locations / Deny; CLI en sub nueva = registrar <code>Microsoft.PolicyInsights</code>, no el CLI ni GA), Cost Management.</div>
-      <div class="topic-meta"><span>8 secciones</span><span>37 flashcards</span></div>
+      <div class="topic-meta"><span>8 secciones</span><span>41 flashcards</span></div>
     </a>
   </div>
 </div>
@@ -255,19 +255,19 @@
       <div class="topic-top"><span class="topic-file">04-storage-accounts.html</span><span class="badge b-core">Núcleo</span></div>
       <div class="topic-name">Storage Accounts</div>
       <div class="topic-desc">Tipos de cuenta, Standard vs Premium (FileStorage se crea, no se convierte desde GPv1/GPv2; solo una región = ZRS, no GRS/GZRS), CLI create = <code>StorageV2</code> + <code>Standard_GRS</code> (tiers+lifecycle+geo, no RA-GRS/GZRS), access tiers (30/90/180; sin Cold en el drop-down + inmediato = Cool, no Archive), redundancia (Files NFSv4.1 LRS→ZRS = migración manual), failover y endpoints.</div>
-      <div class="topic-meta"><span>9 secciones</span><span>20 flashcards</span></div>
+      <div class="topic-meta"><span>9 secciones</span><span>21 flashcards</span></div>
     </a>
     <a class="topic" href="05-storage-seguridad.html" style="border-left-color:var(--core)">
       <div class="topic-top"><span class="topic-file">05-storage-seguridad.html</span><span class="badge b-core">Núcleo</span></div>
       <div class="topic-name">Storage · Seguridad y acceso</div>
       <div class="topic-desc">Los tres tipos de SAS (ad hoc = Explorer → container → upload → SAS en el token, no stored policy ni RG; start time ≠ now por clock skew; Yes/No/Yes/Yes), stored access policies, access keys (CLI: <code>[1].value</code> → renew primary → <code>[0].value</code> → renew secondary), CMK, RBAC de plano de datos, Storage Explorer (List/Get SAs = Reader en la sub), firewall (endpoint <code>Microsoft.Storage</code> + <code>Add-AzStorageAccountNetworkRule</code> + <code>-Bypass AzureServices</code> para vault/Event Hub), endpoints y cifrado.</div>
-      <div class="topic-meta"><span>8 secciones</span><span>23 flashcards</span></div>
+      <div class="topic-meta"><span>8 secciones</span><span>27 flashcards</span></div>
     </a>
     <a class="topic" href="06-blob-files-datos.html" style="border-left-color:var(--core)">
       <div class="topic-top"><span class="topic-file">06-blob-files-datos.html</span><span class="badge b-core">Núcleo</span></div>
       <div class="topic-name">Blob, Files y movimiento de datos</div>
       <div class="topic-desc">Soft delete vs versioning vs snapshots, lifecycle (<code>Add-…Action</code> → Filter → Rule → <code>Set-…Policy</code>), upload Cool = <code>Set-AzStorageBlobContent -StandardBlobTier</code>, object replication, Azure Files (FSLogix temp = faltan permisos SMB/NTFS; híbrido + internet + sin DC = Entra Kerberos, no AD DS ni Entra DS), File Sync, AzCopy (Blob = Entra + SAS; Files = SAS only; <code>sync --delete-destination</code> = espejo) vs Storage Explorer vs Data Box.</div>
-      <div class="topic-meta"><span>9 secciones</span><span>30 flashcards</span></div>
+      <div class="topic-meta"><span>10 secciones</span><span>37 flashcards</span></div>
     </a>
   </div>
 </div>
@@ -310,7 +310,7 @@
       <div class="topic-top"><span class="topic-file">11-arm-bicep.html</span><span class="badge b-core">Núcleo</span></div>
       <div class="topic-name">ARM Templates y Bicep</div>
       <div class="topic-desc">Anatomía de una plantilla, Incremental vs Complete (<code>-Mode</code> en el cmdlet, no en el JSON), 15 VMs = JSON+PS (no XML ni copy×14), scopes, Bicep, what-if, Export-AzResourceGroup (no Save- ni New-…Deployment), reusar export = <code>[resourceGroup().location]</code> en el <em>template</em> (no en el parameters file; crear el RG no pisa un eastus hardcodeado), password no en claro = Key Vault + access policy primero, y template specs.</div>
-      <div class="topic-meta"><span>8 secciones</span><span>25 flashcards</span></div>
+      <div class="topic-meta"><span>9 secciones</span><span>28 flashcards</span></div>
     </a>
   </div>
 </div>
@@ -390,14 +390,14 @@
     <a class="topic" href="18-ejercicios.html" style="border-left-color:var(--accent)">
       <div class="topic-top"><span class="topic-file">18-ejercicios.html</span><span class="badge b-core">Hacé primero</span></div>
       <div class="topic-name">Escenarios de examen</div>
-      <div class="topic-desc">260 escenarios, uno por trampa del material. Leés el enunciado, resolvés vos, y recién después abrís la solución. Progreso guardado en el navegador.</div>
-      <div class="topic-meta"><span>260 ejercicios</span><span>Solución colapsable</span></div>
+      <div class="topic-desc">261 escenarios, uno por trampa del material. Leés el enunciado, resolvés vos, y recién después abrís la solución. Progreso guardado en el navegador.</div>
+      <div class="topic-meta"><span>261 ejercicios</span><span>Solución colapsable</span></div>
     </a>
     <a class="topic" href="19-labs-portal.html" style="border-left-color:var(--mix)">
       <div class="topic-top"><span class="topic-file">19-labs-portal.html</span><span class="badge b-mix">Portal</span></div>
       <div class="topic-name">Labs en la suscripción</div>
-      <div class="topic-desc">134 tareas para hacer en el portal, ordenadas por frecuencia de examen. Checklist de “lo hice”, sin solución teórica — es para clicar Azure de verdad.</div>
-      <div class="topic-meta"><span>134 labs</span><span>Por frecuencia</span></div>
+      <div class="topic-desc">160 tareas para hacer en el portal, ordenadas por frecuencia de examen. Checklist de “lo hice”, sin solución teórica — es para clicar Azure de verdad. Las últimas cinco cubren rotación de keys, SAS de file share, soft delete, firewall y gotchas de shell.</div>
+      <div class="topic-meta"><span>160 labs</span><span>Por frecuencia</span></div>
     </a>
   </div>
 </div>

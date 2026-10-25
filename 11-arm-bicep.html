@@ -224,6 +224,7 @@
   <a href="#sec-bicep"><span class="dot"></span>Bicep</a>
   <a href="#sec-operacion"><span class="dot"></span>Validación y operación</a>
   <a href="#sec-comparativa"><span class="dot"></span>ARM vs Terraform vs CLI</a>
+  <a href="#sec-ps-memoria"><span class="dot"></span>PowerShell: memoria vs Azure</a>
   <a href="#flashcards"><span class="dot"></span>Flashcards</a>
 </nav>
 
@@ -1124,6 +1125,43 @@ az deployment group create -g rg-app \
     </div>
   </div>
 
+  <div class="section" id="sec-ps-memoria">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,.15)">🧠</div>
+      <span class="section-title">Az PowerShell: en memoria vs Azure</span>
+      <span class="section-tag">Transversal</span>
+    </div>
+
+    <p>Az PowerShell parte los cmdlets en dos capas. El verbo no alcanza para saber si tocaste Azure: <code>New-</code>, <code>Add-</code> y <code>Set-</code> de una pieza de configuración trabajan <strong>en memoria</strong>. El cmdlet del recurso es el que escribe.</p>
+
+    <div class="rule-box">
+      <strong>Heurística:</strong> si pide <code>-ResourceGroupName</code> (o recibe el objeto completo del recurso y lo manda de vuelta), toca Azure. Si solo recibe el objeto de config (<code>*Config</code>, <code>*Rule</code>, <code>*Filter</code>, <code>*Action</code>, <code>*DataDisk</code>), queda en la sesión.
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Pieza</th><th>En memoria</th><th>Toca Azure</th></tr></thead>
+        <tbody>
+          <tr><td>Subnet</td><td><code>Add-</code> / <code>Set-</code> / <code>Remove-AzVirtualNetworkSubnetConfig</code></td><td><code>Set-AzVirtualNetwork</code></td></tr>
+          <tr><td>Regla de NSG</td><td><code>Add-</code> / <code>Set-</code> / <code>Remove-AzNetworkSecurityRuleConfig</code></td><td><code>Set-AzNetworkSecurityGroup</code></td></tr>
+          <tr><td>Disco de VM</td><td><code>Add-</code> / <code>Set-AzVMDataDisk</code></td><td><code>Update-AzVM</code></td></tr>
+          <tr><td>NIC</td><td><code>Add-</code> / <code>Set-AzNetworkInterfaceIpConfig</code></td><td><code>Set-AzNetworkInterface</code></td></tr>
+          <tr><td>Lifecycle</td><td><code>Add-AzStorageAccountManagementPolicyAction</code>, <code>New-…Filter</code>, <code>New-…Rule</code></td><td><code>Set-AzStorageAccountManagementPolicy</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Trampa del examen:</strong> <code>Set-AzVirtualNetworkSubnetConfig</code> es local. Sin el <code>Set-AzVirtualNetwork</code> de después, Azure no se entera. <code>-AddressPrefix</code> y <code>-ServiceEndpoint</code> <strong>reemplazan</strong> la lista actual: no appendean. Y el objeto <code>$vnet</code> queda con el <strong>ETag viejo</strong> después del Set; un segundo Set con ese mismo objeto devuelve <strong>412</strong>. Hay que volver a hacer <code>Get-AzVirtualNetwork</code>.</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">💡</span>
+      <span><strong>Contraste:</strong> Azure CLI impacta Azure en cada comando. <code>az network vnet subnet update</code> no tiene un objeto en memoria que haya que “guardar” después.</span>
+    </div>
+  </div>
+
   <!-- ══ FLASHCARDS ══ -->
   <div class="fc-section" id="flashcards">
     <div class="fc-head"><h2>🃏 Flashcards</h2></div>
@@ -1197,7 +1235,10 @@ const FLASHCARDS = [
   { q: "Template de una VM, 50 VMs, password no en claro. ¿Primero: en la plantilla, Key Vault + access policy, nested template, o Recovery Services vault?", a: "<strong>Key Vault + access policy</strong> (y <code>enabledForTemplateDeployment</code>). En la plantilla o en otra plantilla queda en claro. RSV es Backup, no secretos. Después el parameter file con <code>reference</code>.", cat: "Parámetros" },
   { q: "Deploy OK y el RG quedó solo con el storage de la plantilla. ¿-Mode Complete en el cmdlet, no usaste -Mode, o mode: Complete en el JSON?", a: "<code>-Mode Complete</code> en <code>New-AzResourceGroupDeployment</code>. Sin <code>-Mode</code> = Incremental (no borra). El ARM JSON <strong>no tiene</strong> property mode.", cat: "Modos" },
   { q: "15 VMs idénticas a un equipo. ¿JSON+PS, XML+CLI, o crear una VM y copiarla 14 veces?", a: "<strong>JSON + PowerShell</strong> (<code>New-AzResourceGroupDeployment -TemplateFile</code>). ARM no es XML. No hay “copy VM ×14” en CLI/PS: eso es plantilla o imagen.", cat: "Operación" },
-  { q: "Export de una VM, reusar, todos en la región del RG. ¿parameters file con [resourceGroup().location], crear el RG y desplegar, o editar el template?", a: "Editar la <strong>plantilla</strong>: cada location = <code>[resourceGroup().location]</code>. El parameters file no evalúa funciones ARM. Crear el RG no pisa un <code>\"eastus\"</code> hardcodeado.", cat: "Funciones" }
+  { q: "Export de una VM, reusar, todos en la región del RG. ¿parameters file con [resourceGroup().location], crear el RG y desplegar, o editar el template?", a: "Editar la <strong>plantilla</strong>: cada location = <code>[resourceGroup().location]</code>. El parameters file no evalúa funciones ARM. Crear el RG no pisa un <code>\"eastus\"</code> hardcodeado.", cat: "Funciones" },
+  { q: "En Az PowerShell, ¿New/Add/Set de un *Config toca Azure? ¿Cuál es la heurística?", a: "<strong>No.</strong> <code>*Config</code>, <code>*Rule</code>, <code>*Filter</code>, <code>*Action</code> y <code>*DataDisk</code> quedan en memoria, sea cual sea el verbo. Toca Azure el cmdlet del recurso. Heurística: pide <code>-ResourceGroupName</code> o recibe el objeto completo del recurso.", cat: "PowerShell" },
+  { q: "Set-AzVirtualNetworkSubnetConfig ya corrió. ¿Falta algo? ¿AddressPrefix agrega? ¿Por qué un 412?", a: "Falta <code>Set-AzVirtualNetwork</code>. <code>-AddressPrefix</code> y <code>-ServiceEndpoint</code> <strong>reemplazan</strong>. Después del Set, <code>$vnet</code> tiene el ETag viejo: otro Set devuelve <strong>412</strong>. Hay que hacer Get de nuevo.", cat: "PowerShell" },
+  { q: "¿az network vnet subnet update deja el cambio en memoria como el *Config de PowerShell?", a: "<strong>No.</strong> Cada comando de Azure CLI impacta Azure. No hay un segundo cmdlet para “guardar”.", cat: "PowerShell" }
 ];
 
 /* ── motor (no tocar) ── */
